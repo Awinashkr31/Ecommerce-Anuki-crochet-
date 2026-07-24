@@ -1,0 +1,322 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  CATALOG_MANAGER
+  ORDER_FULFILLMENT
+  CUSTOMER_SUPPORT
+  MARKETING
+  FINANCE
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String?
+  fullName     String   @map("name")
+  avatarUrl    String?  @map("avatar_url")
+  authProvider String?  @default("EMAIL") @map("auth_provider")
+  phone        String?
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses      Address[]
+  orders         Order[]
+  reviews        Review[]
+  wallet         Wallet?
+  posts          Post[]
+  auditLogs      AuditLog[]
+  orderTimelines OrderTimeline[]
+  inventoryLogs  InventoryLog[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id           String              @id @default(uuid())
+  userId       String              @unique
+  user         User                @relation(fields: [userId], references: [id])
+  balance      Float               @default(0)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  transactions WalletTransaction[]
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  bannerUrl   String?
+  isActive    Boolean    @default(true)
+  parentId    String?
+  parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children    Category[] @relation("Subcategories")
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  shortDesc      String?
+  fullDesc       String?
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id])
+  isMadeToOrder  Boolean  @default(false)
+  processingDays Int      @default(2)
+  basePrice      Float
+  salePrice      Float?
+  published      Boolean  @default(false)
+
+  featured          Boolean @default(false)
+  trending          Boolean @default(false)
+  bestseller        Boolean @default(false)
+  limitedEdition    Boolean @default(false)
+  weight            Float?
+  length            Float?
+  width             Float?
+  height            Float?
+  lowStockThreshold Int     @default(5)
+  maxOrdersPerDay   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants             Variant[]
+  reviews              Review[]
+  images               Image[]
+  customizationOptions CustomizationOption[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  altText   String?
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomizationOption {
+  id        String   @id @default(uuid())
+  name      String // e.g., "Color Theme", "Embroidery Text"
+  type      String // e.g., "TEXT", "DROPDOWN"
+  options   String? // comma separated or JSON for dropdown choices
+  required  Boolean  @default(false)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Variant {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  sku       String   @unique
+  color     String?
+  size      String?
+  price     Float
+  stock     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id])
+  status        OrderStatus @default(PENDING)
+  totalAmount   Float
+  internalNotes String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items    OrderItem[]
+  payment  Payment?
+  shipment Shipment?
+  timeline OrderTimeline[]
+}
+
+model Shipment {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  awbNumber   String   @unique
+  courierName String
+  trackingUrl String?
+  status      String   @default("LABEL_CREATED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id            String         @id @default(uuid())
+  orderId       String
+  order         Order          @relation(fields: [orderId], references: [id])
+  variantId     String
+  variant       Variant        @relation(fields: [variantId], references: [id])
+  quantity      Int
+  price         Float
+  customization String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  returnRequest ReturnRequest?
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  gateway       String
+  transactionId String   @unique
+  status        String
+  amount        Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int
+  comment   String?
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  amount      Float
+  type        String // "CREDIT", "DEBIT"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ReturnRequest {
+  id            String    @id @default(uuid())
+  orderItemId   String    @unique
+  orderItem     OrderItem @relation(fields: [orderItemId], references: [id])
+  reason        String
+  images        String[] // URLs of images provided by customer
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, REFUNDED
+  refundMethod  String    @default("WALLET") // WALLET, ORIGINAL
+  restocked     Boolean   @default(false)
+  adminComments String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Coupon {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  type          String // "PERCENTAGE", "FLAT"
+  value         Float
+  minOrderValue Float     @default(0)
+  usageLimit    Int?
+  usedCount     Int       @default(0)
+  validFrom     DateTime  @default(now())
+  validTo       DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String // Markdown
+  published Boolean  @default(false)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entityId  String?
+  details   String? // JSON stringified
+  createdAt DateTime @default(now())
+}
+
+model OrderTimeline {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  status    String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model InventoryLog {
+  id           String   @id @default(uuid())
+  variantId    String
+  variant      Variant  @relation(fields: [variantId], references: [id])
+  changeAmount Int
+  reason       String // ORDER, RESTOCK, MANUAL
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model StoreSettings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
