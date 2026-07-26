@@ -1,3 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'Read the Terms of Service for Anuki Crochet. Learn about the rules, guidelines, and agreements for using our website.',
+  alternates: {
+    canonical: '/policies/terms-of-service'
+  }
+};
+
 export default function TermsOfServicePage() {
   return (
     <>
@@ -31,7 +41,7 @@ export default function TermsOfServicePage() {
 
       <h3>6. Contact Information</h3>
       <p>
-        Questions about the Terms of Service should be sent to us at support@anukicrochet.com.
+        Questions about the Terms of Service should be sent to us at support@anukicrochet.in.
       </p>
     </>
   );

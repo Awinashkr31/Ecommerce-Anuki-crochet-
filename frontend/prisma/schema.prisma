@@ -56,11 +56,15 @@ model Address {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  fullName  String
+  phone     String
   street    String
   city      String
   state     String
   zipCode   String
-  country   String
+  country   String   @default("India")
+  landmark  String?
+  isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -109,6 +113,11 @@ model Product {
   sku               String?
   barcode           String?
   stockStatus       String  @default("IN_STOCK")
+  stock             Int     @default(0)
+
+  // Variant Config
+  hasStyles         Boolean @default(false)
+  hasSizes          Boolean @default(false)
 
   // Organization fields
   subcategoryId     String?
@@ -121,6 +130,8 @@ model Product {
   material          String?
   careInstructions  String?
   countryOfOrigin   String  @default("India")
+  color             String?
+  size              String?
 
   // Shipping
   shippingCharges   Float?
@@ -192,11 +203,32 @@ model Variant {
   material  String?
   style     String?
   attributes Json?
-  imageUrl  String?
+  imageUrls String[] @default([])
   price     Float
   stock     Int      @default(0)
+
+  // Overrides for Variant vs Product
+  name              String?
+  shortDesc         String?
+  fullDesc          String?
+  salePrice         Float?
+  costPrice         Float?
+  weight            Float?
+  length            Float?
+  width             Float?
+  height            Float?
+  isHandmade        Boolean?
+  careInstructions  String?
+  countryOfOrigin   String?
+  taxSettings       String?
+  stockStatus       String?
+  lowStockThreshold Int?
+  shippingCharges   Float?
+  freeShipping      Boolean?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   orderItems    OrderItem[]
   inventoryLogs InventoryLog[]
 }

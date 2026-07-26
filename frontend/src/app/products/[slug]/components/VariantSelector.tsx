@@ -6,24 +6,40 @@ export default function VariantSelector({
   variants,
   selectedVariantId,
   setSelectedVariantId,
+  baseColor,
+  baseProduct,
 }: {
   variants: any[];
   selectedVariantId: string | null;
-  setSelectedVariantId: (id: string) => void;
+  setSelectedVariantId: (id: string | null) => void;
+  baseColor?: string | null;
+  baseProduct?: any;
 }) {
-  if (!variants || variants.length === 0) return null;
+  const allVariants = useMemo(() => {
+    const base = baseProduct ? {
+      id: 'base',
+      color: baseProduct.color,
+      size: baseProduct.size,
+      style: baseProduct.style,
+      material: baseProduct.material,
+    } : null;
+
+    return base && (base.color || base.size || base.style) ? [base, ...variants] : variants;
+  }, [variants, baseProduct]);
+
+  if (!allVariants || allVariants.length === 0) return null;
 
   // Group variants by type for luxury presentation
-  const colors = useMemo(() => Array.from(new Set(variants.filter(v => v.color).map(v => v.color))), [variants]);
-  const sizes = useMemo(() => Array.from(new Set(variants.filter(v => v.size).map(v => v.size))), [variants]);
-  const styles = useMemo(() => Array.from(new Set(variants.filter(v => v.style).map(v => v.style))), [variants]);
+  const colors = useMemo(() => Array.from(new Set(allVariants.filter(v => v.color).map(v => v.color))), [allVariants]);
+  const sizes = useMemo(() => Array.from(new Set(allVariants.filter(v => v.size).map(v => v.size))), [allVariants]);
+  const styles = useMemo(() => Array.from(new Set(allVariants.filter(v => v.style).map(v => v.style))), [allVariants]);
 
-  const currentVariant = variants.find(v => v.id === selectedVariantId) || variants[0];
+  const currentVariant = allVariants.find(v => v.id === (selectedVariantId || 'base')) || allVariants[0];
 
   const handleSelect = (key: string, val: string) => {
     // Find a variant that matches the new selection but keeps other existing selections if possible
-    const target = variants.find(v => v[key] === val) || variants[0];
-    if (target) setSelectedVariantId(target.id);
+    const target = allVariants.find(v => v[key] === val) || allVariants[0];
+    if (target) setSelectedVariantId(target.id === 'base' ? null : target.id);
   };
 
   // Color Mapping for UI Swatches
@@ -43,10 +59,10 @@ export default function VariantSelector({
         <div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-bold text-neutral-900">Color</span>
-            <span className="text-sm font-medium text-neutral-500">{currentVariant?.color}</span>
+            <span className="text-sm font-medium text-neutral-500">{colors.length > 0 ? currentVariant?.color : baseColor}</span>
           </div>
           <div className="flex flex-wrap gap-3">
-            {colors.map((c) => {
+            {colors.map((c: any) => {
               const isSelected = currentVariant?.color === c;
               return (
                 <button
@@ -56,7 +72,7 @@ export default function VariantSelector({
                 >
                   <span 
                     className="w-8 h-8 rounded-full border border-black/10" 
-                    style={{ backgroundColor: colorMap[c] || '#ccc' }}
+                    style={{ backgroundColor: colorMap[c] || c }}
                   />
                 </button>
               );

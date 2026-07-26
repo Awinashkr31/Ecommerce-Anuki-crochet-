@@ -16,24 +16,54 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [activeTab, setActiveTab] = useState('Variant Basics');
+  const TABS = ['Variant Basics', 'Product Details', 'Shipping & Attributes'];
   
   const handleOpenAdd = () => {
     setEditingVariant({
       id: null,
       color: '',
       size: '',
-      material: '',
+      material: product?.material || '',
       style: '',
       sku: '',
-      price: product?.basePrice || 0,
+      price: '',
       stock: 0,
-      imageUrl: null
+      imageUrls: [],
+      name: product?.name || '',
+      shortDesc: product?.shortDesc || '',
+      fullDesc: product?.fullDesc || '',
+      salePrice: product?.salePrice || '',
+      costPrice: product?.costPrice || '',
+      weight: product?.weight || '',
+      length: product?.length || '',
+      width: product?.width || '',
+      height: product?.height || '',
+      isHandmade: product?.isHandmade ?? true,
+      careInstructions: product?.careInstructions || '',
+      countryOfOrigin: product?.countryOfOrigin || '',
+      taxSettings: product?.taxSettings || '',
+      stockStatus: product?.stockStatus || 'IN_STOCK',
+      lowStockThreshold: product?.lowStockThreshold || 5,
+      shippingCharges: product?.shippingCharges || '',
+      freeShipping: product?.freeShipping ?? false
     });
+    setActiveTab('Variant Basics');
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (v: any) => {
-    setEditingVariant(v);
+    setEditingVariant({
+      ...v,
+      salePrice: v.salePrice || '',
+      costPrice: v.costPrice || '',
+      weight: v.weight || '',
+      length: v.length || '',
+      width: v.width || '',
+      height: v.height || '',
+      shippingCharges: v.shippingCharges || ''
+    });
+    setActiveTab('Variant Basics');
     setIsModalOpen(true);
   };
 
@@ -63,6 +93,10 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
     try {
       setSaving(true);
       const payload = { ...editingVariant };
+      if (payload.price === '' || payload.price === null || payload.price === undefined) {
+        payload.price = product.basePrice;
+      }
+
       if (editingVariant.id) {
         await apiPut(`/products/${id}/variants/${editingVariant.id}`, payload);
       } else {
@@ -85,13 +119,24 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append('image', file);
+      formData.append('folder', 'products');
       const data = await apiUpload('/upload', formData);
-      setEditingVariant((prev: any) => ({ ...prev, imageUrl: data.url }));
+      setEditingVariant((prev: any) => ({ 
+        ...prev, 
+        imageUrls: [...(prev.imageUrls || []), data.url] 
+      }));
     } catch (err) {
       toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setEditingVariant((prev: any) => ({
+      ...prev,
+      imageUrls: (prev.imageUrls || []).filter((_: any, i: number) => i !== index)
+    }));
   };
 
   if (isLoading) return <div className="p-8 flex items-center justify-center"><Loader2 className="animate-spin text-rose-500" size={32} /></div>;
@@ -143,7 +188,7 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
                 <tr key={v.id} className="hover:bg-neutral-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="w-12 h-12 bg-neutral-100 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200">
-                      {v.imageUrl ? <img src={v.imageUrl} alt="Variant" className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-neutral-400" />}
+                      {(v.imageUrls && v.imageUrls.length > 0) ? <img src={v.imageUrls[0]} alt="Variant" className="w-full h-full object-cover" /> : (v.imageUrl ? <img src={v.imageUrl} alt="Variant" className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-neutral-400" />)}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -181,55 +226,160 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
             </div>
             <div className="p-6 overflow-y-auto flex-1">
               <form id="variant-form" onSubmit={handleSave} className="space-y-6">
-                
-                <div className="flex gap-6">
-                  <div className="w-32 flex-shrink-0">
-                    <label className="block text-sm font-bold text-neutral-700 mb-2">Image</label>
-                    <label className="w-full aspect-square border-2 border-dashed border-neutral-300 rounded-xl flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:bg-neutral-50 transition-colors relative overflow-hidden">
-                      {editingVariant.imageUrl ? (
-                        <img src={editingVariant.imageUrl} className="w-full h-full object-cover" alt="" />
-                      ) : (
-                        uploadingImage ? <Loader2 size={24} className="animate-spin" /> : <Plus size={24} />
-                      )}
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
-                    </label>
-                  </div>
-                  
-                  <div className="flex-1 grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">Color</label>
-                      <input type="text" value={editingVariant.color} onChange={e => setEditingVariant({...editingVariant, color: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Yellow" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">Size</label>
-                      <input type="text" value={editingVariant.size} onChange={e => setEditingVariant({...editingVariant, size: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Large" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">Material</label>
-                      <input type="text" value={editingVariant.material} onChange={e => setEditingVariant({...editingVariant, material: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Cotton" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">Style</label>
-                      <input type="text" value={editingVariant.style} onChange={e => setEditingVariant({...editingVariant, style: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Heart" />
-                    </div>
-                  </div>
+                {/* Tabs */}
+                <div className="flex gap-6 border-b border-neutral-200 mb-6">
+                  {TABS.map(tab => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      className={`pb-3 font-bold text-sm transition-colors border-b-2 ${activeTab === tab ? 'border-rose-600 text-rose-600' : 'border-transparent text-neutral-500 hover:text-neutral-900'}`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="grid grid-cols-3 gap-6 pt-4 border-t border-neutral-100">
-                  <div>
-                    <label className="block text-sm font-bold text-neutral-700 mb-2">SKU</label>
-                    <input type="text" value={editingVariant.sku} onChange={e => setEditingVariant({...editingVariant, sku: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-neutral-700 mb-2">Price (₹)</label>
-                    <input type="number" required value={editingVariant.price} onChange={e => setEditingVariant({...editingVariant, price: Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-neutral-700 mb-2">Stock Quantity</label>
-                    <input type="number" required value={editingVariant.stock} onChange={e => setEditingVariant({...editingVariant, stock: Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
-                  </div>
-                </div>
+                {activeTab === 'Variant Basics' && (
+                  <>
+                    <div className="space-y-6">
+                      <div className="w-full">
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Images</label>
+                        <div className="flex flex-wrap gap-4">
+                          {(editingVariant.imageUrls || []).map((url: string, index: number) => (
+                            <div key={index} className="w-24 h-24 rounded-xl border border-neutral-200 overflow-hidden relative group flex-shrink-0">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-white/90 text-rose-600 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-700 shadow-sm border border-neutral-200">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
+                          <label className="w-24 h-24 flex-shrink-0 border-2 border-dashed border-neutral-300 rounded-xl flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:bg-neutral-50 hover:border-neutral-400 transition-colors relative overflow-hidden">
+                            {uploadingImage ? <Loader2 size={24} className="animate-spin" /> : <Plus size={24} />}
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                          </label>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 mb-1">Color</label>
+                          <input type="text" value={editingVariant.color || ''} onChange={e => setEditingVariant({...editingVariant, color: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Yellow" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 mb-1">Size</label>
+                          <input type="text" value={editingVariant.size || ''} onChange={e => setEditingVariant({...editingVariant, size: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Large" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 mb-1">Material</label>
+                          <input type="text" value={editingVariant.material || ''} onChange={e => setEditingVariant({...editingVariant, material: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Cotton" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 mb-1">Style</label>
+                          <input type="text" value={editingVariant.style || ''} onChange={e => setEditingVariant({...editingVariant, style: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="e.g. Heart" />
+                        </div>
+                      </div>
+                    </div>
 
+                    <div className="grid grid-cols-3 gap-6 pt-4 border-t border-neutral-100">
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">SKU</label>
+                        <input type="text" value={editingVariant.sku || ''} onChange={e => setEditingVariant({...editingVariant, sku: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Price (₹) - Optional</label>
+                        <input type="number" value={editingVariant.price === '' ? '' : editingVariant.price} onChange={e => setEditingVariant({...editingVariant, price: e.target.value === '' ? '' : Number(e.target.value)})} placeholder={`Base price: ₹${product?.basePrice}`} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Sale Price (₹)</label>
+                        <input type="number" value={editingVariant.salePrice === '' ? '' : editingVariant.salePrice} onChange={e => setEditingVariant({...editingVariant, salePrice: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Stock Quantity</label>
+                        <input type="number" required value={editingVariant.stock || 0} onChange={e => setEditingVariant({...editingVariant, stock: Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Low Stock Threshold</label>
+                        <input type="number" value={editingVariant.lowStockThreshold || 5} onChange={e => setEditingVariant({...editingVariant, lowStockThreshold: Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Stock Status</label>
+                        <select value={editingVariant.stockStatus || 'IN_STOCK'} onChange={e => setEditingVariant({...editingVariant, stockStatus: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500">
+                          <option value="IN_STOCK">In Stock</option>
+                          <option value="OUT_OF_STOCK">Out of Stock</option>
+                          <option value="PRE_ORDER">Pre-Order</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === 'Product Details' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Variant Name Override</label>
+                      <input type="text" value={editingVariant.name || ''} onChange={e => setEditingVariant({...editingVariant, name: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="Defaults to main product name if empty" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Short Description</label>
+                      <textarea value={editingVariant.shortDesc || ''} onChange={e => setEditingVariant({...editingVariant, shortDesc: e.target.value})} rows={2} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="Brief summary..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Full Description</label>
+                      <textarea value={editingVariant.fullDesc || ''} onChange={e => setEditingVariant({...editingVariant, fullDesc: e.target.value})} rows={4} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" placeholder="Detailed description..." />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'Shipping & Attributes' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Weight (kg)</label>
+                        <input type="number" step="0.01" value={editingVariant.weight === '' ? '' : editingVariant.weight} onChange={e => setEditingVariant({...editingVariant, weight: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Length (cm)</label>
+                        <input type="number" step="0.1" value={editingVariant.length === '' ? '' : editingVariant.length} onChange={e => setEditingVariant({...editingVariant, length: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Width (cm)</label>
+                        <input type="number" step="0.1" value={editingVariant.width === '' ? '' : editingVariant.width} onChange={e => setEditingVariant({...editingVariant, width: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Height (cm)</label>
+                        <input type="number" step="0.1" value={editingVariant.height === '' ? '' : editingVariant.height} onChange={e => setEditingVariant({...editingVariant, height: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Shipping Charges (₹)</label>
+                        <input type="number" value={editingVariant.shippingCharges === '' ? '' : editingVariant.shippingCharges} onChange={e => setEditingVariant({...editingVariant, shippingCharges: e.target.value === '' ? '' : Number(e.target.value)})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div className="flex items-center gap-3 pt-6">
+                        <input type="checkbox" id="freeShipping" checked={editingVariant.freeShipping || false} onChange={e => setEditingVariant({...editingVariant, freeShipping: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                        <label htmlFor="freeShipping" className="font-bold text-neutral-700">Free Shipping</label>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <input type="checkbox" id="isHandmade" checked={editingVariant.isHandmade ?? true} onChange={e => setEditingVariant({...editingVariant, isHandmade: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                      <label htmlFor="isHandmade" className="font-bold text-neutral-700">This variant is handmade</label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Care Instructions</label>
+                        <input type="text" value={editingVariant.careInstructions || ''} onChange={e => setEditingVariant({...editingVariant, careInstructions: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-neutral-700 mb-2">Country of Origin</label>
+                        <input type="text" value={editingVariant.countryOfOrigin || ''} onChange={e => setEditingVariant({...editingVariant, countryOfOrigin: e.target.value})} className="w-full border p-2.5 rounded-lg outline-none focus:border-rose-500" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
             <div className="px-6 py-4 border-t bg-neutral-50 flex justify-end gap-3">

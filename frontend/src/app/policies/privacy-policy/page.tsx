@@ -1,3 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Read the Privacy Policy for Anuki Crochet. Learn how we collect, use, and protect your personal information.',
+  alternates: {
+    canonical: '/policies/privacy-policy'
+  }
+};
+
 export default function PrivacyPolicyPage() {
   return (
     <>
@@ -31,7 +41,7 @@ export default function PrivacyPolicyPage() {
 
       <h3>6. Contact Us</h3>
       <p>
-        If you have any questions about this Privacy Policy, please contact us at support@anukicrochet.com.
+        If you have any questions about this Privacy Policy, please contact us at support@anukicrochet.in.
       </p>
     </>
   );

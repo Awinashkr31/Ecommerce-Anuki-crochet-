@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronRight, Loader2, ShieldCheck, Heart } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 import { apiGet } from '../../../lib/api';
@@ -15,6 +15,7 @@ import ProductInfo from './components/ProductInfo';
 import VariantSelector from './components/VariantSelector';
 import ProductAccordions from './components/ProductAccordions';
 import StickyBuyBar from './components/StickyBuyBar';
+import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 
 function calculateDiscount(base: number, sale: number | null) {
   if (!sale || sale >= base) return null;
@@ -113,11 +114,18 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
-      <Toaster />
+    <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
+      <Toaster position="top-center" />
+      <BreadcrumbSchema 
+        items={[
+          { name: 'Home', item: '/' },
+          { name: 'Products', item: '/products' },
+          { name: product.name, item: `/products/${product.slug}` }
+        ]} 
+      />
       
       {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <nav className="text-sm font-medium text-neutral-500 flex items-center gap-2">
           <Link href="/" className="hover:text-rose-600 transition-colors">Home</Link>
           <ChevronRight size={14} />
@@ -127,7 +135,7 @@ export default function ProductDetailPage() {
         </nav>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 lg:pb-24">
+      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
           
           {/* Left Column: Image Gallery */}
@@ -151,10 +159,12 @@ export default function ProductDetailPage() {
               variants={product.variants || []}
               selectedVariantId={selectedVariantId}
               setSelectedVariantId={setSelectedVariantId}
+              baseColor={product.color}
+              baseProduct={product}
             />
 
             <ProductAccordions product={product} />
-            
+
             <StickyBuyBar 
               product={product}
               currentVariant={currentVariant}
@@ -168,7 +178,43 @@ export default function ProductDetailPage() {
             />
           </div>
         </div>
-      </div>
+      </article>
+
+      {/* EEAT & Trust Signals Section */}
+      <section className="bg-white border-y border-neutral-100 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-4">Why Choose Anuki Crochet?</h2>
+            <p className="text-neutral-500 max-w-2xl mx-auto">Every piece is carefully handcrafted with premium yarn, ensuring a lasting keepsake that brings joy for years to come.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100">
+              <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
+                <ShieldCheck size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 mb-2">Premium Quality</h3>
+              <p className="text-sm text-neutral-600">Hypoallergenic, color-fast yarn that never fades.</p>
+            </div>
+            <div className="flex flex-col items-center text-center p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4">
+                <Heart size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 mb-2">100% Handmade</h3>
+              <p className="text-sm text-neutral-600">Crafted with love by skilled artisans in India.</p>
+            </div>
+            <div className="flex flex-col items-center text-center p-6 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 mb-2">Secure Payments</h3>
+              <p className="text-sm text-neutral-600">Encrypted and safe checkout via Razorpay.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Footer Spacing for Sticky Bar */}
+      <div className="h-24 md:h-0"></div>
     </div>
   );
 }

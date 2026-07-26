@@ -126,7 +126,8 @@ export default function EditProductPage() {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append('image', file);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/upload`, {
+      formData.append('folder', 'products');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://anukicrochet.in/api'}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData,

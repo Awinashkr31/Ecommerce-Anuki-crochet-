@@ -2,7 +2,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 import Link from 'next/link';
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 };
 
 async function getPost(slug: string) {
@@ -14,15 +14,13 @@ async function getPost(slug: string) {
     excerpt: "Learn the best ways to wash, dry, and store your handmade crochet items.",
     date: "Oct 25, 2024",
     author: "Admin User",
-    imageUrl: "https://example.com/crochet-care.jpg"
+    imageUrl: "https://anukicrochet.in/crochet-care.jpg"
   };
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const post = await getPost(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   return {
     title: `${post.title} | The Maker's Journal`,
@@ -51,10 +49,42 @@ export async function generateMetadata(
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const post = await getPost(params.slug);
+  const { slug } = await params;
+  const post = await getPost(slug);
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    image: post.imageUrl,
+    datePublished: new Date(post.date).toISOString(),
+    author: {
+      '@type': 'Person',
+      name: 'Anuki',
+      description: 'Founder and lead artisan at Anuki Crochet with over 10 years of experience in crafting bespoke crochet items.',
+      url: 'https://anukicrochet.in/about',
+      sameAs: [
+        'https://instagram.com/anukicrochet',
+        'https://pinterest.com/anukicrochet'
+      ]
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Anuki Crochet',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://anukicrochet.in/logo.png'
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero */}
       <div className="bg-neutral-50 py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -72,7 +102,7 @@ export default async function BlogPostPage({ params }: Props) {
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <article className="max-w-3xl mx-auto px-6 py-12">
         <div className="aspect-video bg-neutral-100 rounded-2xl mb-12 flex items-center justify-center text-neutral-400">
           [Cover Image]
         </div>
@@ -86,7 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
         
         {/* Share */}
-        <div className="mt-16 pt-8 border-t border-neutral-100 flex items-center justify-between">
+        <div className="mt-12 pt-8 border-t border-neutral-100 flex items-center justify-between">
           <p className="font-medium text-neutral-900">Share this article</p>
           <div className="flex gap-4">
             <button className="text-neutral-500 hover:text-neutral-900 font-medium text-sm">Twitter</button>
@@ -94,7 +124,21 @@ export default async function BlogPostPage({ params }: Props) {
             <button className="text-neutral-500 hover:text-neutral-900 font-medium text-sm">Copy Link</button>
           </div>
         </div>
-      </div>
+
+        {/* Author Bio (EEAT) */}
+        <div className="mt-12 bg-neutral-50 rounded-2xl p-8 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
+          <div className="w-20 h-20 bg-rose-200 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-rose-600 font-bold text-2xl">
+            A
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-neutral-900 mb-2">Written by Anuki</h3>
+            <p className="text-neutral-600 mb-4">Founder and lead artisan at Anuki Crochet. With over a decade of experience in the art of amigurumi and floral crochet, Anuki shares expert tips on preserving handmade crafts and creating lasting memories.</p>
+            <Link href="/about" className="text-rose-600 font-bold hover:underline">
+              Read our brand story →
+            </Link>
+          </div>
+        </div>
+      </article>
     </div>
   );
 }

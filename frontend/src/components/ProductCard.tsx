@@ -13,7 +13,7 @@ export interface Product {
   salePrice?: number;
   isMadeToOrder: boolean;
   images: { url: string; altText: string }[];
-  category?: { name: string };
+  category?: { name: string; slug?: string };
   variants?: any[];
   bestseller?: boolean;
   status?: string;

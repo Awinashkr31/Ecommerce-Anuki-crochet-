@@ -1,3 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Shipping Policy',
+  description: 'Read the Shipping Policy for Anuki Crochet. Find out about delivery times, shipping costs, and order tracking.',
+  alternates: {
+    canonical: '/policies/shipping-policy'
+  }
+};
+
 export default function ShippingPolicyPage() {
   return (
     <>
@@ -31,7 +41,7 @@ export default function ShippingPolicyPage() {
 
       <h3>6. Lost or Damaged Packages</h3>
       <p>
-        We take great care in packaging our handmade items securely. However, if your package arrives damaged or is lost in transit, please contact us within 48 hours of delivery (or expected delivery date) at support@anukicrochet.com with photos of the damage, and we will assist you.
+        We take great care in packaging our handmade items securely. However, if your package arrives damaged or is lost in transit, please contact us within 48 hours of delivery (or expected delivery date) at support@anukicrochet.in with photos of the damage, and we will assist you.
       </p>
     </>
   );

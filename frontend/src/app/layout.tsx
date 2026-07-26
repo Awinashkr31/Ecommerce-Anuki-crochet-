@@ -5,7 +5,6 @@ import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
-import { CartDrawer } from "@/components/CartDrawer";
 import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from 'sonner';
 
@@ -20,18 +19,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://anukicrochet.in'),
   title: {
-    template: '%s | Handmade Crochet',
-    default: 'Handmade Crochet | Custom Bouquets & Gifts',
+    template: '%s | Anuki Crochet',
+    default: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
   },
-  description: "Bespoke handcrafted crochet items. Discover beautiful crochet flower bouquets, custom plushies, and handmade gifts.",
+  description: "Discover beautiful, bespoke handcrafted crochet flower bouquets, custom plushies, and unique handmade gifts for every occasion. Shop at Anuki Crochet in India.",
   openGraph: {
-    title: 'Handmade Crochet',
-    description: 'Bespoke handcrafted crochet items.',
-    url: 'https://handmadecrochet.com',
-    siteName: 'Handmade Crochet',
-    locale: 'en_US',
+    title: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
+    description: 'Discover beautiful, bespoke handcrafted crochet flower bouquets, custom plushies, and unique handmade gifts for every occasion.',
+    url: 'https://anukicrochet.in',
+    siteName: 'Anuki Crochet',
+    locale: 'en_IN',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
+    description: 'Discover beautiful, bespoke handcrafted crochet flower bouquets and unique handmade gifts.',
   },
 };
 
@@ -78,7 +83,6 @@ export default function RootLayout({
             <main className="flex-grow pb-16 md:pb-0">
               {children}
             </main>
-            <CartDrawer />
             <BottomNav />
           </AuthProvider>
         </AnalyticsProvider>

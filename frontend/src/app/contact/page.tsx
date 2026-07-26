@@ -1,6 +1,38 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Anuki Crochet',
+  description: 'Get in touch with Anuki Crochet for custom orders, product questions, or support.',
+  alternates: {
+    canonical: '/contact'
+  }
+};
+
 export default function ContactPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Anuki Crochet',
+    url: 'https://anukicrochet.in',
+    logo: 'https://anukicrochet.in/logo.png',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'support@anukicrochet.in',
+      contactType: 'customer support',
+      availableLanguage: ['English', 'Hindi']
+    },
+    sameAs: [
+      'https://instagram.com/anukicrochet',
+      'https://pinterest.com/anukicrochet'
+    ]
+  };
+
   return (
     <div className="bg-neutral-50 min-h-screen py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto px-6">
         <h1 className="text-3xl font-black mb-8 text-center">Contact Us</h1>
         
@@ -13,7 +45,7 @@ export default function ContactPage() {
               </p>
               
               <div className="space-y-4 text-neutral-600">
-                <p><strong>Email:</strong> support@anukicrochet.com</p>
+                <p><strong>Email:</strong> support@anukicrochet.in</p>
                 <p><strong>Instagram:</strong> @anuki_crochet</p>
                 <p><strong>Hours:</strong> Mon-Fri, 9am - 6pm (IST)</p>
               </div>

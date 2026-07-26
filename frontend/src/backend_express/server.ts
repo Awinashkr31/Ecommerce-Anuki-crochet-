@@ -17,6 +17,7 @@ import shippingRoutes from './routes/shipping';
 import auditLogsRoutes from './routes/auditLogs';
 import inventoryRoutes from './routes/inventory';
 import settingsRoutes from './routes/settings';
+import addressRoutes from './routes/addresses';
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use('/api/shipping', shippingRoutes);
 app.use('/api/audit-logs', auditLogsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/addresses', addressRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import Link from 'next/link';
-import { Search, MoreHorizontal, Edit2, Check, X, Trash2, Loader2, Copy, ListTree } from 'lucide-react';
+import { Search, MoreHorizontal, Edit2, Check, X, Trash2, Loader2, Copy, ListTree, ChevronDown, ChevronUp } from 'lucide-react';
 import { apiGet, apiPut, apiDelete, apiPost } from '../../../lib/api';
 
 interface Product {
@@ -19,6 +19,7 @@ interface Product {
   limitedEdition: boolean;
   isMadeToOrder: boolean;
   category: { id: string; name: string } | null;
+  stock: number;
   variants: { id: string; sku: string; stock: number; price: number; size: string | null; color: string | null }[];
   images: { id: string; url: string; altText: string | null }[];
 }
@@ -34,6 +35,13 @@ export default function AdminProductsPage() {
   const [quickEditPrice, setQuickEditPrice] = useState<number>(0);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [expandedProducts, setExpandedProducts] = useState<string[]>([]);
+
+  const toggleExpand = (id: string) => {
+    setExpandedProducts(prev => 
+      prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+    );
+  };
 
   // Close menu on click outside
   useEffect(() => {
@@ -72,6 +80,16 @@ export default function AdminProductsPage() {
     }
   };
 
+    const handleDeleteVariant = async (productId: string, variantId: string) => {
+    if (!confirm('Are you sure you want to delete this variant?')) return;
+    try {
+      await apiDelete(`/products/${productId}/variants/${variantId}`);
+      mutate();
+    } catch (err) {
+      console.error('Failed to delete variant:', err);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
@@ -103,7 +121,8 @@ export default function AdminProductsPage() {
 
   const totalStock = (p: Product) => {
     if (p.isMadeToOrder) return 'Made to Order';
-    const total = p.variants.reduce((sum, v) => sum + v.stock, 0);
+    if (!p.variants || p.variants.length === 0) return p.stock;
+    const total = p.variants.reduce((sum, v) => sum + v.stock, 0) + p.stock;
     return total;
   };
 
@@ -190,7 +209,9 @@ export default function AdminProductsPage() {
                 const flags = getFlags(product);
                 const mainImage = product.images?.[0];
                 return (
-                  <tr key={product.id} className="hover:bg-neutral-50/50 transition-colors group">
+                  <Fragment key={product.id}>
+                    <tr className="hover:bg-neutral-50/50 transition-colors group relative">
+
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
@@ -241,15 +262,15 @@ export default function AdminProductsPage() {
                         </div>
                       )}
                     </td>
+                    
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                        stock === 'Made to Order' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' :
-                        (typeof stock === 'number' && stock < 5) ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                        'bg-neutral-100 text-neutral-700 border border-neutral-200'
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                        Number(stock) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                       }`}>
-                        {typeof stock === 'number' ? `${stock} in stock` : stock}
+                        {stock} in stock
                       </span>
                     </td>
+
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                         product.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-800' : 
@@ -261,34 +282,136 @@ export default function AdminProductsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="relative inline-block text-left z-10 dropdown-container">
-                        <button 
-                          onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
-                          className="text-neutral-400 hover:text-neutral-900 transition-colors p-1"
-                        >
-                          <MoreHorizontal size={20} />
-                        </button>
-                        {openMenuId === product.id && (
-                          <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                            <div className="py-1" role="menu">
-                              <Link href={`/admin/products/edit/${product.id}`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
-                                <Edit2 size={16} className="mr-3 text-neutral-400" /> Edit Product
-                              </Link>
-                              <button onClick={() => handleCopyProduct(product.id)} className="w-full text-left flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
-                                <Copy size={16} className="mr-3 text-neutral-400" /> Copy Product
-                              </button>
-                              <Link href={`/admin/products/${product.id}/variants`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium border-b border-neutral-100">
-                                <ListTree size={16} className="mr-3 text-neutral-400" /> Manage Variants
-                              </Link>
-                              <button onClick={() => { handleDelete(product.id); setOpenMenuId(null); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
-                                <Trash2 size={16} className="mr-3 text-rose-400" /> Delete Product
-                              </button>
-                            </div>
-                          </div>
+                      <div className="flex items-center justify-end gap-3">
+                        {product.variants && product.variants.length > 0 && (
+                          <button 
+                            onClick={() => toggleExpand(product.id)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold transition-colors"
+                          >
+                            {product.variants.length + 1} Variants
+                            {expandedProducts.includes(product.id) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          </button>
                         )}
+                        <div className="relative inline-block text-left z-10 dropdown-container">
+                          <button 
+                            onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
+                            className="text-neutral-400 hover:text-neutral-900 transition-colors p-1"
+                          >
+                            <MoreHorizontal size={20} />
+                          </button>
+                          {openMenuId === product.id && (
+                            <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                              <div className="py-1" role="menu">
+                                <Link href={`/admin/products/edit/${product.id}`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
+                                  <Edit2 size={16} className="mr-3 text-neutral-400" /> Edit Product
+                                </Link>
+                                <button onClick={() => handleCopyProduct(product.id)} className="w-full text-left flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
+                                  <Copy size={16} className="mr-3 text-neutral-400" /> Copy Product
+                                </button>
+                                <Link href={`/admin/products/${product.id}/variants`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium border-b border-neutral-100">
+                                  <ListTree size={16} className="mr-3 text-neutral-400" /> Manage Variants
+                                </Link>
+                                <button onClick={() => { handleDelete(product.id); setOpenMenuId(null); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
+                                  <Trash2 size={16} className="mr-3 text-rose-400" /> Delete Product
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
+                    {expandedProducts.includes(product.id) && product.variants && product.variants.length > 0 && (
+                      <tr className="bg-neutral-50/30 hover:bg-neutral-50 transition-colors border-t border-dashed border-neutral-100 group">
+                        <td className="px-6 py-3"></td>
+                        <td className="px-6 py-3 pl-12">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-neutral-100 rounded flex-shrink-0 overflow-hidden relative">
+                              <div className="absolute -left-6 top-1/2 w-4 h-4 border-l-2 border-b-2 border-neutral-300 rounded-bl -translate-y-1/2"></div>
+                              {mainImage ? (
+                                <img src={mainImage.url} className="w-full h-full object-cover relative z-10 rounded" alt="" />
+                              ) : (
+                                <div className="w-full h-full bg-neutral-200 relative z-10 rounded"></div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-sm text-neutral-700">
+                                Base Product
+                              </div>
+                              <div className="text-xs text-neutral-500 font-medium">{product.slug} • {product.stock} in stock</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 text-sm text-neutral-400">Main</td>
+                        <td className="px-6 py-3">
+                          <span className="font-bold text-sm text-neutral-700">₹{product.basePrice.toLocaleString()}</span>
+                          {product.salePrice && <span className="ml-2 text-xs text-emerald-600 font-bold">₹{product.salePrice.toLocaleString()}</span>}
+                        </td>
+                        <td className="px-6 py-3 text-sm text-neutral-500">
+                          {product.stock}
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${product.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Link href={`/admin/products/edit/${product.id}`} className="p-1.5 text-neutral-400 hover:text-blue-600 transition-colors" title="Edit Main Product">
+                              <Edit2 size={16} />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {expandedProducts.includes(product.id) && product.variants?.map((v: any) => (
+                      <tr key={v.id} className="bg-neutral-50/30 hover:bg-neutral-50 transition-colors border-t border-dashed border-neutral-100 group">
+                        <td className="px-6 py-3"></td>
+                        <td className="px-6 py-3 pl-12">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-neutral-100 rounded flex-shrink-0 overflow-hidden relative">
+                              <div className="absolute -left-6 top-1/2 w-4 h-4 border-l-2 border-b-2 border-neutral-300 rounded-bl -translate-y-1/2"></div>
+                              {v.imageUrls && v.imageUrls.length > 0 ? (
+                                <img src={v.imageUrls[0]} className="w-full h-full object-cover relative z-10 rounded" alt="" />
+                              ) : v.imageUrl ? (
+                                <img src={v.imageUrl} className="w-full h-full object-cover relative z-10 rounded" alt="" />
+                              ) : (
+                                <div className="w-full h-full bg-neutral-200 relative z-10 rounded"></div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-sm text-neutral-700">
+                                {[v.color, v.size, v.material, v.style].filter(Boolean).join(' • ') || 'Standard Variant'}
+                              </div>
+                              <div className="text-xs text-neutral-500 font-medium">{v.sku || 'No SKU'} • {v.stock} in stock</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 text-sm text-neutral-400">Variant</td>
+                        <td className="px-6 py-3">
+                          <span className="font-bold text-sm text-neutral-700">₹{v.price.toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-3 text-sm text-neutral-500">
+                          {v.stock}
+                        </td>
+                        <td className="px-6 py-3">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${v.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                            {v.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Link href={`/admin/products/${product.id}/variants`} className="p-1.5 text-neutral-400 hover:text-blue-600 transition-colors" title="Edit Variant">
+                              <Edit2 size={16} />
+                            </Link>
+                            <button onClick={() => handleDeleteVariant(product.id, v.id)} className="p-1.5 text-neutral-400 hover:text-rose-600 transition-colors" title="Delete Variant">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
                 );
               })}
             </tbody>

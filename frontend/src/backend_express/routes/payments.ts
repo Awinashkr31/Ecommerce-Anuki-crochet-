@@ -10,8 +10,8 @@ const router = Router();
 import { prisma } from '../lib/prisma';
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret',
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_TIFdGVUKCE4VcF',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'b7KRuP8aWzo18jwy17iSZ22I',
 });
 
 // Create Order
@@ -21,9 +21,9 @@ router.post('/create-order', async (req: any, res: any) => {
     const { amount, currency = 'INR', internalOrderId } = body;
 
     const options = {
-      amount: amount * 100, // Razorpay works in paise
+      amount: Math.round(amount * 100), // Razorpay works in paise, ensure integer
       currency,
-      receipt: `receipt_${internalOrderId}`
+      receipt: `rcpt_${internalOrderId}`.substring(0, 40)
     };
 
     const order = await razorpay.orders.create(options);
@@ -45,7 +45,7 @@ router.post('/verify', async (req: any, res: any) => {
       internalOrderId 
     } = body;
 
-    const secret = process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret';
+    const secret = process.env.RAZORPAY_KEY_SECRET || 'b7KRuP8aWzo18jwy17iSZ22I';
 
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
@@ -74,7 +74,7 @@ router.post('/verify', async (req: any, res: any) => {
 
       // Send Confirmation Email
       // Fallback email if user is guest or missing email
-      const customerEmail = updatedOrder.user?.email || 'customer@example.com';
+      const customerEmail = updatedOrder.user?.email || 'support@anukicrochet.in';
       await sendOrderConfirmationEmail(customerEmail, updatedOrder.id, updatedOrder.totalAmount);
       
       return res.json({ success: true, message: 'Payment verified successfully' });

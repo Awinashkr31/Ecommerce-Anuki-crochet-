@@ -26,7 +26,7 @@ export default function PaymentPolicyPage() {
 
       <h3>5. Payment Failures</h3>
       <p>
-        If your payment fails during checkout but money is deducted from your account, it is typically reversed by your bank within 5-7 business days. If you face any persistent issues, please contact us at support@anukicrochet.com with your transaction ID.
+        If your payment fails during checkout but money is deducted from your account, it is typically reversed by your bank within 5-7 business days. If you face any persistent issues, please contact us at support@anukicrochet.in with your transaction ID.
       </p>
     </>
   );

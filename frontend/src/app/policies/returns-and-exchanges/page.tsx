@@ -1,7 +1,35 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Returns & Exchanges',
+  description: 'Read the Returns and Exchanges policy for Anuki Crochet. Understand our policies for handmade customized products.',
+  alternates: {
+    canonical: '/policies/returns-and-exchanges'
+  }
+};
+
 export default function ReturnsAndExchangesPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'MerchantReturnPolicy',
+    name: 'Anuki Crochet Return Policy',
+    applicableCountry: 'IN',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+    merchantReturnDays: 0,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: 'https://schema.org/FreeReturn',
+    itemDefectReturnFees: 'https://schema.org/FreeReturn',
+    itemDefectReturnLabelSource: 'https://schema.org/ReturnLabelCustomerResponsibility',
+    description: 'Handmade & custom items are non-returnable. Defective or damaged items may be returned within 48 hours for a full refund or replacement.'
+  };
+
   return (
     <>
-      <h1 className="text-3xl font-black mb-6">Returns & Exchanges</h1>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <h1 className="text-3xl font-black mb-6">Returns &amp; Exchanges</h1>
       <p className="text-sm text-neutral-500 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
       
       <h3>1. General Return Policy</h3>
@@ -11,7 +39,7 @@ export default function ReturnsAndExchangesPage() {
 
       <h3>2. Defective or Damaged Items</h3>
       <p>
-        If your item arrives defective, damaged, or you receive the incorrect item, we sincerely apologize! Please contact us within 48 hours of delivery at support@anukicrochet.com with clear photos of the issue. We will evaluate the problem and make it right by offering a replacement or refund.
+        If your item arrives defective, damaged, or you receive the incorrect item, we sincerely apologize! Please contact us within 48 hours of delivery at support@anukicrochet.in with clear photos of the issue. We will evaluate the problem and make it right by offering a replacement or refund.
       </p>
 
       <h3>3. Custom Orders</h3>

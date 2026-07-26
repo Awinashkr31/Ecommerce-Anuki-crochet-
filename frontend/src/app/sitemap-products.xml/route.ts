@@ -1,20 +1,32 @@
 export async function GET() {
-  const baseUrl = 'https://handmadecrochet.com';
+  const baseUrl = 'https://anukicrochet.in';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://anukicrochet.in/api';
   
-  // Mock data, in production replace with Prisma fetch for products
-  const products = [
-    { slug: 'crochet-rose-bouquet-red', updatedAt: new Date() },
-    { slug: 'custom-sunflower-plush', updatedAt: new Date() }
-  ];
+  let products = [];
+  try {
+    const res = await fetch(`${apiUrl}/products`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const data = await res.json();
+      products = data.filter((p: any) => p.status === 'PUBLISHED');
+    }
+  } catch (error) {
+    console.error('Failed to fetch products for sitemap:', error);
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${products.map(p => `
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  ${products.map((p: any) => `
     <url>
       <loc>${baseUrl}/products/${p.slug}</loc>
-      <lastmod>${p.updatedAt.toISOString()}</lastmod>
+      <lastmod>${new Date().toISOString()}</lastmod>
       <changefrequency>daily</changefrequency>
       <priority>0.8</priority>
+      ${p.images && p.images.length > 0 ? p.images.map((img: any) => `
+      <image:image>
+        <image:loc>${img.url.replace(/&/g, '&amp;')}</image:loc>
+        <image:title>${(p.name || '').replace(/&/g, '&amp;')}</image:title>
+      </image:image>
+      `).join('') : ''}
     </url>
   `).join('')}
 </urlset>

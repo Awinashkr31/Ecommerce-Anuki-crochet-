@@ -9,7 +9,7 @@ import { apiGet, apiPost, apiUpload } from '../../../../lib/api';
 interface Category { id: string; name: string; slug: string; }
 interface UploadedImage { url: string; altText: string; }
 
-const TABS = ['Basic Info', 'Pricing & Inventory', 'Attributes & Shipping', 'SEO'];
+const TABS = ['Basic Info', 'Attributes & Shipping', 'SEO'];
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -32,7 +32,11 @@ export default function NewProductPage() {
   const [salePrice, setSalePrice] = useState<number | ''>('');
   const [taxSettings, setTaxSettings] = useState('');
   const [stockStatus, setStockStatus] = useState('IN_STOCK');
+  const [stock, setStock] = useState<number>(0);
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
+  const [hasStyles, setHasStyles] = useState(false);
+  const [hasSizes, setHasSizes] = useState(false);
+  const [color, setColor] = useState('');
 
   // Attributes & Shipping
   const [isHandmade, setIsHandmade] = useState(true);
@@ -75,6 +79,7 @@ export default function NewProductPage() {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append('image', file);
+      formData.append('folder', 'products');
       const data = await apiUpload('/upload', formData);
       setImages([...images, { url: data.url, altText: name || 'Product image' }]);
     } catch (err) {
@@ -100,7 +105,8 @@ export default function NewProductPage() {
         name, slug, shortDesc, fullDesc, categoryId,
         basePrice: Number(basePrice),
         salePrice: salePrice !== '' ? Number(salePrice) : undefined,
-        taxSettings, stockStatus, lowStockThreshold,
+        taxSettings, stockStatus, stock, lowStockThreshold,
+        hasStyles, hasSizes, color,
         isHandmade, material, careInstructions, countryOfOrigin,
         weight: weight !== '' ? Number(weight) : undefined,
         length: length !== '' ? Number(length) : undefined,
@@ -212,13 +218,8 @@ export default function NewProductPage() {
                 <label className="block text-sm font-bold text-neutral-700 mb-2">Product Video URL (Optional)</label>
                 <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="https://..." />
               </div>
-            </div>
-          )}
 
-          {/* TAB 2: PRICING & INVENTORY */}
-          {activeTab === 'Pricing & Inventory' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold border-b pb-4">Pricing</h2>
+              <h2 className="text-xl font-bold border-b pb-4 pt-6">Pricing</h2>
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-neutral-700 mb-2">Regular Price (₹) *</label>
@@ -241,8 +242,22 @@ export default function NewProductPage() {
                   </select>
                 </div>
                 <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Stock Quantity</label>
+                  <input type="number" value={stock} onChange={e => setStock(Number(e.target.value))} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+                <div>
                   <label className="block text-sm font-bold text-neutral-700 mb-2">Low Stock Alert Threshold</label>
                   <input type="number" value={lowStockThreshold} onChange={e => setLowStockThreshold(Number(e.target.value))} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+              </div>
+
+              <h2 className="text-xl font-bold border-b pb-4 pt-6">Variants Configuration, Color & Size</h2>
+              <div className="grid grid-cols-1 gap-6">
+
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Base Color (Optional)</label>
+                  <input type="text" value={color} onChange={e => setColor(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="e.g. Red, Blue, or #FF0000" />
+                  <p className="text-xs text-neutral-500 mt-1">Enter the primary color here. Add additional colors as variants.</p>
                 </div>
               </div>
             </div>

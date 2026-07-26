@@ -7,14 +7,20 @@ import Link from "next/link";
 import { useAuthStore } from "../../store/authStore";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
-import { apiPost } from "../../lib/api";
+import { apiPost, apiGet } from "../../lib/api";
+import useSWR from "swr";
+import toast from "react-hot-toast";
 
 const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
+
+const fetcher = (url: string) => apiGet(url);
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("orders");
   const { profile, isLoading, logout: clearAuthStore } = useAuthStore();
   const router = useRouter();
+  const { data: myOrders, mutate: mutateOrders } = useSWR(profile ? '/orders/my-orders' : null, fetcher);
+  const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !profile) {
@@ -179,32 +185,78 @@ export default function AccountPage() {
             {activeTab === "orders" && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
-                {mockOrders.map(order => (
+                {!myOrders ? (
+                  <p className="text-neutral-500">Loading orders...</p>
+                ) : myOrders.length === 0 ? (
+                  <p className="text-neutral-500">You have no recent orders.</p>
+                ) : myOrders.map((order: any) => (
                   <div key={order.id} className="bg-white border border-neutral-200 rounded-3xl p-6 md:p-8 hover:border-neutral-300 transition-colors">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6 pb-6 border-b border-neutral-100 gap-4">
                       <div>
-                        <p className="font-black text-lg">{order.id}</p>
-                        <p className="text-sm text-neutral-500 mt-1">Placed on {new Date(order.date).toLocaleDateString()}</p>
+                        <p className="font-black text-lg">Order #{order.id.slice(0, 8).toUpperCase()}</p>
+                        <p className="text-sm text-neutral-500 mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="md:text-right flex flex-row md:flex-col justify-between items-center md:items-end">
-                        <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === "Delivered" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
+                        <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === "DELIVERED" ? "bg-emerald-100 text-emerald-800" : order.status === "CANCELLED" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"}`}>
                           {order.status}
                         </span>
-                        <p className="font-bold text-lg mt-2 hidden md:block">₹{order.total}</p>
+                        <p className="font-bold text-lg mt-2 hidden md:block">₹{order.totalAmount}</p>
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {order.items.map((item, i) => (
-                        <div key={i} className="flex justify-between items-center text-sm text-neutral-700">
-                          <span className="font-medium"><span className="text-neutral-400 mr-2">{item.qty}x</span> {item.name}</span>
+                      {order.items.map((item: any) => (
+                        <div key={item.id} className="flex justify-between items-center text-sm text-neutral-700">
+                          <span className="font-medium">
+                            <span className="text-neutral-400 mr-2">{item.quantity}x</span> 
+                            {item.variant?.product?.name || 'Unknown Product'} {item.customization ? `(Custom: ${item.customization})` : ''}
+                          </span>
+                          <div className="flex items-center gap-4">
+                            <span>₹{item.price * item.quantity}</span>
+                            {order.status === 'DELIVERED' && (
+                              <button 
+                                onClick={async () => {
+                                  const reason = window.prompt("Reason for return?");
+                                  if (reason) {
+                                    try {
+                                      await apiPost('/returns', { orderItemId: item.id, reason, refundMethod: 'WALLET' });
+                                      toast.success("Return requested successfully!");
+                                    } catch(e: any) {
+                                      toast.error(e.message || "Failed to request return");
+                                    }
+                                  }
+                                }}
+                                className="text-xs text-rose-600 font-bold hover:underline"
+                              >
+                                Request Return
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
+                    
+                    {expandedTimeline === order.id && order.timeline && (
+                      <div className="mt-6 pt-4 border-t border-neutral-100 space-y-4">
+                        <h4 className="font-bold text-sm text-neutral-700 mb-2">Order Timeline</h4>
+                        {order.timeline.map((event: any) => (
+                          <div key={event.id} className="flex items-start gap-4">
+                            <div className="w-2 h-2 mt-1.5 rounded-full bg-neutral-300"></div>
+                            <div>
+                              <p className="text-sm font-bold text-neutral-800">{event.status}</p>
+                              <p className="text-xs text-neutral-500">{new Date(event.createdAt).toLocaleString()} - {event.note}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                     <div className="mt-6 pt-6 border-t border-neutral-100 flex flex-wrap gap-4">
-                      <button className="bg-neutral-100 text-neutral-900 px-6 py-2 rounded-xl text-sm font-bold hover:bg-neutral-200 transition-colors">Track Order</button>
-                      {order.status === "Delivered" && (
-                        <button className="text-rose-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-rose-50 transition-colors">Request Return</button>
-                      )}
+                      <button 
+                        onClick={() => setExpandedTimeline(expandedTimeline === order.id ? null : order.id)}
+                        className="bg-neutral-100 text-neutral-900 px-6 py-2 rounded-xl text-sm font-bold hover:bg-neutral-200 transition-colors"
+                      >
+                        {expandedTimeline === order.id ? "Hide Tracking" : "Track Order"}
+                      </button>
                     </div>
                   </div>
                 ))}

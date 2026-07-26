@@ -1,11 +1,18 @@
 export async function GET() {
-  const baseUrl = 'https://handmadecrochet.com';
+  const baseUrl = 'https://anukicrochet.in';
   
   const pages = [
     { slug: '', priority: 1.0, changefreq: 'daily' },
-    { slug: 'about', priority: 0.5, changefreq: 'monthly' },
+    { slug: 'products', priority: 0.9, changefreq: 'daily' },
+    { slug: 'about', priority: 0.7, changefreq: 'monthly' },
+    { slug: 'contact', priority: 0.6, changefreq: 'monthly' },
     { slug: 'faq', priority: 0.5, changefreq: 'monthly' },
-    { slug: 'policies', priority: 0.3, changefreq: 'yearly' },
+    { slug: 'blog', priority: 0.8, changefreq: 'daily' },
+    { slug: 'policies/privacy-policy', priority: 0.3, changefreq: 'yearly' },
+    { slug: 'policies/terms-of-service', priority: 0.3, changefreq: 'yearly' },
+    { slug: 'policies/shipping-policy', priority: 0.4, changefreq: 'yearly' },
+    { slug: 'policies/returns-and-exchanges', priority: 0.4, changefreq: 'yearly' },
+    { slug: 'policies/payment-policy', priority: 0.3, changefreq: 'yearly' },
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

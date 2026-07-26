@@ -40,9 +40,9 @@ export function BottomNav() {
           <Search size={24} className="mb-1" />
           <span className="text-[10px] font-bold">Shop</span>
         </Link>
-        <button 
-          onClick={() => useCartStore.getState().setIsOpen(true)}
-          className={`flex flex-col items-center justify-center w-16 h-full transition-colors relative ${pathname === "/checkout" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+        <Link 
+          href="/cart"
+          className={`flex flex-col items-center justify-center w-16 h-full transition-colors relative ${pathname === "/cart" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
         >
           <div className="relative">
             <ShoppingBag size={24} className="mb-1" />
@@ -53,7 +53,7 @@ export function BottomNav() {
             )}
           </div>
           <span className="text-[10px] font-bold">Cart</span>
-        </button>
+        </Link>
 
         {/* Show Admin link for staff, Account link for others */}
         {isAdmin ? (

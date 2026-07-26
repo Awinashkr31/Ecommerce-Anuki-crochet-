@@ -1,5 +1,5 @@
 export async function GET() {
-  const baseUrl = 'https://handmadecrochet.com';
+  const baseUrl = 'https://anukicrochet.in';
   
   const categories = [
     { slug: 'bouquets', updatedAt: new Date() },
@@ -16,7 +16,7 @@ export async function GET() {
   </url>
   ${categories.map(c => `
     <url>
-      <loc>${baseUrl}/products?category=${c.slug}</loc>
+      <loc>${baseUrl}/categories/${c.slug}</loc>
       <lastmod>${c.updatedAt.toISOString()}</lastmod>
       <changefrequency>weekly</changefrequency>
       <priority>0.8</priority>

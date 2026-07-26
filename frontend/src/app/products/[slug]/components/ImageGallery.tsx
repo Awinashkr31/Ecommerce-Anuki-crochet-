@@ -36,13 +36,14 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
             transition={{ duration: 0.3 }}
             className="w-full h-full"
           >
-            <Image
-              src={mainImage}
-              alt={images[activeIndex]?.altText || altText}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              priority
-            />
+              <Image
+                src={mainImage}
+                alt={images[activeIndex]?.altText || altText}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                priority
+              />
           </motion.div>
         </AnimatePresence>
 

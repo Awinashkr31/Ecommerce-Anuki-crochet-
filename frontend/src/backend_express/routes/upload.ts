@@ -5,8 +5,7 @@ import { supabase } from '../lib/supabase';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
+
 
 dotenv.config();
 
@@ -15,11 +14,11 @@ const router = Router();
 const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET || 'product-images';
 
 // Configure Multer (store in memory for processing)
-// Limit file size to 10MB
+// Limit file size to 5MB for faster uploads
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -29,12 +28,7 @@ const upload = multer({
   }
 });
 
-const IMAGE_SIZES = {
-  thumbnail: 150,
-  card: 400,
-  detail: 800,
-  full: 1200
-};
+
 
 router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), upload.single('image'), async (req: any, res: any) => {
   try {
@@ -43,56 +37,45 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
     }
 
     const baseFileName = `${uuidv4()}`;
-    const uploadedUrls: Record<string, string> = {};
 
-    // Process and upload each size in parallel
-    const uploadPromises = Object.entries(IMAGE_SIZES).map(async ([sizeName, width]) => {
-      // Convert to WebP and resize
-      const webpBuffer = await sharp(req.file.buffer)
-        .resize({ width, withoutEnlargement: true })
-        .webp({ quality: 80, effort: 4 })
-        .toBuffer();
+    // Convert to WebP and highly optimize (max width 1000px)
+    const webpBuffer = await sharp(req.file.buffer)
+      .resize({ width: 1000, withoutEnlargement: true })
+      .webp({ quality: 75, effort: 4 })
+      .toBuffer();
 
-      const fileName = `${baseFileName}-${sizeName}.webp`;
-      let finalUrl = '';
-      
-      const { data, error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(fileName, webpBuffer, {
-          contentType: 'image/webp',
-          upsert: false // Don't overwrite since we use uuids
-        });
+    const folder = req.body.folder || 'misc';
+    const fileName = `${folder}/${baseFileName}.webp`;
+    
+    // Upload to Supabase only (no local fallback)
+    const { error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(fileName, webpBuffer, {
+        contentType: 'image/webp',
+        upsert: false 
+      });
 
-      if (error) {
-        console.warn(`Supabase upload failed for ${sizeName}, falling back to local storage:`, error.message);
-        
-        // Fallback to local file system
-        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-        
-        const localFilePath = path.join(uploadsDir, fileName);
-        fs.writeFileSync(localFilePath, webpBuffer);
-        finalUrl = `/uploads/${fileName}`;
-      } else {
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from(BUCKET_NAME)
-          .getPublicUrl(fileName);
-        finalUrl = publicUrl;
-      }
+    if (error) {
+      console.error(`Supabase upload failed:`, error.message);
+      throw new Error(`Failed to upload to cloud storage: ${error.message}`);
+    }
 
-      uploadedUrls[sizeName] = finalUrl;
-    });
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(fileName);
 
-    await Promise.all(uploadPromises);
+    const finalUrl = publicUrl;
 
-    // Return all sizes to the frontend
-    // The main URL used for default rendering will be the 'detail' size
+    // Return the same URL for all sizes to prevent breaking existing frontend code
     return res.json({ 
-      url: uploadedUrls.detail, // Backwards compatibility for single URL expectations
-      sizes: uploadedUrls       // Full multi-size structure
+      url: finalUrl, 
+      sizes: {
+        thumbnail: finalUrl,
+        card: finalUrl,
+        detail: finalUrl,
+        full: finalUrl
+      }
     });
   } catch (error: any) {
     console.error('Upload Error:', error);

@@ -1,5 +1,5 @@
 export async function GET() {
-  const baseUrl = 'https://handmadecrochet.com';
+  const baseUrl = 'https://anukicrochet.in';
   
   const posts = [
     { slug: 'how-to-care-for-crochet-plushies', updatedAt: new Date() },

@@ -196,8 +196,8 @@ export function StoreHeader() {
               Log in
             </Link>
           )}
-          <button 
-            onClick={() => useCartStore.getState().setIsOpen(true)}
+          <Link 
+            href="/cart"
             className="relative p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
           >
             <ShoppingCart size={24} />
@@ -206,7 +206,7 @@ export function StoreHeader() {
                 {totalCartItems}
               </span>
             )}
-          </button>
+          </Link>
         </div>
       </div>
     </header>

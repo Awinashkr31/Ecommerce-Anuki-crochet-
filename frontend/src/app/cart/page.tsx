@@ -5,12 +5,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import AddressModal, { Address } from "@/components/AddressModal";
+import { apiGet } from "@/lib/api";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, removeItem, updateQuantity } = useCartStore();
   const [isGiftPacked, setIsGiftPacked] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+
+  useEffect(() => {
+    // Fetch default address on load
+    const fetchDefaultAddress = async () => {
+      try {
+        const addresses = await apiGet<Address[]>('/addresses');
+        if (addresses && addresses.length > 0) {
+          const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+          if (defaultAddr) setSelectedAddress(defaultAddr);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchDefaultAddress();
+  }, []);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
@@ -23,7 +43,10 @@ export default function CartPage() {
 
   const discounts = totalMRP - subtotal;
   const giftCharge = isGiftPacked ? 29 : 0;
-  const totalAmount = subtotal + giftCharge;
+  const freeDeliveryThreshold = 500;
+  const deliveryCharge = subtotal >= freeDeliveryThreshold ? 0 : 50;
+  const amountToFreeDelivery = freeDeliveryThreshold - subtotal;
+  const totalAmount = subtotal + giftCharge + deliveryCharge;
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] py-10 px-4 md:px-8">
@@ -46,20 +69,45 @@ export default function CartPage() {
             <div className="lg:col-span-8 flex flex-col gap-6">
               
               {/* Address Block */}
-              <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-start justify-between gap-4">
-                <div className="flex gap-4">
-                  <div className="mt-1">
-                    <MapPin size={20} className="text-neutral-400" />
+              {!selectedAddress ? (
+                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between gap-4">
+                  <div className="flex gap-4 items-center">
+                    <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
+                      <MapPin size={20} className="text-neutral-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-serif font-bold text-neutral-900 text-lg">Delivery Address</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">Awinash Kumar, 813210</span></p>
-                    <p className="text-sm text-neutral-500 mt-0.5">chandigarh</p>
-                  </div>
+                  <button 
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="px-4 py-2 border border-rose-200 text-rose-600 font-semibold text-sm rounded-xl hover:bg-rose-50 transition-colors"
+                  >
+                    + Add Address
+                  </button>
                 </div>
-                <button className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors">
-                  Change
-                </button>
-              </div>
+              ) : (
+                <div className="bg-[#f9f9f9] rounded-2xl border border-neutral-200 p-5 flex items-start justify-between gap-4 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-neutral-300"></div>
+                  <div className="flex gap-4 pl-2">
+                    <div className="mt-0.5">
+                      <MapPin size={18} className="text-neutral-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">{selectedAddress.fullName}, {selectedAddress.zipCode}</span></p>
+                      <p className="text-sm text-neutral-500 mt-1 leading-relaxed">
+                        {selectedAddress.street}, {selectedAddress.landmark ? `${selectedAddress.landmark}, ` : ''}{selectedAddress.city}, {selectedAddress.state}
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors shrink-0 bg-white"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
 
               {/* Cart Items */}
               {items.map((item) => {
@@ -146,6 +194,42 @@ export default function CartPage() {
                 </button>
               </div>
 
+              {/* Complete Your Gift (Cross-sells) */}
+              <div className="mt-2">
+                <h3 className="font-serif text-neutral-900 text-lg mb-4 flex items-center gap-2">
+                  Complete Your Gift 🎁
+                </h3>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {/* Cross-sell Item 1 */}
+                  <div className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
+                    <div className="w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
+                      <Image src="/uploads/634bd601-3837-40fd-9ae5-94769537f777-detail.webp" alt="Claw clip" fill className="object-cover" />
+                    </div>
+                    <p className="text-xs font-medium text-neutral-800 line-clamp-1">Crochet Flower Claw...</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-bold text-sm">₹149</span>
+                      <button className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200">
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cross-sell Item 2 */}
+                  <div className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
+                    <div className="w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
+                      <Image src="/uploads/389284e1-31dd-4fe0-8145-2bd2ab878701-detail.webp" alt="Single flower" fill className="object-cover" />
+                    </div>
+                    <p className="text-xs font-medium text-neutral-800 line-clamp-1">Single flower crochet...</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-bold text-sm">₹49</span>
+                      <button className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200">
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Apply Coupon */}
               <button className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between hover:bg-neutral-50 transition-colors w-full text-left">
                 <div className="flex items-center gap-3 text-neutral-800 font-medium">
@@ -171,9 +255,17 @@ export default function CartPage() {
                   
                   <div className="flex justify-between pb-2">
                     <span>Delivery Charges</span>
-                    <span className="text-[#059669] font-medium"><span className="text-neutral-400 line-through mr-1 font-normal">₹80</span> FREE</span>
+                    <span className={deliveryCharge === 0 ? "text-[#059669] font-medium" : "text-neutral-900 font-medium"}>
+                      {deliveryCharge === 0 ? <><span className="text-neutral-400 line-through mr-1 font-normal">₹50</span> FREE</> : `₹${deliveryCharge}`}
+                    </span>
                   </div>
-                  <p className="text-xs text-[#059669] font-medium pb-2 border-b border-neutral-100 border-dashed">Free delivery unlocked!</p>
+                  {deliveryCharge > 0 ? (
+                    <p className="text-xs text-[#059669] font-medium pb-2 border-b border-neutral-100 border-dashed">
+                      Add ₹{amountToFreeDelivery} to FREE delivery
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[#059669] font-medium pb-2 border-b border-neutral-100 border-dashed">Free delivery unlocked!</p>
+                  )}
 
                   <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed">
                     <span className="flex items-center gap-1">Discounts <ChevronDownIcon /></span>
@@ -232,6 +324,16 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      <AddressModal 
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        selectedAddressId={selectedAddress?.id}
+        onSelect={(addr) => {
+          setSelectedAddress(addr);
+          setIsAddressModalOpen(false);
+        }}
+      />
     </div>
   );
 }

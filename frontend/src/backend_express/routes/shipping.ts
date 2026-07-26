@@ -30,7 +30,7 @@ router.post('/create', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER
       billing_pincode: "110001",
       billing_state: "State",
       billing_country: "India",
-      billing_email: "customer@example.com",
+      billing_email: "support@anukicrochet.in",
       billing_phone: "9999999999",
       shipping_is_billing: true,
       order_items: order.items.map((item: any) => ({

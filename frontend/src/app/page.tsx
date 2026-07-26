@@ -33,8 +33,41 @@ export default function Home() {
       });
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://anukicrochet.in/#website",
+        "url": "https://anukicrochet.in/",
+        "name": "Anuki Crochet",
+        "description": "Handmade Crochet Gifts & Custom Bouquets",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://anukicrochet.in/search?query={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://anukicrochet.in/#organization",
+        "name": "Anuki Crochet",
+        "url": "https://anukicrochet.in/",
+        "logo": "https://anukicrochet.in/logo.png",
+        "sameAs": [
+          "https://instagram.com/anukicrochet",
+          "https://facebook.com/anukicrochet"
+        ]
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <main>
         {/* Hero Section */}
         <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
@@ -85,7 +118,7 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {categories.slice(0, 4).map((cat) => (
                 <Link href={`/products?category=${cat.slug}`} key={cat.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-200">
-                  <Image src={cat.bannerUrl || "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop"} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <Image src={cat.bannerUrl || "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&h=500&fit=crop"} alt={cat.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-6 left-6 right-6">
                     <h3 className="text-white font-bold text-xl">{cat.name}</h3>

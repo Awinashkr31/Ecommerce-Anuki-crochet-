@@ -79,7 +79,7 @@ export default function ProductAccordions({ product }: { product: any }) {
         onClick={() => toggle("shipping")}
       >
         <p><strong>Processing Time:</strong> Ships in {product.processingDays || 3} business days.</p>
-        <p className="mt-2"><strong>Returns:</strong> 7-day easy return policy for defective or incorrect items.</p>
+        <p className="mt-2"><strong>Replacements:</strong> 7-day easy replacement policy for defective or incorrect items. (No Returns)</p>
       </AccordionItem>
     </div>
   );

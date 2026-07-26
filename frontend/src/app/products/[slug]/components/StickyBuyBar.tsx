@@ -1,5 +1,6 @@
 "use client";
 import { ShoppingCart, Zap, Minus, Plus, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useCartStore } from "../../../../store/cartStore";
 
 export default function StickyBuyBar({ 
@@ -23,7 +24,7 @@ export default function StickyBuyBar({
   handleBuyNow: () => void;
   isAddingToCart: boolean;
 }) {
-  const { items, updateQuantity, removeItem, setIsOpen } = useCartStore();
+  const { items, updateQuantity, removeItem } = useCartStore();
   
   const stockLimit = currentVariant?.stock ?? product.stock ?? 10;
   const cartItemId = currentVariant ? `${product.id}-${currentVariant.id}` : product.id;
@@ -40,52 +41,42 @@ export default function StickyBuyBar({
   return (
     <>
       {/* Desktop Sticky Buy Box */}
-      <div className="hidden lg:block bg-white border border-neutral-200 rounded-[24px] p-8 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.1)] sticky top-24 z-10">
+      <div className="hidden lg:flex justify-end mt-8 sticky bottom-4 z-10">
         
         {inCart ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-[#F54B7E] text-white">
+          <div className="space-y-3 w-full max-w-[280px]">
+            <div className="flex items-center justify-between p-1.5 rounded-xl bg-[#F54B7E] text-white">
               <button 
                 onClick={() => cartItem.quantity > 1 ? updateQuantity(cartItemId, cartItem.quantity - 1) : removeItem(cartItemId)} 
-                className="w-12 h-12 flex items-center justify-center hover:bg-black/10 rounded-xl transition-colors"
+                className="w-10 h-10 flex items-center justify-center hover:bg-black/10 rounded-lg transition-colors"
               >
-                <Minus size={20} />
+                <Minus size={18} />
               </button>
-              <span className="font-bold text-xl">{cartItem.quantity}</span>
+              <span className="font-bold text-lg">{cartItem.quantity}</span>
               <button 
                 onClick={() => updateQuantity(cartItemId, cartItem.quantity + 1)} 
                 disabled={cartItem.quantity >= stockLimit} 
-                className="w-12 h-12 flex items-center justify-center hover:bg-black/10 rounded-xl transition-colors disabled:opacity-50"
+                className="w-10 h-10 flex items-center justify-center hover:bg-black/10 rounded-lg transition-colors disabled:opacity-50"
               >
-                <Plus size={20} />
+                <Plus size={18} />
               </button>
             </div>
-            <button 
-              onClick={() => setIsOpen(true)}
-              className="w-full py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2 hover:bg-neutral-50 shadow-sm"
+            <Link 
+              href="/cart"
+              className="w-full py-3 bg-white border-2 border-neutral-200 text-neutral-900 rounded-xl font-bold text-base transition-colors flex items-center justify-center gap-2 hover:bg-neutral-50 shadow-sm"
             >
-              <ShoppingCart size={20} /> View Cart ({cartItem.quantity})
-            </button>
+              <ShoppingCart size={18} /> View Cart ({cartItem.quantity})
+            </Link>
           </div>
         ) : (
           <>
-            <div className="space-y-3">
-              <button 
-                onClick={handleAddToCart}
-                disabled={!inStock || isAddingToCart}
-                className="w-full py-4 bg-white border-2 border-[#F54B7E] text-[#F54B7E] hover:bg-[#F54B7E]/5 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isAddingToCart ? <Loader2 className="animate-spin" size={20} /> : <ShoppingCart size={20} />} Add to Cart
-              </button>
-              
-              <button 
-                onClick={handleBuyNow}
-                disabled={!inStock || isAddingToCart}
-                className="w-full py-4 bg-[#F54B7E] text-white rounded-2xl font-bold text-lg shadow-[0_8px_20px_-8px_rgba(245,75,126,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#E03A6A]"
-              >
-                <Zap size={20} /> Buy it Now
-              </button>
-            </div>
+            <button 
+              onClick={handleAddToCart}
+              disabled={!inStock || isAddingToCart}
+              className="w-full max-w-[280px] py-3 bg-[#F54B7E] text-white rounded-xl font-bold text-base shadow-[0_8px_20px_-8px_rgba(245,75,126,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#E03A6A]"
+            >
+              {isAddingToCart ? <Loader2 className="animate-spin" size={18} /> : <ShoppingCart size={18} />} Add to Cart
+            </button>
           </>
         )}
       </div>
@@ -96,14 +87,14 @@ export default function StickyBuyBar({
           {inCart ? (
             <>
               {/* View Cart Button (State 2/3) */}
-              <button 
-                onClick={() => setIsOpen(true)}
+              <Link 
+                href="/cart"
                 className="relative flex items-center justify-center px-4 h-full bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] font-bold text-[15px] transition-colors shadow-sm active:scale-[0.98]"
               >
                 <ShoppingCart size={20} strokeWidth={2.5} />
                 <span className="absolute -top-2 -right-2 bg-[#F54B7E] text-white text-[11px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">{cartItem.quantity}</span>
                 <span className="ml-2">View Cart</span>
-              </button>
+              </Link>
               
               {/* Quantity Selector inside Red Button (State 2/3) */}
               <div className="flex-1 flex items-center justify-between bg-[#F54B7E] text-white rounded-[16px] p-1 shadow-[0_8px_16px_-8px_rgba(245,75,126,0.4)] transition-all">
@@ -126,12 +117,12 @@ export default function StickyBuyBar({
           ) : (
             <>
               {/* Square Cart Button (State 1) */}
-              <button 
-                onClick={() => setIsOpen(true)}
+              <Link 
+                href="/cart"
                 className="w-[60px] h-full flex items-center justify-center bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] transition-colors shadow-sm active:scale-95 hover:bg-neutral-50"
               >
                 <ShoppingCart size={22} strokeWidth={2.5} />
-              </button>
+              </Link>
               
               {/* Add to Cart Button (State 1) */}
               <button 

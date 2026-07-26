@@ -7,91 +7,6 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { apiGet } from '@/lib/api';
 
-// --- MOCK DATA ---
-const mockData = {
-  today: {
-    revenue: 4500,
-    ordersPlaced: 12,
-    pendingAction: 5,
-    lowStock: 2,
-    newSignups: 3,
-    salesTrend: [
-      { label: '9 AM', revenue: 500 },
-      { label: '12 PM', revenue: 1200 },
-      { label: '3 PM', revenue: 800 },
-      { label: '6 PM', revenue: 1500 },
-      { label: '9 PM', revenue: 500 },
-    ],
-    topProducts: [
-      { name: "Amigurumi Bunny", units: 5, revenue: 4250 },
-      { name: "Custom Name Keychain", units: 4, revenue: 1000 },
-      { name: "Crochet Coaster Set", units: 2, revenue: 800 },
-      { name: "Sunflower Bouquet", units: 1, revenue: 1500 },
-    ],
-    categories: [
-      { name: 'Toys', value: 40 },
-      { name: 'Accessories', value: 30 },
-      { name: 'Home Decor', value: 20 },
-      { name: 'Apparel', value: 10 },
-    ]
-  },
-  week: {
-    revenue: 41100,
-    ordersPlaced: 117,
-    pendingAction: 15,
-    lowStock: 8,
-    newSignups: 45,
-    salesTrend: [
-      { label: 'Mon', revenue: 4500 },
-      { label: 'Tue', revenue: 5200 },
-      { label: 'Wed', revenue: 3800 },
-      { label: 'Thu', revenue: 6100 },
-      { label: 'Fri', revenue: 5900 },
-      { label: 'Sat', revenue: 7200 },
-      { label: 'Sun', revenue: 8400 },
-    ],
-    topProducts: [
-      { name: "Custom Crochet Blanket", units: 25, revenue: 45000 },
-      { name: "Granny Square Cardigan", units: 10, revenue: 32000 },
-      { name: "Amigurumi Bunny", units: 80, revenue: 12000 },
-      { name: "Chunky Winter Beanie", units: 35, revenue: 8500 },
-      { name: "Sunflower Bouquet", units: 20, revenue: 30000 },
-    ],
-    categories: [
-      { name: 'Toys', value: 35 },
-      { name: 'Apparel', value: 30 },
-      { name: 'Home Decor', value: 25 },
-      { name: 'Accessories', value: 10 },
-    ]
-  },
-  month: {
-    revenue: 185000,
-    ordersPlaced: 540,
-    pendingAction: 22,
-    lowStock: 14,
-    newSignups: 180,
-    salesTrend: [
-      { label: 'Week 1', revenue: 42000 },
-      { label: 'Week 2', revenue: 48000 },
-      { label: 'Week 3', revenue: 41000 },
-      { label: 'Week 4', revenue: 54000 },
-    ],
-    topProducts: [
-      { name: "Custom Crochet Blanket", units: 110, revenue: 198000 },
-      { name: "Sunflower Bouquet", units: 85, revenue: 127500 },
-      { name: "Granny Square Cardigan", units: 45, revenue: 144000 },
-      { name: "Amigurumi Bunny", units: 320, revenue: 48000 },
-      { name: "Crochet Coaster Set", units: 150, revenue: 60000 },
-    ],
-    categories: [
-      { name: 'Apparel', value: 35 },
-      { name: 'Toys', value: 30 },
-      { name: 'Home Decor', value: 25 },
-      { name: 'Accessories', value: 10 },
-    ]
-  }
-};
-
 const COLORS = ['#171717', '#e11d48', '#10b981', '#f59e0b'];
 
 import useSWR from 'swr';
@@ -115,7 +30,16 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const currentData = data?.[timeframe] || mockData[timeframe];
+  const currentData = data?.[timeframe] || {
+    revenue: 0,
+    ordersPlaced: 0,
+    pendingAction: 0,
+    lowStock: 0,
+    newSignups: 0,
+    salesTrend: [],
+    topProducts: [],
+    categories: []
+  };
 
   return (
     <>

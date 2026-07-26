@@ -18,12 +18,36 @@ router.post('/', async (req: any, res: any) => {
       
       // 1. Verify and deduct stock for each item
       for (const item of items) {
-        const variant = await tx.variant.findUnique({
+        let variant: any = await tx.variant.findUnique({
           where: { id: item.variantId },
           include: { product: true }
         });
         
-        if (!variant) throw new Error(`Variant not found: ${item.variantId}`);
+        if (!variant) {
+          // Check if it's a base product (frontend might send productId if no variants exist)
+          const product = await tx.product.findUnique({ where: { id: item.variantId } });
+          if (product) {
+            // Find or create a base variant
+            variant = await tx.variant.findFirst({ where: { productId: product.id, sku: `${product.id.slice(0, 8)}-base` }, include: { product: true } });
+            if (!variant) {
+              const baseVariant = await tx.variant.create({
+                data: {
+                  productId: product.id,
+                  sku: `${product.id.slice(0, 8)}-base`,
+                  price: product.salePrice || product.basePrice,
+                  stock: product.stock,
+                  color: product.color,
+                  size: product.size,
+                  material: product.material || null,
+                }
+              });
+              variant = { ...baseVariant, product };
+            }
+            item.variantId = variant.id; // Update payload for OrderItem creation
+          } else {
+            throw new Error(`Variant not found: ${item.variantId}`);
+          }
+        }
         
         // If not made to order, ensure stock is sufficient and deduct
         if (!variant.product.isMadeToOrder) {
@@ -84,6 +108,31 @@ router.post('/', async (req: any, res: any) => {
   } catch (error: any) {
     console.error("Order creation failed:", error.message);
     return res.status(400).json({ error: error.message || 'Failed to create order' });
+  }
+});
+// GET my orders (Customer)
+router.get('/my-orders', verifyToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.userId;
+    const orders = await prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: { product: true }
+            }
+          }
+        },
+        payment: true,
+        timeline: { orderBy: { createdAt: 'desc' } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.json(orders);
+  } catch (error: any) {
+    console.error("Failed to fetch my orders:", error.message);
+    return res.status(400).json({ error: 'Failed to fetch your orders' });
   }
 });
 

@@ -20,6 +20,11 @@ router.get('/', async (req: any, res: any) => {
 
     // 2. Fetch from DB
     const products = await prisma.product.findMany({
+      where: {
+        status: {
+          not: 'ARCHIVED'
+        }
+      },
       include: {
         category: true,
         images: { orderBy: { order: 'asc' } },
@@ -42,8 +47,11 @@ router.get('/', async (req: any, res: any) => {
 router.get('/slug/:slug', async (req: any, res: any) => {
   try {
     const { slug } = req.params;
-    const product = await prisma.product.findUnique({
-      where: { slug: slug as string },
+    const product = await prisma.product.findFirst({
+      where: { 
+        slug: slug as string,
+        status: { not: 'ARCHIVED' }
+      },
       include: {
         category: true,
         images: { orderBy: { order: 'asc' } },
@@ -62,8 +70,11 @@ router.get('/slug/:slug', async (req: any, res: any) => {
 router.get('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const product = await prisma.product.findUnique({
-      where: { id: id as string },
+    const product = await prisma.product.findFirst({
+      where: { 
+        id: id as string,
+        status: { not: 'ARCHIVED' }
+      },
       include: {
         category: true,
         images: { orderBy: { order: 'asc' } },
@@ -107,12 +118,17 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
       costPrice, taxSettings, sku, barcode, stockStatus,
       subcategoryId, brand, tags, collections, isHandmade, material,
       careInstructions, countryOfOrigin, shippingCharges, freeShipping,
-      seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl
+      seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+      stock, color, size
     } = body;
+
+    const hasStyles = variants && variants.length > 0 ? variants.some((v: any) => v.style || v.color) : false;
+    const hasSizes = variants && variants.length > 0 ? variants.some((v: any) => v.size) : false;
 
     const product = await prisma.product.create({
       data: {
-        name, slug, shortDesc, fullDesc, categoryId, isMadeToOrder, processingDays,
+        name, slug, shortDesc, fullDesc, isMadeToOrder, processingDays,
+        category: { connect: { id: categoryId } },
         basePrice, salePrice, status,
         featured, trending, bestseller, limitedEdition,
         weight, length, width, height, lowStockThreshold, maxOrdersPerDay,
@@ -120,6 +136,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
         subcategoryId, brand, tags, collections, isHandmade, material,
         careInstructions, countryOfOrigin, shippingCharges, freeShipping,
         seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+        stock, hasStyles, hasSizes, color, size,
         variants: {
           create: variants || []
         },
@@ -157,21 +174,27 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
       subcategoryId, brand, tags, collections, isHandmade, material,
       careInstructions, countryOfOrigin, shippingCharges, freeShipping,
       seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+      stock, color, size,
       variants, images
     } = body;
+
+    const hasStyles = variants && variants.length > 0 ? variants.some((v: any) => v.style || v.color) : (body.hasStyles ?? false);
+    const hasSizes = variants && variants.length > 0 ? variants.some((v: any) => v.size) : (body.hasSizes ?? false);
 
     // First update the scalar fields
     const product = await prisma.product.update({
       where: { id: id as string },
       data: {
-        name, slug, shortDesc, fullDesc, categoryId, isMadeToOrder, processingDays,
+        name, slug, shortDesc, fullDesc, isMadeToOrder, processingDays,
+        category: categoryId ? { connect: { id: categoryId } } : undefined,
         basePrice, salePrice, status,
         featured, trending, bestseller, limitedEdition,
         weight, length, width, height, lowStockThreshold, maxOrdersPerDay,
         costPrice, taxSettings, sku, barcode, stockStatus,
         subcategoryId, brand, tags, collections, isHandmade, material,
         careInstructions, countryOfOrigin, shippingCharges, freeShipping,
-        seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl
+        seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+        stock, hasStyles, hasSizes, color, size
       },
     });
 
@@ -205,6 +228,25 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
 router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { id } = req.params;
+    
+    // Check if the product has variants linked to orders
+    const variants = await prisma.variant.findMany({ where: { productId: id as string }, select: { id: true } });
+    const variantIds = variants.map(v => v.id);
+    const orderItemCount = await prisma.orderItem.count({ where: { variantId: { in: variantIds } } });
+
+    if (orderItemCount > 0) {
+      // Soft delete by archiving to preserve order history
+      await prisma.product.update({
+        where: { id: id as string },
+        data: { status: 'ARCHIVED' }
+      });
+      await invalidateProductsCache();
+      await createAuditLog(req.user.userId, 'ARCHIVE_PRODUCT', id as string, { reason: 'Has existing orders' });
+      return res.status(200).json({ message: 'Product archived due to existing orders' });
+    }
+
+    // Hard delete safely
+    await prisma.inventoryLog.deleteMany({ where: { variantId: { in: variantIds } } });
     await prisma.variant.deleteMany({ where: { productId: id as string } });
     await prisma.image.deleteMany({ where: { productId: id as string } });
     await prisma.customizationOption.deleteMany({ where: { productId: id as string } });
@@ -216,6 +258,7 @@ router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALO
 
     return res.status(204).send();
   } catch (error) {
+    console.error("Delete Product Error:", error);
     return res.status(500).json({ error: 'Failed to delete product' });
   }
 });
@@ -291,13 +334,43 @@ router.post('/:id/copy', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CAT
   }
 });
 
+const cleanVariantData = (data: any) => {
+  const cleaned = { ...data };
+  delete cleaned.id;
+  delete cleaned.productId;
+  delete cleaned.product;
+  
+  // Convert empty strings to null for numbers
+  const numberFields = ['price', 'salePrice', 'costPrice', 'weight', 'length', 'width', 'height', 'shippingCharges', 'lowStockThreshold'];
+  for (const field of numberFields) {
+    if (cleaned[field] === '') {
+      cleaned[field] = null;
+    } else if (cleaned[field] !== null && cleaned[field] !== undefined) {
+      cleaned[field] = Number(cleaned[field]);
+    }
+  }
+  
+  if (!cleaned.imageUrls) {
+    cleaned.imageUrls = [];
+  }
+  // migrate old imageUrl if present
+  if (cleaned.imageUrl) {
+    if (!cleaned.imageUrls.includes(cleaned.imageUrl)) {
+      cleaned.imageUrls.push(cleaned.imageUrl);
+    }
+    delete cleaned.imageUrl;
+  }
+  
+  return cleaned;
+};
+
 // Variant CRUD endpoints
 router.post('/:id/variants', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const variantData = req.body;
+    const cleanData = cleanVariantData(req.body);
     const variant = await prisma.variant.create({
-      data: { ...variantData, productId: id }
+      data: { ...cleanData, productId: id }
     });
     await invalidateProductsCache();
     return res.status(201).json(variant);
@@ -310,10 +383,10 @@ router.post('/:id/variants', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 
 router.put('/:id/variants/:variantId', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { variantId } = req.params;
-    const variantData = req.body;
+    const cleanData = cleanVariantData(req.body);
     const variant = await prisma.variant.update({
       where: { id: variantId },
-      data: variantData
+      data: cleanData
     });
     await invalidateProductsCache();
     return res.json(variant);
@@ -326,6 +399,13 @@ router.put('/:id/variants/:variantId', verifyToken, requireRoles(['ADMIN', 'SUPE
 router.delete('/:id/variants/:variantId', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { variantId } = req.params;
+    
+    const orderItemCount = await prisma.orderItem.count({ where: { variantId } });
+    if (orderItemCount > 0) {
+      return res.status(400).json({ error: 'Cannot delete variant because it is linked to existing orders. Please update its stock to 0 instead.' });
+    }
+
+    await prisma.inventoryLog.deleteMany({ where: { variantId } });
     await prisma.variant.delete({ where: { id: variantId } });
     await invalidateProductsCache();
     return res.status(204).send();
@@ -352,10 +432,26 @@ router.post('/:id/variants/:variantId/copy', verifyToken, requireRoles(['ADMIN',
         size: original.size,
         material: original.material,
         style: original.style,
-        attributes: original.attributes || undefined,
-        imageUrl: null, // Reset image
+        imageUrls: [], // Reset images
         price: original.price,
         stock: 0, // Reset stock
+        name: original.name,
+        shortDesc: original.shortDesc,
+        fullDesc: original.fullDesc,
+        salePrice: original.salePrice,
+        costPrice: original.costPrice,
+        weight: original.weight,
+        length: original.length,
+        width: original.width,
+        height: original.height,
+        isHandmade: original.isHandmade,
+        careInstructions: original.careInstructions,
+        countryOfOrigin: original.countryOfOrigin,
+        taxSettings: original.taxSettings,
+        stockStatus: original.stockStatus,
+        lowStockThreshold: original.lowStockThreshold,
+        shippingCharges: original.shippingCharges,
+        freeShipping: original.freeShipping,
       }
     });
 

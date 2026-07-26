@@ -9,7 +9,7 @@ import { signOut } from "firebase/auth";
 import { apiPost } from "../../lib/api";
 import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, RotateCcw, Ticket,
-  FileText, BarChart3, Warehouse, ScrollText, Settings, Truck, Star, Palette, LogOut
+  FileText, BarChart3, Warehouse, ScrollText, Settings, Truck, Star, Palette, LogOut, Search
 } from "lucide-react";
 
 interface SidebarProps {
@@ -29,6 +29,7 @@ const navItems = [
   { href: "/admin/reviews", label: "Reviews", icon: Star, roles: ["SUPER_ADMIN", "ADMIN", "MARKETING"] },
   { href: "/admin/blog", label: "Blog", icon: FileText, roles: ["SUPER_ADMIN", "ADMIN", "MARKETING"] },
   { href: "/admin/reports", label: "Reports", icon: BarChart3, roles: ["SUPER_ADMIN", "ADMIN", "FINANCE"] },
+  { href: "/admin/seo", label: "SEO Health", icon: Search, roles: ["SUPER_ADMIN", "ADMIN", "MARKETING"] },
   { href: "/admin/cms", label: "CMS", icon: Palette, roles: ["SUPER_ADMIN", "ADMIN", "MARKETING"] },
   { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["SUPER_ADMIN", "ADMIN"] },
   { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["SUPER_ADMIN"] },
