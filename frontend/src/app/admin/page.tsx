@@ -264,7 +264,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-3 justify-center">
-            {currentData.categories.map((cat, idx) => (
+            {currentData.categories.map((cat: any, idx: number) => (
               <div key={cat.name} className="flex items-center gap-2 text-xs font-bold text-neutral-600">
                 <span className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[idx % COLORS.length]}}></span>
                 {cat.name}
@@ -290,7 +290,7 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-50">
-              {currentData.topProducts.map((prod, idx) => (
+              {currentData.topProducts.map((prod: any, idx: number) => (
                 <tr key={idx} className="hover:bg-neutral-50/50 transition-colors group">
                   <td className="py-4">
                     <div className="flex items-center gap-3">
