@@ -22,7 +22,7 @@ interface UploadedImage {
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const id = params?.id as string;
   
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');

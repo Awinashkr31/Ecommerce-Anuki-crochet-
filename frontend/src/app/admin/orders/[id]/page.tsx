@@ -22,7 +22,7 @@ interface OrderDetail {
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = params.id as string;
+  const orderId = params?.id as string;
   const fetcher = (url: string) => apiGet<OrderDetail>(url);
   
   const { data: order, isLoading: loading, mutate } = useSWR(`/orders/${orderId}`, fetcher, { revalidateOnFocus: true });
