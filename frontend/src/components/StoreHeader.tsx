@@ -59,8 +59,8 @@ export function StoreHeader() {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         
         {/* Logo */}
-        <Link href="/" className="text-2xl font-black tracking-tighter text-neutral-900 flex-shrink-0">
-          CROCHET<span className="text-rose-500">.</span>
+        <Link href="/" className="flex-shrink-0">
+          <img src="/logo.png" alt="Anuki Logo" className="h-10 w-auto object-contain" />
         </Link>
 
         {/* Desktop Nav with Mega-menu style triggers */}
