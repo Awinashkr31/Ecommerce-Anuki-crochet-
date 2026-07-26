@@ -11,7 +11,7 @@ import { useCartStore } from "@/store/cartStore";
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const [product, setProduct] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
