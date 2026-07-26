@@ -248,7 +248,7 @@ export default function AdminDashboardPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {currentData.categories.map((entry, index) => (
+                  {currentData.categories.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
