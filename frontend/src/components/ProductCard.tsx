@@ -17,6 +17,7 @@ export interface Product {
   category?: { name: string };
   variants?: any[];
   bestseller?: boolean;
+  published?: boolean;
 }
 
 export function ProductCard({ product }: { product: Product }) {
