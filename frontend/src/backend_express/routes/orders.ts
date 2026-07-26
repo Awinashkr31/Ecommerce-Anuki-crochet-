@@ -8,7 +8,7 @@ import { prisma } from '../lib/prisma';
 router.post('/', async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { userId, items, address, totalAmount } = body;
+    const { userId, items, address, totalAmount, paymentMethod } = body;
     
     // In a real scenario, we'd calculate totalAmount securely here by fetching variant prices from DB
     // rather than trusting the client's totalAmount.
@@ -53,18 +53,29 @@ router.post('/', async (req: any, res: any) => {
               customization: item.customization || null
             }))
           },
-          // Mock Payment creation
-          payment: {
-            create: {
-              gateway: 'MOCK_RAZORPAY',
-              transactionId: `txn_${Date.now()}`,
-              status: 'SUCCESS',
-              amount: totalAmount
+          // Create pending COD payment if COD, otherwise leave empty for online
+          ...(paymentMethod === 'cod' ? {
+            payment: {
+              create: {
+                gateway: 'COD',
+                transactionId: `cod_${Date.now()}`,
+                status: 'PENDING',
+                amount: totalAmount
+              }
             }
-          }
+          } : {})
         },
         include: { items: true, payment: true }
       });
+      
+      // Update order status if COD
+      if (paymentMethod === 'cod') {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: 'PROCESSING' }
+        });
+        order.status = 'PROCESSING';
+      }
       
       return order;
     });

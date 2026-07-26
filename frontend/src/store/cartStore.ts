@@ -10,10 +10,13 @@ export interface CartItem {
   quantity: number;
   image?: string;
   customization?: string;
+  variantText?: string;
 }
 
 interface CartState {
   items: CartItem[];
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -25,6 +28,8 @@ interface CartState {
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
+      isOpen: false,
+      setIsOpen: (isOpen) => set({ isOpen }),
       items: [],
       addItem: (item) => set((state) => {
         const existing = state.items.find((i) => i.id === item.id);

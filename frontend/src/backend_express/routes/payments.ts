@@ -52,6 +52,9 @@ router.post('/verify', async (req: any, res: any) => {
     const generated_signature = hmac.digest('hex');
 
     if (generated_signature === razorpay_signature) {
+      const existingOrder = await prisma.order.findUnique({ where: { id: internalOrderId } });
+      const paymentAmount = existingOrder ? existingOrder.totalAmount : 0;
+
       // Payment successful, update internal order status
       const updatedOrder = await prisma.order.update({
         where: { id: internalOrderId },
@@ -62,7 +65,7 @@ router.post('/verify', async (req: any, res: any) => {
               gateway: 'RAZORPAY',
               transactionId: razorpay_payment_id,
               status: 'PAID',
-              amount: 0 // Ideally this should be passed from the verify payload or DB
+              amount: paymentAmount
             }
           }
         },
@@ -85,7 +88,7 @@ router.post('/verify', async (req: any, res: any) => {
               gateway: 'RAZORPAY',
               transactionId: razorpay_payment_id || 'failed_' + Date.now(),
               status: 'FAILED',
-              amount: 0
+              amount: 0 // Fetching logic could also be applied here if needed
             }
           }
         }

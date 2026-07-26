@@ -1,394 +1,245 @@
 "use client";
 
-import { useCartStore } from '@/store/cartStore';
-import { useState } from 'react';
-import Link from 'next/link';
-import Script from 'next/script';
-import { CheckCircle2, ChevronRight, Truck, Tag, CreditCard, ClipboardList } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
-import { apiPost } from '@/lib/api';
+import { useCartStore } from "@/store/cartStore";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, MapPin, Truck, ShieldCheck, Tag, Circle, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function CheckoutPage() {
-  const { items, getTotal, clearCart } = useCartStore();
-  const [step, setStep] = useState(1);
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { items, clearCart } = useCartStore();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("upi");
 
-  // Form State
-  const [address, setAddress] = useState({ firstName: '', lastName: '', street: '', city: '', state: '', pincode: '' });
-  const [isPincodeValid, setIsPincodeValid] = useState<boolean | null>(null);
-  
-  const [shippingMethod, setShippingMethod] = useState('standard');
-  const [couponCode, setCouponCode] = useState('');
-  const [discount, setDiscount] = useState(0);
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
-
-  const subtotal = getTotal();
-  const shippingCost = shippingMethod === 'express' ? 150 : 0;
-  const finalTotal = subtotal + shippingCost - discount;
-
-  const handlePincodeChange = (val: string) => {
-    setAddress({ ...address, pincode: val });
-    if (val.length === 6) {
-      // Mock validation logic
-      if (['110001', '400001', '560001', '700001'].includes(val)) {
-        setIsPincodeValid(true);
-      } else {
-        setIsPincodeValid(false);
-      }
-    } else {
-      setIsPincodeValid(null);
-    }
-  };
-
-  const applyCoupon = () => {
-    if (couponCode.toUpperCase() === 'WELCOME10') {
-      setDiscount(subtotal * 0.1);
-      setCouponApplied(true);
-    } else {
-      alert('Invalid Coupon');
-      setCouponApplied(false);
-      setDiscount(0);
-    }
-  };
-
-  const { profile } = useAuthStore();
-
-  const handlePayment = async () => {
-    setIsLoading(true);
-    try {
-      if (paymentMethod === 'cod') {
-        const orderData = {
-          userId: profile?.id, // Will be undefined if guest, but schema might require it, so let's pass it. Wait, authStore uses profile.id or profile.userId? Let's check authStore later, but typically profile.id. 
-          items: items,
-          address: address, // sending just in case, but backend currently ignores it
-          totalAmount: finalTotal
-        };
-        
-        await apiPost('/orders', orderData);
-        
-        clearCart();
-        setOrderComplete(true);
-        setIsLoading(false);
-        return;
-      }
-
-      // Razorpay Flow (mocked logic for now, but creating order in DB)
-      const orderData = {
-          userId: profile?.id,
-          items: items,
-          address: address,
-          totalAmount: finalTotal
-      };
-      
-      const order = await apiPost('/orders', orderData);
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'dummy_key',
-        amount: finalTotal * 100, // Razorpay takes paise
-        currency: "INR",
-        name: "Handmade Crochet",
-        description: "Order Payment",
-        order_id: order.id, // Just mocking with our DB order ID
-        handler: async function (response: any) {
-          // Mock Verify
-          clearCart();
-          setOrderComplete(true);
-        },
-        prefill: {
-          name: `${address.firstName} ${address.lastName}`,
-          email: profile?.email || "test@example.com",
-          contact: "9999999999"
-        },
-        theme: { color: "#e11d48" }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any){
-        alert(response.error.description);
-      });
-      rzp.open();
-    } catch (error) {
-      console.error(error);
-      alert('Error initiating payment');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (orderComplete) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-6">
-        <div className="bg-white p-8 rounded-3xl shadow-sm text-center max-w-md w-full border border-neutral-100">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 size={40} />
-          </div>
-          <h1 className="text-3xl font-black mb-2 tracking-tight">Order Confirmed!</h1>
-          <p className="text-neutral-500 mb-8 leading-relaxed">Your order #ORD-{Math.floor(Math.random() * 100000)} has been successfully placed. We'll send you a confirmation email shortly.</p>
-          <Link href="/products" className="bg-neutral-900 text-white px-6 py-4 rounded-xl font-bold hover:bg-neutral-800 transition-colors inline-block w-full">
-            Continue Shopping
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+  // If cart is empty, redirect
   if (items.length === 0) {
-    return (
-      <div className="min-h-screen bg-neutral-50 p-6 flex items-center justify-center">
-        <div className="text-center max-w-sm">
-          <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-          <p className="text-neutral-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
-          <Link href="/products" className="bg-rose-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-rose-700 transition-colors">
-            Start Shopping
-          </Link>
-        </div>
-      </div>
-    );
+    if (typeof window !== 'undefined') router.replace('/cart');
+    return null;
   }
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const isGiftPacked = false; // Could read from store in a real app
+  const giftCharge = isGiftPacked ? 29 : 0;
+  const totalAmount = subtotal + giftCharge;
+
+  const handlePay = () => {
+    setIsProcessing(true);
+    // Simulate Razorpay or Payment gateway delay
+    setTimeout(() => {
+      setIsProcessing(false);
+      clearCart();
+      toast.success("Order Placed Successfully!", { duration: 3000 });
+      router.push('/shop'); // Redirect to success page or shop
+    }, 2000);
+  };
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-6 selection:bg-rose-200">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Checkout Header Progress */}
-        <header className="mb-10 text-center">
-          <h1 className="text-3xl font-black mb-6 tracking-tight">Checkout</h1>
-          <div className="flex items-center justify-center gap-2 text-sm font-medium">
-            <span className={`${step >= 1 ? 'text-rose-600 font-bold' : 'text-neutral-400'}`}>Address</span>
-            <ChevronRight size={16} className="text-neutral-300" />
-            <span className={`${step >= 2 ? 'text-rose-600 font-bold' : 'text-neutral-400'}`}>Shipping</span>
-            <ChevronRight size={16} className="text-neutral-300" />
-            <span className={`${step >= 3 ? 'text-rose-600 font-bold' : 'text-neutral-400'}`}>Payment</span>
-            <ChevronRight size={16} className="text-neutral-300" />
-            <span className={`${step >= 4 ? 'text-rose-600 font-bold' : 'text-neutral-400'}`}>Review</span>
+    <div className="min-h-screen bg-[#FDFDFD] flex flex-col relative pb-32">
+      <Toaster />
+      
+      {/* Header */}
+      <header className="bg-white border-b border-neutral-100 py-4 px-4 md:px-8 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.back()} className="p-2 hover:bg-neutral-50 rounded-full transition-colors -ml-2">
+              <ArrowLeft size={20} className="text-neutral-700" />
+            </button>
+            <h1 className="text-xl font-bold text-neutral-900">Checkout</h1>
           </div>
-        </header>
+          <div className="text-right">
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Step 3/3</p>
+            <p className="text-sm font-semibold text-[#059669] flex items-center gap-1">
+              Secure Payment <ShieldCheck size={14} />
+            </p>
+          </div>
+        </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main Content */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Main Checkout Flow */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Left Column */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
             
-            {/* Step 1: Address */}
-            <div className={`bg-white p-6 md:p-8 rounded-3xl border transition-all ${step === 1 ? 'border-neutral-200 shadow-sm ring-1 ring-neutral-200' : 'border-neutral-100 opacity-60'}`}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">1</div>
-                  Shipping Address
-                </h2>
-                {step > 1 && <button onClick={() => setStep(1)} className="text-rose-600 text-sm font-bold hover:underline">Edit</button>}
+            {/* Delivery Address */}
+            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                  <MapPin size={16} />
+                </div>
+                <h3 className="font-serif text-lg text-neutral-900">Delivery Address</h3>
               </div>
               
-              {step === 1 && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="text" placeholder="First Name" value={address.firstName} onChange={e => setAddress({...address, firstName: e.target.value})} className="border border-neutral-200 rounded-xl p-3 w-full outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                    <input type="text" placeholder="Last Name" value={address.lastName} onChange={e => setAddress({...address, lastName: e.target.value})} className="border border-neutral-200 rounded-xl p-3 w-full outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                  </div>
-                  <input type="text" placeholder="Street Address" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} className="border border-neutral-200 rounded-xl p-3 w-full outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input type="text" placeholder="City" value={address.city} onChange={e => setAddress({...address, city: e.target.value})} className="border border-neutral-200 rounded-xl p-3 w-full outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                    <input type="text" placeholder="State" value={address.state} onChange={e => setAddress({...address, state: e.target.value})} className="border border-neutral-200 rounded-xl p-3 w-full outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all" />
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="Pincode (e.g. 110001)" 
-                        maxLength={6}
-                        value={address.pincode}
-                        onChange={(e) => handlePincodeChange(e.target.value)}
-                        className={`border rounded-xl p-3 w-full outline-none transition-all ${
-                          isPincodeValid === true ? 'border-emerald-500 bg-emerald-50 focus:ring-emerald-500' :
-                          isPincodeValid === false ? 'border-rose-500 bg-rose-50 focus:ring-rose-500' :
-                          'border-neutral-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500'
-                        }`}
-                      />
-                      {isPincodeValid === false && <p className="text-xs text-rose-600 mt-1 font-medium">Sorry, we don't deliver to this pincode yet.</p>}
-                      {isPincodeValid === true && <p className="text-xs text-emerald-600 mt-1 font-medium">Serviceable area!</p>}
-                    </div>
-                  </div>
-                  <button 
-                    disabled={!isPincodeValid}
-                    onClick={() => setStep(2)} 
-                    className="bg-neutral-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Continue to Shipping
-                  </button>
+              <div className="bg-neutral-50 rounded-xl p-4 flex items-start justify-between gap-4 border border-neutral-100">
+                <div>
+                  <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">Awinash Kumar, 813210</span></p>
+                  <p className="text-sm text-neutral-500 mt-0.5">chandigarh</p>
                 </div>
-              )}
+                <button className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors bg-white">
+                  Change
+                </button>
+              </div>
             </div>
 
-            {/* Step 2: Shipping Method */}
-            <div className={`bg-white p-6 md:p-8 rounded-3xl border transition-all ${step === 2 ? 'border-neutral-200 shadow-sm ring-1 ring-neutral-200' : 'border-neutral-100 opacity-60'}`}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">2</div>
-                  Shipping Method
-                </h2>
-                {step > 2 && <button onClick={() => setStep(2)} className="text-rose-600 text-sm font-bold hover:underline">Edit</button>}
+            {/* Delivery Estimate */}
+            <div className="bg-[#ECFDF5] rounded-[20px] shadow-sm border border-[#D1FAE5] p-5 flex gap-4 items-center">
+              <div className="text-[#059669]">
+                <Truck size={24} />
               </div>
+              <div>
+                <p className="text-[#059669] font-bold">Delivery by Jul 29 - Jul 31</p>
+                <p className="text-xs text-[#059669]/80 font-medium mt-0.5">Free shipping applied</p>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5">
+              <h3 className="font-serif text-lg text-neutral-900 mb-4">Payment Method</h3>
               
-              {step === 2 && (
-                <div className="space-y-4">
-                  <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${shippingMethod === 'standard' ? 'border-rose-500 bg-rose-50' : 'border-neutral-100 hover:border-neutral-200'}`}>
-                    <input type="radio" name="shipping" checked={shippingMethod === 'standard'} onChange={() => setShippingMethod('standard')} className="w-5 h-5 text-rose-600 focus:ring-rose-500" />
-                    <div className="flex-1">
-                      <p className="font-bold flex items-center gap-2"><Truck size={16} /> Standard Delivery</p>
-                      <p className="text-sm text-neutral-500 mt-1">5-7 Business Days</p>
+              <div className="space-y-3">
+                {/* UPI / Cards */}
+                <label className={`block p-4 rounded-xl border-2 transition-all cursor-pointer ${paymentMethod === 'upi' ? 'border-[#FFC107] bg-[#FFFBF0]' : 'border-neutral-100 hover:border-neutral-200'}`}>
+                  <div className="flex items-start gap-4">
+                    <div className="mt-0.5">
+                      {paymentMethod === 'upi' ? (
+                        <CheckCircle2 className="text-[#FFC107]" size={20} fill="currentColor" stroke="white" />
+                      ) : (
+                        <Circle className="text-neutral-300" size={20} />
+                      )}
                     </div>
-                    <span className="font-bold">Free</span>
-                  </label>
-
-                  <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${shippingMethod === 'express' ? 'border-rose-500 bg-rose-50' : 'border-neutral-100 hover:border-neutral-200'}`}>
-                    <input type="radio" name="shipping" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} className="w-5 h-5 text-rose-600 focus:ring-rose-500" />
                     <div className="flex-1">
-                      <p className="font-bold flex items-center gap-2"><Truck size={16} className="text-rose-600" /> Express Delivery</p>
-                      <p className="text-sm text-neutral-500 mt-1">2-3 Business Days</p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-neutral-900">UPI & Cards</span>
+                        <span className="bg-[#FFF4F6] text-[#E11D48] text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                          RECOMMENDED ⚡
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-1">GPay, PhonePe, Paytm, Visa, RuPay</p>
                     </div>
-                    <span className="font-bold">₹150</span>
-                  </label>
-                  
-                  <button onClick={() => setStep(3)} className="bg-neutral-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition-all mt-4">
-                    Continue to Payment
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Step 3: Payment */}
-            <div className={`bg-white p-6 md:p-8 rounded-3xl border transition-all ${step === 3 ? 'border-neutral-200 shadow-sm ring-1 ring-neutral-200' : 'border-neutral-100 opacity-60'}`}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">3</div>
-                  Payment
-                </h2>
-                {step > 3 && <button onClick={() => setStep(3)} className="text-rose-600 text-sm font-bold hover:underline">Edit</button>}
-              </div>
-
-              {step === 3 && (
-                <div className="space-y-4">
-                  <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-rose-500 bg-rose-50' : 'border-neutral-100 hover:border-neutral-200'}`}>
-                    <input type="radio" name="payment" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 text-rose-600 focus:ring-rose-500" />
-                    <div className="flex-1">
-                      <p className="font-bold flex items-center gap-2"><CreditCard size={16} /> Credit / Debit / UPI</p>
-                      <p className="text-sm text-neutral-500 mt-1">Secure via Razorpay</p>
-                    </div>
-                  </label>
-
-                  <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-rose-500 bg-rose-50' : 'border-neutral-100 hover:border-neutral-200'}`}>
-                    <input type="radio" name="payment" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 text-rose-600 focus:ring-rose-500" />
-                    <div className="flex-1">
-                      <p className="font-bold flex items-center gap-2">Cash on Delivery</p>
-                      <p className="text-sm text-neutral-500 mt-1">Pay when your order arrives</p>
-                    </div>
-                  </label>
-                  
-                  <button onClick={() => setStep(4)} className="bg-neutral-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-neutral-800 transition-all mt-4">
-                    Review Order
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Step 4: Review */}
-            <div className={`bg-white p-6 md:p-8 rounded-3xl border transition-all ${step === 4 ? 'border-neutral-200 shadow-sm ring-1 ring-neutral-200' : 'border-neutral-100 opacity-60'}`}>
-              <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">4</div>
-                Review & Place Order
-              </h2>
-
-              {step === 4 && (
-                <div className="space-y-6">
-                  <div className="bg-neutral-50 p-6 rounded-2xl">
-                    <h3 className="font-bold flex items-center gap-2 mb-4"><ClipboardList size={18}/> Final Confirmation</h3>
-                    <p className="text-sm text-neutral-600 mb-2"><strong>Shipping to:</strong> {address.firstName} {address.lastName}, {address.street}, {address.city}, {address.pincode}</p>
-                    <p className="text-sm text-neutral-600 mb-2"><strong>Method:</strong> {shippingMethod === 'standard' ? 'Standard Delivery' : 'Express Delivery'}</p>
-                    <p className="text-sm text-neutral-600"><strong>Payment:</strong> {paymentMethod === 'card' ? 'Online Payment' : 'Cash on Delivery'}</p>
                   </div>
-                  
-                  <button 
-                    onClick={handlePayment} 
-                    disabled={isLoading}
-                    className="w-full bg-rose-600 text-white px-6 py-4 rounded-2xl font-black text-lg hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200 disabled:bg-rose-400"
-                  >
-                    {isLoading ? 'Processing...' : `Place Order — ₹${finalTotal.toLocaleString()}`}
-                  </button>
-                </div>
-              )}
+                  <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />
+                </label>
+
+                {/* COD (Unavailable) */}
+                <label className="block p-4 rounded-xl border-2 border-neutral-100 bg-neutral-50/50 cursor-not-allowed opacity-60">
+                  <div className="flex items-start gap-4">
+                    <div className="mt-0.5">
+                      <Circle className="text-neutral-300" size={20} />
+                    </div>
+                    <div className="flex-1 flex justify-between items-center">
+                      <div>
+                        <span className="font-bold text-neutral-900">Cash on Delivery</span>
+                        <p className="text-xs text-neutral-500 mt-1">Pay cash at doorstep (+₹40)</p>
+                      </div>
+                      <span className="bg-neutral-200 text-neutral-500 text-[10px] font-bold px-2 py-0.5 rounded">
+                        Unavailable
+                      </span>
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
-            
+
+            {/* Apply Coupon Dropdown (Mock) */}
+            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between cursor-pointer hover:bg-neutral-50 transition-colors">
+              <div className="flex items-center gap-3 text-neutral-800 font-medium">
+                <Tag size={20} className="text-neutral-400" />
+                Apply Coupon
+              </div>
+              <ChevronDownIcon />
+            </div>
+
           </div>
 
-          {/* Order Summary Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-neutral-200 sticky top-6">
-              <h2 className="text-xl font-black mb-6 tracking-tight">Order Summary</h2>
+          {/* Right Column */}
+          <div className="lg:col-span-4 sticky top-24">
+            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-6">
+              <h3 className="font-serif text-lg text-neutral-900 mb-6">Order Summary</h3>
               
-              <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start text-sm">
-                    <div>
-                      <p className="font-bold">{item.name}</p>
-                      <p className="text-neutral-500 mt-0.5">Qty: {item.quantity}</p>
-                      {item.customization && <p className="text-xs text-rose-600 mt-1 bg-rose-50 inline-block px-2 py-1 rounded">Note: {item.customization}</p>}
+              <div className="space-y-4 mb-6 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                {items.map(item => (
+                  <div key={item.id} className="flex gap-4">
+                    <div className="w-16 h-16 bg-neutral-100 rounded-xl overflow-hidden shrink-0 relative">
+                      {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" />}
                     </div>
-                    <p className="font-bold">₹{(item.price * item.quantity).toLocaleString()}</p>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-serif text-neutral-800 leading-tight">{item.name}</h4>
+                      <p className="text-xs text-neutral-500 mt-1">Qty: {item.quantity}</p>
+                    </div>
+                    <div className="text-sm font-bold text-neutral-900">₹{item.price}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Coupon Section */}
-              <div className="border-t border-b border-neutral-100 py-6 mb-6">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input 
-                      type="text" 
-                      placeholder="Coupon Code" 
-                      value={couponCode}
-                      onChange={e => setCouponCode(e.target.value)}
-                      disabled={couponApplied}
-                      className="w-full pl-10 pr-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <button 
-                    onClick={couponApplied ? () => {setCouponApplied(false); setDiscount(0); setCouponCode('');} : applyCoupon}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${couponApplied ? 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300' : 'bg-neutral-900 text-white hover:bg-neutral-800'}`}
-                  >
-                    {couponApplied ? 'Remove' : 'Apply'}
-                  </button>
-                </div>
-                {!couponApplied && <p className="text-xs text-neutral-500 mt-2">Hint: Use WELCOME10 for 10% off</p>}
-              </div>
-
-              <div className="space-y-3 text-sm mb-6">
+              <div className="space-y-3 text-sm text-neutral-600 border-t border-neutral-100 pt-6">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500 font-medium">Subtotal</span>
-                  <span className="font-bold">₹{subtotal.toLocaleString()}</span>
+                  <span>Subtotal</span>
+                  <span className="font-medium text-neutral-900">₹{subtotal}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500 font-medium">Shipping</span>
-                  <span className="font-bold">{shippingCost === 0 ? 'Free' : `₹${shippingCost}`}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-rose-600">
-                    <span className="font-bold">Discount</span>
-                    <span className="font-bold">-₹{discount.toLocaleString()}</span>
+                {isGiftPacked && (
+                  <div className="flex justify-between">
+                    <span>Gift Packaging</span>
+                    <span className="font-medium text-neutral-900">₹29</span>
                   </div>
                 )}
-              </div>
-
-              <div className="border-t border-neutral-200 pt-6 flex justify-between items-center font-black text-2xl">
-                <span>Total</span>
-                <span className="text-rose-600">₹{finalTotal.toLocaleString()}</span>
+                <div className="flex justify-between border-b border-neutral-100 pb-4">
+                  <span>Shipping</span>
+                  <span className="font-medium text-[#059669]">Free</span>
+                </div>
+                <div className="flex justify-between pt-2 text-lg font-bold text-neutral-900">
+                  <span>Total Pay</span>
+                  <span>₹{totalAmount}</span>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
+      </main>
+
+      {/* Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-50">
+        {/* Top small Trust line */}
+        <div className="flex justify-center items-center gap-6 py-2 border-b border-neutral-100 text-[10px] text-neutral-500 font-medium">
+          <span className="flex items-center gap-1"><ShieldCheck size={12} /> 100% Secure</span>
+          <span className="flex items-center gap-1"><Truck size={12} /> Fast Delivery</span>
+        </div>
+        
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between pb-safe">
+          <div>
+            <div className="text-xl font-black text-neutral-900">₹{totalAmount}</div>
+            <div className="text-[10px] text-neutral-500 font-medium">Total incl. taxes</div>
+          </div>
+          
+          <button 
+            onClick={handlePay}
+            disabled={isProcessing}
+            className="px-12 py-3.5 bg-[#FFC107] text-black font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] hover:bg-[#F3B604] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center min-w-[200px]"
+          >
+            {isProcessing ? (
+              <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              "Pay Securely"
+            )}
+          </button>
+        </div>
       </div>
+
     </div>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
   );
 }

@@ -1,25 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, User, LogOut, Shield, ChevronDown } from "lucide-react";
-import { CartDrawer } from "./CartDrawer";
+import { Search, User, LogOut, Shield, ChevronDown, ShoppingCart, Menu, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
+import { useCartStore } from "../store/cartStore";
 import { auth } from "../lib/firebase";
 import { signOut } from "firebase/auth";
-import { apiPost } from "../lib/api";
+import { apiGet, apiPost } from "../lib/api";
+import useSWR from 'swr';
 
 const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
 
 export function StoreHeader() {
   const { profile, logout: clearAuthStore } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
+  const activeCategories = categories.filter((c: any) => c.isActive && !c.parentId);
 
   const isLoggedIn = !!profile;
   const isAdmin = isLoggedIn && ADMIN_ROLES.includes(profile.role);
+  const totalCartItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -31,6 +39,24 @@ export function StoreHeader() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // If we scroll down past 60px, hide it. If we scroll up, show it.
+      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const handleLogout = () => {
     setDropdownOpen(false);
@@ -55,35 +81,41 @@ export function StoreHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-neutral-100 hidden md:block">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-neutral-100 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
         
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <img src="/logo.png" alt="Anuki Logo" className="h-10 w-auto object-contain" />
-        </Link>
+        {/* Mobile Back Button or Logo */}
+        <div className="flex items-center gap-3 relative z-10">
+          {pathname !== "/" && (
+            <button 
+              onClick={() => router.back()}
+              className="p-2 md:hidden -ml-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+            >
+              <ArrowLeft size={24} />
+            </button>
+          )}
+          <Link href="/" className="flex-shrink-0">
+            <img src="/logo.png" alt="Anuki Logo" className="h-10 md:h-16 w-auto object-contain" />
+          </Link>
+        </div>
 
         {/* Desktop Nav with Mega-menu style triggers */}
-        <nav className="flex items-center gap-8 font-bold text-sm text-neutral-600">
+        <nav className="hidden md:flex items-center gap-8 font-bold text-sm text-neutral-600">
           <div className="group relative py-8">
             <Link href="/products" className="hover:text-rose-600 transition-colors">Shop All</Link>
           </div>
-          <div className="group relative py-8">
-            <Link href="/products?category=bouquets" className="hover:text-rose-600 transition-colors flex items-center gap-1">
-              Bouquets
-            </Link>
-          </div>
-          <div className="group relative py-8">
-            <Link href="/products?category=plushies" className="hover:text-rose-600 transition-colors">Plushies</Link>
-          </div>
-          <div className="group relative py-8">
-            <Link href="/products?isMadeToOrder=true" className="hover:text-rose-600 transition-colors">Custom Gifts</Link>
-          </div>
+          {activeCategories.slice(0, 4).map((category: any) => (
+            <div key={category.id} className="group relative py-8">
+              <Link href={`/products?category=${category.slug}`} className="hover:text-rose-600 transition-colors">
+                {category.name}
+              </Link>
+            </div>
+          ))}
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+          <button className="p-2 hover:bg-neutral-100 rounded-full transition-colors hidden md:block">
             <Search size={20} className="text-neutral-700" />
           </button>
 
@@ -105,7 +137,7 @@ export function StoreHeader() {
                     {getInitials(profile.fullName)}
                   </div>
                 )}
-                <ChevronDown size={14} className={`text-neutral-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={14} className={`text-neutral-500 transition-transform hidden md:block ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
               {dropdownOpen && (
@@ -159,12 +191,22 @@ export function StoreHeader() {
             </div>
           ) : (
             /* Not logged in — show login link */
-            <Link href="/auth" className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-sm font-bold hover:bg-neutral-800 transition-colors">
-              <User size={16} />
+            <Link href="/auth" className="flex items-center gap-2 px-3 md:px-4 py-2 bg-neutral-900 text-white rounded-full text-xs md:text-sm font-bold hover:bg-neutral-800 transition-colors">
+              <User size={16} className="hidden md:block" />
               Log in
             </Link>
           )}
-          <CartDrawer />
+          <button 
+            onClick={() => useCartStore.getState().setIsOpen(true)}
+            className="relative p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+          >
+            <ShoppingCart size={24} />
+            {totalCartItems > 0 && (
+              <span className="absolute top-0 right-0 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {totalCartItems}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>

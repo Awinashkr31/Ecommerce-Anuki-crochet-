@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { ProductCard, Product } from "@/components/ProductCard";
 import { apiGet } from "@/lib/api";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -21,7 +22,7 @@ export default function Home() {
       apiGet<any[]>("/categories")
     ])
       .then(([productsData, categoriesData]) => {
-        const published = (productsData || []).filter((p) => p.published);
+        const published = (productsData || []).filter((p) => p.status === 'PUBLISHED');
         setFeaturedProducts(published.slice(0, 4));
         setCategories(categoriesData || []);
         setLoading(false);
@@ -366,11 +367,7 @@ export default function Home() {
       </main>
       
       {/* Footer */}
-      <footer className="bg-neutral-50 py-12 border-t border-neutral-200">
-        <div className="max-w-7xl mx-auto px-6 text-center text-neutral-500">
-          <p>© 2026 Crochet Studio. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

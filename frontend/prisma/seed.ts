@@ -57,7 +57,7 @@ async function main() {
       fullDesc: 'Brighten up any room with this handmade crochet sunflower bouquet. Made from high-quality yarn, these flowers will never wilt and will bring joy for years to come. Perfect for gifts or home decor.',
       categoryId: bouquets.id,
       basePrice: 1500,
-      published: true,
+      status: 'PUBLISHED',
       featured: true,
       bestseller: true,
       images: {
@@ -85,7 +85,7 @@ async function main() {
       fullDesc: 'This adorable amigurumi bunny is handcrafted with ultra-soft velvet yarn, making it the perfect companion for children or a cute desk buddy. Stuffed with hypoallergenic polyfill.',
       categoryId: plushies.id,
       basePrice: 850,
-      published: true,
+      status: 'PUBLISHED',
       featured: true,
       trending: true,
       images: {
@@ -112,7 +112,7 @@ async function main() {
       fullDesc: 'Add a touch of spring to your keys or bag with this handmade crochet daisy keychain. Lightweight and durable.',
       categoryId: keychains.id,
       basePrice: 250,
-      published: true,
+      status: 'PUBLISHED',
       images: {
         create: [
           { url: 'https://images.unsplash.com/photo-1598282928509-000c4068593a?w=800&h=800&fit=crop', order: 0, altText: 'Daisy Keychain' },
@@ -136,7 +136,7 @@ async function main() {
       fullDesc: 'Stay warm this winter with our handmade chunky crochet beanie. Features a foldable brim and an optional faux fur pom-pom on top.',
       categoryId: apparel.id,
       basePrice: 650,
-      published: true,
+      status: 'PUBLISHED',
       featured: true,
       images: {
         create: [
@@ -164,7 +164,7 @@ async function main() {
       basePrice: 2000,
       isMadeToOrder: true,
       processingDays: 5,
-      published: true,
+      status: 'PUBLISHED',
       bestseller: true,
       images: {
         create: [

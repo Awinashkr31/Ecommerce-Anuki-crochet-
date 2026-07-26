@@ -17,8 +17,9 @@ export function BottomNav() {
   const isLoggedIn = !!profile;
   const isAdmin = isLoggedIn && ADMIN_ROLES.includes(profile.role);
 
-  // Don't show bottom nav in admin area
-  if (pathname?.startsWith("/admin")) {
+  // Don't show bottom nav in admin area, product detail page, or checkout
+  // (Product detail and checkout have their own sticky buy bars on mobile)
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout") || pathname?.match(/^\/products\/[^/]+$/)) {
     return null;
   }
 
@@ -39,8 +40,8 @@ export function BottomNav() {
           <Search size={24} className="mb-1" />
           <span className="text-[10px] font-bold">Shop</span>
         </Link>
-        <Link 
-          href="/checkout" 
+        <button 
+          onClick={() => useCartStore.getState().setIsOpen(true)}
           className={`flex flex-col items-center justify-center w-16 h-full transition-colors relative ${pathname === "/checkout" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
         >
           <div className="relative">
@@ -52,7 +53,7 @@ export function BottomNav() {
             )}
           </div>
           <span className="text-[10px] font-bold">Cart</span>
-        </Link>
+        </button>
 
         {/* Show Admin link for staff, Account link for others */}
         {isAdmin ? (

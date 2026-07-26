@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, MoreHorizontal, Edit2, Check, X, Trash2, Loader2 } from 'lucide-react';
-import { apiGet, apiPut, apiDelete } from '../../../lib/api';
+import { Search, MoreHorizontal, Edit2, Check, X, Trash2, Loader2, Copy, ListTree } from 'lucide-react';
+import { apiGet, apiPut, apiDelete, apiPost } from '../../../lib/api';
 
 interface Product {
   id: string;
@@ -12,7 +12,7 @@ interface Product {
   shortDesc: string | null;
   basePrice: number;
   salePrice: number | null;
-  published: boolean;
+  status: string;
   featured: boolean;
   trending: boolean;
   bestseller: boolean;
@@ -33,6 +33,17 @@ export default function AdminProductsPage() {
   const [quickEditId, setQuickEditId] = useState<string | null>(null);
   const [quickEditPrice, setQuickEditPrice] = useState<number>(0);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if ((e.target as Element).closest('.dropdown-container')) return;
+      setOpenMenuId(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) setSelectedProducts(filtered.map(p => p.id));
@@ -71,6 +82,17 @@ export default function AdminProductsPage() {
       console.error('Failed to delete product:', err);
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleCopyProduct = async (id: string) => {
+    try {
+      await apiPost(`/products/${id}/copy`, {});
+      mutate();
+      alert('Product copied successfully!');
+    } catch (err) {
+      console.error('Failed to copy product:', err);
+      alert('Failed to copy product');
     }
   };
 
@@ -131,7 +153,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-b-2xl shadow-sm border border-neutral-200 overflow-x-auto">
+      <div className="bg-white rounded-b-2xl shadow-sm border border-neutral-200 overflow-x-auto pb-48">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="animate-spin text-neutral-400" size={32} />
@@ -230,26 +252,41 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-                        product.published ? 'bg-emerald-100 text-emerald-800' : 'bg-neutral-200 text-neutral-700'
+                        product.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-800' : 
+                        product.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' :
+                        'bg-neutral-200 text-neutral-700'
                       }`}>
-                        {product.published ? 'Published' : 'Draft'}
+                        {product.status === 'PUBLISHED' ? 'Published' : 
+                         product.status === 'SCHEDULED' ? 'Scheduled' : 'Draft'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {quickEditId === product.id ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={saveQuickEdit} className="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200"><Check size={16} /></button>
-                          <button onClick={() => setQuickEditId(null)} className="p-1.5 bg-neutral-100 text-neutral-700 rounded hover:bg-neutral-200"><X size={16} /></button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleQuickEdit(product)} className="text-neutral-400 hover:text-neutral-900 transition-colors p-1" title="Quick Edit Price"><Edit2 size={16} /></button>
-                          <button onClick={() => handleDelete(product.id)} disabled={deleting === product.id} className="text-neutral-400 hover:text-rose-600 transition-colors p-1" title="Delete">
-                            {deleting === product.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                          </button>
-                          <Link href={`/admin/products/${product.id}`} className="text-neutral-400 hover:text-rose-600 transition-colors p-1" title="Full Edit"><MoreHorizontal size={18} /></Link>
-                        </div>
-                      )}
+                      <div className="relative inline-block text-left z-10 dropdown-container">
+                        <button 
+                          onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
+                          className="text-neutral-400 hover:text-neutral-900 transition-colors p-1"
+                        >
+                          <MoreHorizontal size={20} />
+                        </button>
+                        {openMenuId === product.id && (
+                          <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                            <div className="py-1" role="menu">
+                              <Link href={`/admin/products/edit/${product.id}`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
+                                <Edit2 size={16} className="mr-3 text-neutral-400" /> Edit Product
+                              </Link>
+                              <button onClick={() => handleCopyProduct(product.id)} className="w-full text-left flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium">
+                                <Copy size={16} className="mr-3 text-neutral-400" /> Copy Product
+                              </button>
+                              <Link href={`/admin/products/${product.id}/variants`} className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 font-medium border-b border-neutral-100">
+                                <ListTree size={16} className="mr-3 text-neutral-400" /> Manage Variants
+                              </Link>
+                              <button onClick={() => { handleDelete(product.id); setOpenMenuId(null); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
+                                <Trash2 size={16} className="mr-3 text-rose-400" /> Delete Product
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

@@ -102,7 +102,42 @@ model Product {
   processingDays Int      @default(2)
   basePrice      Float
   salePrice      Float?
-  published      Boolean  @default(false)
+  
+  // New pricing & inventory fields
+  costPrice         Float?
+  taxSettings       String?
+  sku               String?
+  barcode           String?
+  stockStatus       String  @default("IN_STOCK")
+
+  // Organization fields
+  subcategoryId     String?
+  brand             String?
+  tags              String?
+  collections       String?
+
+  // Attributes
+  isHandmade        Boolean @default(true)
+  material          String?
+  careInstructions  String?
+  countryOfOrigin   String  @default("India")
+
+  // Shipping
+  shippingCharges   Float?
+  freeShipping      Boolean @default(false)
+
+  // SEO
+  seoTitle          String?
+  seoDesc           String?
+  seoKeywords       String?
+  canonicalUrl      String?
+  ogImage           String?
+
+  // Media
+  videoUrl          String?
+
+  // Status
+  status            String  @default("DRAFT")
 
   featured          Boolean @default(false)
   trending          Boolean @default(false)
@@ -154,11 +189,14 @@ model Variant {
   sku       String   @unique
   color     String?
   size      String?
+  material  String?
+  style     String?
+  attributes Json?
+  imageUrl  String?
   price     Float
   stock     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   orderItems    OrderItem[]
   inventoryLogs InventoryLog[]
 }

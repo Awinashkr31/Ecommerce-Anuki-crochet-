@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -52,6 +54,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
         .toBuffer();
 
       const fileName = `${baseFileName}-${sizeName}.webp`;
+      let finalUrl = '';
       
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
@@ -61,16 +64,26 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
         });
 
       if (error) {
-        console.error(`Failed to upload ${sizeName}:`, error);
-        throw error;
+        console.warn(`Supabase upload failed for ${sizeName}, falling back to local storage:`, error.message);
+        
+        // Fallback to local file system
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        
+        const localFilePath = path.join(uploadsDir, fileName);
+        fs.writeFileSync(localFilePath, webpBuffer);
+        finalUrl = `/uploads/${fileName}`;
+      } else {
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fileName);
+        finalUrl = publicUrl;
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(fileName);
-
-      uploadedUrls[sizeName] = publicUrl;
+      uploadedUrls[sizeName] = finalUrl;
     });
 
     await Promise.all(uploadPromises);

@@ -1,364 +1,345 @@
 "use client";
 import useSWR from 'swr';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, UploadCloud, Plus, X, GripVertical, Loader2 } from 'lucide-react';
-import { apiGet, apiPost } from '../../../../lib/api';
+import { ArrowLeft, UploadCloud, Plus, X, Loader2, Save, CheckCircle, Trash2 } from 'lucide-react';
+import { apiGet, apiPost, apiUpload } from '../../../../lib/api';
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-}
+interface Category { id: string; name: string; slug: string; }
+interface UploadedImage { url: string; altText: string; }
 
-interface UploadedImage {
-  url: string;
-  altText: string;
-}
+const TABS = ['Basic Info', 'Pricing & Inventory', 'Attributes & Shipping', 'SEO'];
 
 export default function NewProductPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState(TABS[0]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [images, setImages] = useState<UploadedImage[]>([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
-
-  // Form state
+  
+  // Basic Info
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [shortDesc, setShortDesc] = useState('');
   const [fullDesc, setFullDesc] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [basePrice, setBasePrice] = useState<number>(0);
+  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Pricing & Inventory
+  const [basePrice, setBasePrice] = useState<number | ''>('');
   const [salePrice, setSalePrice] = useState<number | ''>('');
-  const [published, setPublished] = useState(false);
-  const [isMadeToOrder, setIsMadeToOrder] = useState(false);
-  const [processingDays, setProcessingDays] = useState(2);
+  const [taxSettings, setTaxSettings] = useState('');
+  const [stockStatus, setStockStatus] = useState('IN_STOCK');
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
+
+  // Attributes & Shipping
+  const [isHandmade, setIsHandmade] = useState(true);
+  const [material, setMaterial] = useState('');
+  const [careInstructions, setCareInstructions] = useState('');
+  const [countryOfOrigin, setCountryOfOrigin] = useState('India');
   const [weight, setWeight] = useState<number | ''>('');
+  const [length, setLength] = useState<number | ''>('');
+  const [width, setWidth] = useState<number | ''>('');
+  const [height, setHeight] = useState<number | ''>('');
+  const [shippingCharges, setShippingCharges] = useState<number | ''>('');
+  const [freeShipping, setFreeShipping] = useState(false);
+  
+  // SEO & Flags
+  const [seoTitle, setSeoTitle] = useState('');
+  const [seoDesc, setSeoDesc] = useState('');
+  const [seoKeywords, setSeoKeywords] = useState('');
+  const [canonicalUrl, setCanonicalUrl] = useState('');
   const [featured, setFeatured] = useState(false);
-  const [trending, setTrending] = useState(false);
   const [bestseller, setBestseller] = useState(false);
+  
+  const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<Category[]>(url), { revalidateOnFocus: false });
 
-  const [variants, setVariants] = useState([{ id: Date.now(), name: 'Standard', sku: '', price: 0, stock: 10 }]);
-
-  const fetcher = (url: string) => apiGet<Category[]>(url);
-  const { data: categories = [] } = useSWR('/categories', fetcher, { revalidateOnFocus: false });
-
-  // Auto-generate slug from name
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   useEffect(() => {
-    if (name && !slug) {
+    if (name && !isSlugManuallyEdited) {
       setSlug(name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
     }
-  }, [name]);
+  }, [name, isSlugManuallyEdited]);
 
-  const addVariant = () => {
-    setVariants([...variants, { id: Date.now(), name: '', sku: '', price: 0, stock: 0 }]);
-  };
-
-  const removeVariant = (id: number) => {
-    if (variants.length <= 1) return;
-    setVariants(variants.filter(v => v.id !== id));
-  };
-
-  const updateVariant = (id: number, field: string, value: any) => {
-    setVariants(variants.map(v => v.id === id ? { ...v, [field]: value } : v));
-  };
-
-  const handleSubmit = async (e: React.FormEvent, asDraft: boolean = false) => {
-    e.preventDefault();
-    if (!name || !slug || !categoryId) {
-      setError('Please fill in name, slug, and category.');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setError('');
-
-      const productData = {
-        name,
-        slug,
-        shortDesc: shortDesc || undefined,
-        fullDesc: fullDesc || undefined,
-        categoryId,
-        basePrice,
-        salePrice: salePrice || undefined,
-        published: asDraft ? false : published,
-        isMadeToOrder,
-        processingDays,
-        weight: weight || undefined,
-        featured,
-        trending,
-        bestseller,
-        variants: variants.map(v => ({
-          sku: v.sku || `${slug.toUpperCase()}-${v.name.toUpperCase().replace(/\s+/g, '-') || 'STD'}`,
-          size: v.name || 'Standard',
-          price: v.price || basePrice,
-          stock: isMadeToOrder ? 0 : v.stock,
-        })),
-        images: images.length > 0 ? images : undefined,
-      };
-
-      await apiPost('/products', productData);
-      router.push('/admin/products');
-    } catch (err: any) {
-      setError(err.message || 'Failed to create product');
-    } finally {
-      setSaving(false);
-    }
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setIsSlugManuallyEdited(true);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+    if (!e.target.files || e.target.files.length === 0) return;
+    setUploadingImage(true);
     try {
-      setUploadingImage(true);
+      const file = e.target.files[0];
       const formData = new FormData();
       formData.append('image', file);
-
-      // Using the base api function directly since we're handling FormData
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/upload`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await res.json();
+      const data = await apiUpload('/upload', formData);
       setImages([...images, { url: data.url, altText: name || 'Product image' }]);
     } catch (err) {
-      console.error('Image upload error:', err);
-      setError('Failed to upload image. Please try again.');
+      console.error(err);
+      alert('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+
+
+  const handleSubmit = async (status: string) => {
+    if (!name || !slug || !categoryId || basePrice === '') {
+      setError('Please fill in Name, Slug, Category, and Base Price.');
+      return;
+    }
+    try {
+      setSaving(true);
+      setError('');
+      
+      const payload = {
+        name, slug, shortDesc, fullDesc, categoryId,
+        basePrice: Number(basePrice),
+        salePrice: salePrice !== '' ? Number(salePrice) : undefined,
+        taxSettings, stockStatus, lowStockThreshold,
+        isHandmade, material, careInstructions, countryOfOrigin,
+        weight: weight !== '' ? Number(weight) : undefined,
+        length: length !== '' ? Number(length) : undefined,
+        width: width !== '' ? Number(width) : undefined,
+        height: height !== '' ? Number(height) : undefined,
+        shippingCharges: shippingCharges !== '' ? Number(shippingCharges) : undefined,
+        freeShipping, seoTitle, seoDesc, seoKeywords, canonicalUrl, videoUrl,
+        featured, bestseller,
+        status,
+        images: images.map((img, i) => ({ ...img, order: i }))
+      };
+
+      await apiPost('/products', payload);
+      router.push('/admin/products');
+    } catch (err: any) {
+      setError(err.message || 'Failed to save product');
+      setSaving(false);
+    }
   };
 
   return (
-    <form onSubmit={(e) => handleSubmit(e, false)} className="max-w-5xl mx-auto pb-24 relative">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-50 bg-neutral-50/80 backdrop-blur-md pb-4 pt-2 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-neutral-200">
+    <div className="p-8 max-w-6xl mx-auto pb-32">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/admin/products" className="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight">Add New Product</h1>
-            <p className="text-sm font-medium text-neutral-500">{name || 'Untitled product'}</p>
-          </div>
+          <Link href="/admin/products" className="p-2 hover:bg-neutral-100 rounded-full transition-colors"><ArrowLeft size={20} /></Link>
+          <h1 className="text-3xl font-bold text-neutral-900">Add New Product</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={(e) => handleSubmit(e, true)} disabled={saving} className="px-5 py-2 bg-neutral-900 text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors disabled:opacity-50">
-            {saving ? <Loader2 size={18} className="animate-spin" /> : 'Save Draft'}
+        <div className="flex gap-3">
+          <button onClick={() => handleSubmit('DRAFT')} disabled={saving} className="px-4 py-2 border border-neutral-300 rounded-lg text-sm font-bold text-neutral-700 hover:bg-neutral-50 flex items-center gap-2">
+            <Save size={16} /> Save Draft
           </button>
-          <button type="submit" disabled={saving} className="px-5 py-2 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors shadow-md shadow-rose-200 disabled:opacity-50">
-            {saving ? <Loader2 size={18} className="animate-spin" /> : 'Publish Product'}
+          <button onClick={() => handleSubmit('PUBLISHED')} disabled={saving} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 flex items-center gap-2">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />} Publish Product
           </button>
         </div>
       </div>
 
-      {error && (
-        <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl font-medium text-sm">{error}</div>
-      )}
+      {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-100 font-medium">{error}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Column */}
-        <div className="lg:col-span-2 space-y-8">
-
-          {/* Basic Info */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-            <h2 className="text-lg font-bold mb-6">Basic Information</h2>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Product Name <span className="text-rose-500">*</span></label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Crochet Sunflower Bouquet" className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all" required />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">URL Slug <span className="text-rose-500">*</span></label>
-                <div className="flex items-center">
-                  <span className="bg-neutral-50 border border-r-0 border-neutral-200 rounded-l-xl p-3 text-neutral-500 text-sm">/products/</span>
-                  <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="crochet-sunflower-bouquet" className="flex-1 border border-neutral-200 rounded-r-xl p-3 focus:border-rose-500 outline-none" required />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Short Description</label>
-                <textarea rows={2} value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} placeholder="A brief summary for product cards..." className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 outline-none resize-none"></textarea>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Full Description</label>
-                <textarea rows={6} value={fullDesc} onChange={(e) => setFullDesc(e.target.value)} placeholder="Detailed product information, materials used, care instructions..." className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 outline-none"></textarea>
-              </div>
-            </div>
-          </section>
-
-          {/* Media */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold">Media Gallery</h2>
-              <span className="text-xs font-bold text-neutral-400">{images.length}/10 images</span>
-            </div>
-            
-            {images.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                {images.map((img, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-neutral-200 group bg-neutral-100">
-                    <img src={img.url} alt={img.altText} className="w-full h-full object-cover" />
-                    <button 
-                      type="button" 
-                      onClick={() => removeImage(idx)}
-                      className="absolute top-2 right-2 p-1.5 bg-white/90 text-rose-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {images.length < 10 && (
-              <label className="border-2 border-dashed border-neutral-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-neutral-50 hover:bg-neutral-100 transition-colors cursor-pointer mb-6 group">
-                <input 
-                  type="file" 
-                  accept="image/jpeg,image/png,image/webp,image/gif" 
-                  className="hidden" 
-                  onChange={handleImageUpload}
-                  disabled={uploadingImage}
-                />
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-neutral-400 group-hover:text-rose-600 transition-colors mb-4">
-                  {uploadingImage ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
-                </div>
-                <p className="font-bold text-neutral-700 text-lg mb-1">
-                  {uploadingImage ? 'Uploading...' : 'Click to upload image'}
-                </p>
-                <p className="text-sm text-neutral-500">Supports JPG, PNG, WEBP (Max 10MB)</p>
-              </label>
-            )}
-          </section>
-
-          {/* Pricing & Variants */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-            <h2 className="text-lg font-bold mb-6">Pricing & Inventory</h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Base Price (₹) <span className="text-rose-500">*</span></label>
-                <input type="number" value={basePrice} onChange={(e) => setBasePrice(Number(e.target.value))} placeholder="0" className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 outline-none font-bold" required />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Sale Price (Optional)</label>
-                <input type="number" value={salePrice} onChange={(e) => setSalePrice(e.target.value ? Number(e.target.value) : '')} placeholder="0" className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 outline-none" />
-              </div>
-            </div>
-
-            <div className="border-t border-neutral-100 pt-6">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="font-bold">Variants</h3>
-                  <p className="text-xs text-neutral-500">Does this product come in multiple options (size, color)?</p>
-                </div>
-                <button type="button" onClick={addVariant} className="flex items-center gap-1 text-sm font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors">
-                  <Plus size={16} /> Add Variant
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {variants.map((v) => (
-                  <div key={v.id} className="flex items-center gap-3 bg-neutral-50 p-3 rounded-xl border border-neutral-200 group">
-                    <GripVertical size={16} className="text-neutral-400 cursor-grab" />
-                    <input type="text" value={v.name} onChange={(e) => updateVariant(v.id, 'name', e.target.value)} placeholder="Variant Name (e.g. Small / Red)" className="flex-1 bg-white border border-neutral-200 rounded-lg p-2 text-sm outline-none focus:border-rose-500" />
-                    <input type="text" value={v.sku} onChange={(e) => updateVariant(v.id, 'sku', e.target.value)} placeholder="SKU" className="w-28 bg-white border border-neutral-200 rounded-lg p-2 text-sm outline-none focus:border-rose-500" />
-                    <div className="relative w-28">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">₹</span>
-                      <input type="number" value={v.price} onChange={(e) => updateVariant(v.id, 'price', Number(e.target.value))} placeholder="Price" className="w-full bg-white border border-neutral-200 rounded-lg p-2 pl-7 text-sm outline-none focus:border-rose-500" />
-                    </div>
-                    <input type="number" value={v.stock} onChange={(e) => updateVariant(v.id, 'stock', Number(e.target.value))} placeholder="Stock" className="w-24 bg-white border border-neutral-200 rounded-lg p-2 text-sm outline-none focus:border-rose-500" disabled={isMadeToOrder} />
-                    <button type="button" onClick={() => removeVariant(v.id)} className="p-2 text-neutral-400 hover:text-rose-600 transition-colors">
-                      <X size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+      <div className="flex gap-8">
+        {/* Sidebar Tabs */}
+        <div className="w-64 flex-shrink-0 space-y-1">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm transition-colors ${activeTab === tab ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'}`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        {/* Sidebar Column */}
-        <div className="space-y-8">
-
-          {/* Handmade Settings */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200 border-t-4 border-t-rose-500">
-            <h2 className="text-lg font-bold mb-4">Handmade Settings</h2>
+        {/* Content */}
+        <div className="flex-1 bg-white border border-neutral-200 rounded-2xl shadow-sm p-8">
+          
+          {/* TAB 1: BASIC INFO */}
+          {activeTab === 'Basic Info' && (
             <div className="space-y-6">
-              <label className="flex items-start gap-3 cursor-pointer p-4 bg-rose-50/50 border border-rose-100 rounded-xl hover:bg-rose-50 transition-colors">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-rose-300 text-rose-600 focus:ring-rose-500"
-                  checked={isMadeToOrder}
-                  onChange={(e) => setIsMadeToOrder(e.target.checked)}
-                />
+              <h2 className="text-xl font-bold border-b pb-4">Basic Information</h2>
+              
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <span className="block font-bold text-rose-900">Made to Order</span>
-                  <span className="text-xs text-rose-700/80 mt-1 block leading-relaxed">Customers can buy even if stock is 0.</span>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Product Name *</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="e.g. Sunflower Crochet Bouquet" />
                 </div>
-              </label>
-
-              <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Processing Time (days)</label>
-                <input type="number" value={processingDays} onChange={(e) => setProcessingDays(Number(e.target.value))} className="w-full border border-neutral-200 rounded-xl p-3 outline-none focus:border-rose-500" min={1} />
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Slug *</label>
+                  <input type="text" value={slug} onChange={handleSlugChange} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500 bg-neutral-50" />
+                </div>
               </div>
-            </div>
-          </section>
 
-          {/* Organization */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-            <h2 className="text-lg font-bold mb-4">Organization</h2>
-            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Category <span className="text-rose-500">*</span></label>
-                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full border border-neutral-200 rounded-xl p-3 outline-none focus:border-rose-500 bg-white" required>
-                  <option value="">Select Category</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Category *</label>
+                <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500">
+                  <option value="">Select a category</option>
+                  {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-bold text-neutral-700">
-                  <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="rounded border-neutral-300 text-rose-600" /> Featured
+
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Short Description</label>
+                <textarea value={shortDesc} onChange={e => setShortDesc(e.target.value)} rows={2} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="Brief summary for product card..." />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Full Description</label>
+                <textarea value={fullDesc} onChange={e => setFullDesc(e.target.value)} rows={6} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="Detailed product description..." />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Product Images</label>
+                <div className="flex gap-4 flex-wrap mb-4">
+                  {images.map((img, i) => (
+                    <div key={i} className="relative w-24 h-24 border rounded-xl overflow-hidden group">
+                      <img src={img.url} className="w-full h-full object-cover" alt="" />
+                      <button onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-white p-1 rounded-full text-red-500 opacity-0 group-hover:opacity-100"><X size={14}/></button>
+                    </div>
+                  ))}
+                  <label className="w-24 h-24 border-2 border-dashed border-neutral-300 rounded-xl flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:bg-neutral-50 hover:border-neutral-400">
+                    {uploadingImage ? <Loader2 size={24} className="animate-spin" /> : <UploadCloud size={24} />}
+                    <span className="text-xs mt-2 font-medium">Upload</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Product Video URL (Optional)</label>
+                <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="https://..." />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: PRICING & INVENTORY */}
+          {activeTab === 'Pricing & Inventory' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold border-b pb-4">Pricing</h2>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Regular Price (₹) *</label>
+                  <input type="number" value={basePrice} onChange={e => setBasePrice(e.target.value ? Number(e.target.value) : '')} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Sale Price (₹)</label>
+                  <input type="number" value={salePrice} onChange={e => setSalePrice(e.target.value ? Number(e.target.value) : '')} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+              </div>
+
+              <h2 className="text-xl font-bold border-b pb-4 pt-6">Inventory</h2>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Stock Status</label>
+                  <select value={stockStatus} onChange={e => setStockStatus(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500">
+                    <option value="IN_STOCK">In Stock</option>
+                    <option value="OUT_OF_STOCK">Out of Stock</option>
+                    <option value="PRE_ORDER">Pre-Order</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Low Stock Alert Threshold</label>
+                  <input type="number" value={lowStockThreshold} onChange={e => setLowStockThreshold(Number(e.target.value))} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: ATTRIBUTES & SHIPPING */}
+          {activeTab === 'Attributes & Shipping' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold border-b pb-4">Product Attributes</h2>
+              
+              <div className="flex items-center gap-3">
+                <input type="checkbox" id="isHandmade" checked={isHandmade} onChange={e => setIsHandmade(e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                <label htmlFor="isHandmade" className="font-bold text-neutral-700">This is a handmade product</label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Base Material</label>
+                  <input type="text" value={material} onChange={e => setMaterial(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="e.g. 100% Acrylic Yarn" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Country of Origin</label>
+                  <input type="text" value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Care Instructions</label>
+                  <textarea value={careInstructions} onChange={e => setCareInstructions(e.target.value)} rows={3} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="e.g. Hand wash gently, do not bleach..." />
+                </div>
+              </div>
+
+              <h2 className="text-xl font-bold border-b pb-4 pt-6">Shipping Information</h2>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Weight (grams)</label>
+                  <input type="number" value={weight} onChange={e => setWeight(e.target.value ? Number(e.target.value) : '')} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 mb-2">Shipping Charges (₹)</label>
+                  <input type="number" value={shippingCharges} onChange={e => setShippingCharges(e.target.value ? Number(e.target.value) : '')} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" />
+                </div>
+                <div className="col-span-2">
+                  <div className="flex gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Length (cm)</label>
+                      <input type="number" value={length} onChange={e => setLength(e.target.value ? Number(e.target.value) : '')} className="w-32 border p-3 rounded-xl outline-none focus:border-rose-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Width (cm)</label>
+                      <input type="number" value={width} onChange={e => setWidth(e.target.value ? Number(e.target.value) : '')} className="w-32 border p-3 rounded-xl outline-none focus:border-rose-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-neutral-700 mb-2">Height (cm)</label>
+                      <input type="number" value={height} onChange={e => setHeight(e.target.value ? Number(e.target.value) : '')} className="w-32 border p-3 rounded-xl outline-none focus:border-rose-500" />
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-2 flex items-center gap-3 mt-2">
+                  <input type="checkbox" id="freeShipping" checked={freeShipping} onChange={e => setFreeShipping(e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                  <label htmlFor="freeShipping" className="font-bold text-neutral-700">Offer Free Shipping for this product</label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: SEO */}
+          {activeTab === 'SEO' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold border-b pb-4">Search Engine Optimization</h2>
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">SEO Title</label>
+                <input type="text" value={seoTitle} onChange={e => setSeoTitle(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="Keep it under 60 characters" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Meta Description</label>
+                <textarea value={seoDesc} onChange={e => setSeoDesc(e.target.value)} rows={3} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="Write a compelling description for search results..." />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Meta Keywords</label>
+                <input type="text" value={seoKeywords} onChange={e => setSeoKeywords(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="crochet, handmade, bouquet..." />
+              </div>
+              
+              <h2 className="text-xl font-bold border-b pb-4 pt-6">Marketing Flags</h2>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} className="w-5 h-5 rounded border-neutral-300 text-rose-600 focus:ring-rose-500" />
+                  <span className="font-medium text-neutral-700">Featured Product</span>
                 </label>
-                <label className="flex items-center gap-2 text-sm font-bold text-neutral-700">
-                  <input type="checkbox" checked={trending} onChange={(e) => setTrending(e.target.checked)} className="rounded border-neutral-300 text-rose-600" /> Trending
-                </label>
-                <label className="flex items-center gap-2 text-sm font-bold text-neutral-700">
-                  <input type="checkbox" checked={bestseller} onChange={(e) => setBestseller(e.target.checked)} className="rounded border-neutral-300 text-rose-600" /> Bestseller
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={bestseller} onChange={e => setBestseller(e.target.checked)} className="w-5 h-5 rounded border-neutral-300 text-rose-600 focus:ring-rose-500" />
+                  <span className="font-medium text-neutral-700">Bestseller</span>
                 </label>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* Shipping */}
-          <section className="bg-white p-6 rounded-3xl shadow-sm border border-neutral-200">
-            <h2 className="text-lg font-bold mb-4">Shipping</h2>
-            <div>
-              <label className="block text-sm font-bold text-neutral-700 mb-2">Weight (kg)</label>
-              <input type="number" value={weight} onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')} placeholder="0.5" step="0.1" className="w-full border border-neutral-200 rounded-xl p-3 outline-none focus:border-rose-500" />
-            </div>
-          </section>
         </div>
       </div>
-    </form>
+    </div>
   );
 }

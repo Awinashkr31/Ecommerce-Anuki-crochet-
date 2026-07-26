@@ -2,7 +2,7 @@
 import useSWR from 'swr';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Save, Eye, EyeOff, Edit2, Trash2, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { Save, Eye, EyeOff, Edit2, Trash2, ChevronRight, ChevronDown, Loader2, UploadCloud, X } from 'lucide-react';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../../lib/api';
 
 interface Category {
@@ -12,6 +12,7 @@ interface Category {
   description: string | null;
   isActive: boolean;
   parentId: string | null;
+  bannerUrl: string | null;
   children?: Category[];
 }
 
@@ -42,6 +43,11 @@ export default function AdminCategoriesPage() {
   const [formParent, setFormParent] = useState('');
   const [formDesc, setFormDesc] = useState('');
 
+  // Image states
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
       const next = new Set(prev);
@@ -61,6 +67,70 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const compressImageToWebP = (file: File, maxSizeKB: number = 40): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_WIDTH = 800;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject('No canvas context');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let quality = 0.9;
+          const tryCompress = (q: number) => {
+            canvas.toBlob((blob) => {
+              if (!blob) return reject('Blob failed');
+              if (blob.size / 1024 < maxSizeKB || q <= 0.1) {
+                resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + '.webp', {
+                  type: 'image/webp'
+                }));
+              } else {
+                tryCompress(q - 0.1);
+              }
+            }, 'image/webp', q);
+          };
+          tryCompress(quality);
+        };
+        img.onerror = (e) => reject(e);
+      };
+      reader.onerror = (e) => reject(e);
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingImage(true);
+      const compressedFile = await compressImageToWebP(file, 40);
+      setImageFile(compressedFile);
+      setImagePreview(URL.createObjectURL(compressedFile));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to compress image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formSlug) {
@@ -72,11 +142,33 @@ export default function AdminCategoriesPage() {
       setError('');
       setSuccess('');
       
+      let bannerUrl = imagePreview && !imageFile ? imagePreview : undefined;
+
+      // Upload image to backend if a new file is selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/upload`, {
+          method: 'POST',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: formData,
+        });
+        if (!res.ok) throw new Error('Failed to upload image');
+        const data = await res.json();
+        // The backend returns multiple sizes, but since we already compressed it,
+        // we can just use any of them, but let's use 'card' or 'detail' size.
+        bannerUrl = data.sizes?.card || data.url;
+      }
+      
       const payload = {
         name: formName,
         slug: formSlug,
         description: formDesc || undefined,
         parentId: formParent || undefined,
+        bannerUrl,
       };
 
       if (editId) {
@@ -92,6 +184,8 @@ export default function AdminCategoriesPage() {
       setFormParent('');
       setFormDesc('');
       setEditId(null);
+      setImageFile(null);
+      setImagePreview('');
       mutate();
     } catch (err: any) {
       setError(err.message || 'Failed to save category');
@@ -106,6 +200,8 @@ export default function AdminCategoriesPage() {
     setFormSlug(category.slug);
     setFormParent(category.parentId || '');
     setFormDesc(category.description || '');
+    setImagePreview(category.bannerUrl || '');
+    setImageFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
@@ -115,6 +211,8 @@ export default function AdminCategoriesPage() {
     setFormSlug('');
     setFormParent('');
     setFormDesc('');
+    setImagePreview('');
+    setImageFile(null);
   };
 
   // Auto-generate slug
@@ -166,6 +264,7 @@ export default function AdminCategoriesPage() {
                         </button>
                         <div className="font-bold text-neutral-900">{category.name}</div>
                         <span className="text-xs text-neutral-400 font-medium">/{category.slug}</span>
+                        {category.bannerUrl && <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Has Image</span>}
                         {!category.isActive && <span className="bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Hidden</span>}
                       </div>
                       <div className="flex items-center gap-2">
@@ -182,6 +281,7 @@ export default function AdminCategoriesPage() {
                             <div className="flex items-center gap-3">
                               <div className="font-medium text-sm text-neutral-700">{child.name}</div>
                               <span className="text-xs text-neutral-400 font-medium">/{child.slug}</span>
+                              {child.bannerUrl && <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Has Image</span>}
                             </div>
                             <div className="flex items-center gap-2">
                               <button onClick={() => handleEdit(child)} className="p-1.5 text-neutral-400 hover:text-neutral-900 bg-white hover:bg-neutral-100 rounded-lg transition-colors"><Edit2 size={14} /></button>
@@ -229,6 +329,30 @@ export default function AdminCategoriesPage() {
               <div>
                 <label className="block text-sm font-bold text-neutral-700 mb-2">Description</label>
                 <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows={3} placeholder="Describe this category..." className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all resize-none"></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Category Image</label>
+                {imagePreview ? (
+                  <div className="relative inline-block border border-neutral-200 rounded-xl p-2 bg-neutral-50 group">
+                    <img src={imagePreview} alt="Category" className="w-24 h-24 object-cover rounded-lg" />
+                    <button 
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-2 -right-2 bg-rose-500 text-white p-1.5 rounded-full hover:bg-rose-600 transition-colors opacity-0 group-hover:opacity-100 shadow-sm"
+                    >
+                      <X size={14} />
+                    </button>
+                    {imageFile && <div className="absolute bottom-3 left-3 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">{(imageFile.size / 1024).toFixed(1)} KB</div>}
+                  </div>
+                ) : (
+                  <label className="border-2 border-dashed border-neutral-200 rounded-xl p-6 flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:border-rose-300 hover:bg-rose-50 transition-colors">
+                    {uploadingImage ? <Loader2 className="animate-spin mb-2" size={24} /> : <UploadCloud className="mb-2" size={24} />}
+                    <span className="text-sm font-medium">{uploadingImage ? 'Compressing...' : 'Upload Image'}</span>
+                    <span className="text-xs text-neutral-400 mt-1">WebP, &lt; 40KB output</span>
+                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={uploadingImage} />
+                  </label>
+                )}
               </div>
 
               <div className="pt-2">

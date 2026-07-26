@@ -20,9 +20,9 @@ router.get('/', async (req: any, res: any) => {
 router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { name, slug, description, parentId } = body;
+    const { name, slug, description, parentId, bannerUrl } = body;
     const category = await prisma.category.create({
-      data: { name, slug, description, parentId },
+      data: { name, slug, description, parentId, bannerUrl },
     });
     return res.status(201).json(category);
   } catch (error) {
@@ -35,10 +35,10 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
   try {
     const { id } = req.params;
     const body = req.body;
-    const { name, slug, description, parentId } = body;
+    const { name, slug, description, parentId, bannerUrl } = body;
     const category = await prisma.category.update({
       where: { id },
-      data: { name, slug, description, parentId },
+      data: { name, slug, description, parentId, bannerUrl },
     });
     return res.json(category);
   } catch (error) {
