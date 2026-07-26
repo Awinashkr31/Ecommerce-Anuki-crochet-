@@ -53,7 +53,7 @@ export function AdminSidebar({ isOpen, onClose }: SidebarProps) {
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href);
+    return pathname?.startsWith(href) || false;
   };
 
   return (
