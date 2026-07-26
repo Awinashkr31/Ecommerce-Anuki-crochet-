@@ -22,29 +22,14 @@ interface ReturnRequest {
 }
 
 export default function AdminReturnsPage() {
-  const [returns, setReturns] = useState<ReturnRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchReturns();
-  }, []);
-
-  const fetchReturns = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<ReturnRequest[]>('/returns');
-      setReturns(data);
-    } catch (err) {
-      console.error('Failed to fetch returns:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<ReturnRequest[]>(url);
+  const { data: returns = [], isLoading: loading, mutate } = useSWR('/returns', fetcher, { revalidateOnFocus: true });
 
   const updateStatus = async (id: string, status: string) => {
     try {
       await apiPut(`/returns/${id}`, { status });
-      setReturns(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+      mutate();
     } catch (err) {
       console.error('Failed to update return:', err);
     }

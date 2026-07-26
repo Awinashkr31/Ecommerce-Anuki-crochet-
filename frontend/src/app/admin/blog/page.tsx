@@ -15,30 +15,15 @@ interface Post {
 }
 
 export default function AdminBlogPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Post[]>('/posts');
-      setPosts(data);
-    } catch (err) {
-      console.error('Failed to fetch posts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Post[]>(url);
+  const { data: posts = [], isLoading: loading, mutate } = useSWR('/posts', fetcher, { revalidateOnFocus: true });
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post?')) return;
     try {
       await apiDelete(`/posts/${id}`);
-      setPosts(prev => prev.filter(p => p.id !== id));
+      mutate();
     } catch (err) {
       console.error('Failed to delete post:', err);
     }

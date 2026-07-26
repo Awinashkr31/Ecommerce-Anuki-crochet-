@@ -11,8 +11,11 @@ function ProductsContent() {
   const initialCategory = searchParams.get("category");
   const initialIsMadeToOrder = searchParams.get("isMadeToOrder") === "true";
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Product[]>(url);
+
+  const { data: rawProducts = [], isLoading: loading } = useSWR('/products', fetcher, { revalidateOnFocus: true });
+  const products = useMemo(() => rawProducts.filter(p => p.published), [rawProducts]);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -25,19 +28,6 @@ function ProductsContent() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [customizableOnly, setCustomizableOnly] = useState(initialIsMadeToOrder);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
-
-  useEffect(() => {
-    apiGet<Product[]>("/products")
-      .then((data) => {
-        const published = (data || []).filter((p) => p.published);
-        setProducts(published);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
 
   const categories = useMemo(() => {
     const cats = new Set<string>();

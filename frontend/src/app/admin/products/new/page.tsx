@@ -19,7 +19,6 @@ interface UploadedImage {
 
 export default function NewProductPage() {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -43,9 +42,9 @@ export default function NewProductPage() {
 
   const [variants, setVariants] = useState([{ id: Date.now(), name: 'Standard', sku: '', price: 0, stock: 10 }]);
 
-  useEffect(() => {
-    apiGet<Category[]>('/categories').then(setCategories).catch(console.error);
-  }, []);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Category[]>(url);
+  const { data: categories = [] } = useSWR('/categories', fetcher, { revalidateOnFocus: false });
 
   // Auto-generate slug from name
   useEffect(() => {

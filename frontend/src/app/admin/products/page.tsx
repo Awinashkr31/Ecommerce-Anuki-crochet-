@@ -23,30 +23,16 @@ interface Product {
   images: { id: string; url: string; altText: string | null }[];
 }
 
+import useSWR from 'swr';
+const fetcher = (url: string) => apiGet<Product[]>(url);
+
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: products = [], isLoading: loading, mutate } = useSWR('/products', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [quickEditId, setQuickEditId] = useState<string | null>(null);
   const [quickEditPrice, setQuickEditPrice] = useState<number>(0);
   const [deleting, setDeleting] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Product[]>('/products');
-      setProducts(data);
-    } catch (err) {
-      console.error('Failed to fetch products:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) setSelectedProducts(filtered.map(p => p.id));
@@ -68,7 +54,7 @@ export default function AdminProductsPage() {
     if (!quickEditId) return;
     try {
       await apiPut(`/products/${quickEditId}`, { basePrice: quickEditPrice });
-      setProducts(prev => prev.map(p => p.id === quickEditId ? { ...p, basePrice: quickEditPrice } : p));
+      mutate();
       setQuickEditId(null);
     } catch (err) {
       console.error('Failed to update price:', err);
@@ -80,7 +66,7 @@ export default function AdminProductsPage() {
     try {
       setDeleting(id);
       await apiDelete(`/products/${id}`);
-      setProducts(prev => prev.filter(p => p.id !== id));
+      mutate();
     } catch (err) {
       console.error('Failed to delete product:', err);
     } finally {

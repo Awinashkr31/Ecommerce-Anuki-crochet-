@@ -16,28 +16,14 @@ interface Order {
   payment?: { status: string; gateway: string } | null;
 }
 
+import useSWR from 'swr';
+const fetcher = (url: string) => apiGet<Order[]>(url);
+
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: orders = [], isLoading: loading } = useSWR('/orders', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Order[]>('/orders');
-      setOrders(data);
-    } catch (err) {
-      console.error('Failed to fetch orders:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) setSelectedOrders(filtered.map(o => o.id));

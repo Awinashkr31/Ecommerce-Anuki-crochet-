@@ -15,30 +15,15 @@ interface InventoryItem {
 }
 
 export default function AdminInventoryPage() {
-  const [items, setItems] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<InventoryItem[]>(url);
+  const { data: items = [], isLoading: loading, mutate } = useSWR('/inventory', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
-  const fetchInventory = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<InventoryItem[]>('/inventory');
-      setItems(data);
-    } catch (err) {
-      console.error('Failed to fetch inventory:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const adjustStock = async (variantId: string, change: number) => {
     try {
       await apiPut(`/inventory/${variantId}`, { change, reason: 'MANUAL' });
-      setItems(prev => prev.map(i => i.id === variantId ? { ...i, stock: i.stock + change } : i));
+      mutate();
     } catch (err) {
       console.error('Failed to adjust stock:', err);
     }

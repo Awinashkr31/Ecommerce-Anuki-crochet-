@@ -23,25 +23,21 @@ const defaultSettings = [
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Record<string, string>>(url);
+  const { data: rawSettings, isLoading: loading } = useSWR('/settings', fetcher, { revalidateOnFocus: false });
 
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Record<string, string>>('/settings');
-      setSettings(data);
-    } catch (err) {
-      console.error('Failed to fetch settings:', err);
-    } finally {
-      setLoading(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    if (rawSettings && !hasInitialized) {
+      setSettings(rawSettings);
+      setHasInitialized(true);
     }
-  };
+  }, [rawSettings, hasInitialized]);
 
   const handleSave = async () => {
     try {

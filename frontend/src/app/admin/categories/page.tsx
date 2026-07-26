@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Save, Eye, EyeOff, Edit2, Trash2, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../../lib/api';
 
@@ -15,8 +15,21 @@ interface Category {
 }
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Category[]>(url);
+  const { data: rawCategories = [], isLoading: loading, mutate } = useSWR('/categories', fetcher, { revalidateOnFocus: true });
+
+  const categories = React.useMemo(() => {
+    const topLevel = rawCategories.filter(c => !c.parentId);
+    const childrenMap = new Map<string, Category[]>();
+    rawCategories.filter(c => c.parentId).forEach(c => {
+      const siblings = childrenMap.get(c.parentId!) || [];
+      siblings.push(c);
+      childrenMap.set(c.parentId!, siblings);
+    });
+    return topLevel.map(c => ({ ...c, children: childrenMap.get(c.id) || [] }));
+  }, [rawCategories]);
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -28,31 +41,6 @@ export default function AdminCategoriesPage() {
   const [formSlug, setFormSlug] = useState('');
   const [formParent, setFormParent] = useState('');
   const [formDesc, setFormDesc] = useState('');
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Category[]>('/categories');
-      // Build tree: top-level categories with children nested
-      const topLevel = data.filter(c => !c.parentId);
-      const childrenMap = new Map<string, Category[]>();
-      data.filter(c => c.parentId).forEach(c => {
-        const siblings = childrenMap.get(c.parentId!) || [];
-        siblings.push(c);
-        childrenMap.set(c.parentId!, siblings);
-      });
-      const tree = topLevel.map(c => ({ ...c, children: childrenMap.get(c.id) || [] }));
-      setCategories(tree);
-    } catch (err) {
-      console.error('Failed to fetch categories:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -67,7 +55,7 @@ export default function AdminCategoriesPage() {
     if (!confirm('Delete this category?')) return;
     try {
       await apiDelete(`/categories/${id}`);
-      fetchCategories();
+      mutate();
     } catch (err: any) {
       setError(err.message);
     }
@@ -104,7 +92,7 @@ export default function AdminCategoriesPage() {
       setFormParent('');
       setFormDesc('');
       setEditId(null);
-      fetchCategories();
+      mutate();
     } catch (err: any) {
       setError(err.message || 'Failed to save category');
     } finally {

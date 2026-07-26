@@ -14,24 +14,9 @@ interface AuditLog {
 }
 
 export default function AdminAuditLogsPage() {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<AuditLog[]>('/audit-logs');
-      setLogs(data);
-    } catch (err) {
-      console.error('Failed to fetch audit logs:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<AuditLog[]>(url);
+  const { data: logs = [], isLoading: loading } = useSWR('/audit-logs', fetcher, { revalidateOnFocus: true });
 
   return (
     <>

@@ -19,31 +19,16 @@ interface Coupon {
 }
 
 export default function AdminCouponsPage() {
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [loading, setLoading] = useState(true);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<Coupon[]>(url);
+  const { data: coupons = [], isLoading: loading, mutate } = useSWR('/coupons', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
-
-  const fetchCoupons = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<Coupon[]>('/coupons');
-      setCoupons(data);
-    } catch (err) {
-      console.error('Failed to fetch coupons:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this coupon?')) return;
     try {
       await apiDelete(`/coupons/${id}`);
-      setCoupons(prev => prev.filter(c => c.id !== id));
+      mutate();
     } catch (err) {
       console.error('Failed to delete coupon:', err);
     }

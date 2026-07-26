@@ -94,26 +94,25 @@ const mockData = {
 
 const COLORS = ['#171717', '#e11d48', '#10b981', '#f59e0b'];
 
+import useSWR from 'swr';
+
+const fetcher = (url: string) => apiGet<any>(url);
+
 export default function AdminDashboardPage() {
   const [timeframe, setTimeframe] = useState<"today" | "week" | "month">("week");
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  
+  const { data, error, isLoading } = useSWR('/analytics', fetcher, {
+    refreshInterval: 60000, // Refresh every minute
+    revalidateOnFocus: true,
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    apiGet<any>('/analytics')
-      .then(res => {
-        setData(res);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <div className="p-8 text-center text-neutral-500">Loading analytics...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+        <span className="ml-3 text-neutral-500 font-medium">Loading analytics...</span>
+      </div>
+    );
   }
 
   const currentData = data?.[timeframe] || mockData[timeframe];
@@ -261,7 +260,7 @@ export default function AdminDashboardPage() {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col mt-2">
               <span className="text-xs font-bold text-neutral-400 uppercase">Top Category</span>
-              <span className="text-xl font-black">{currentData.categories[0].name}</span>
+              <span className="text-xl font-black">{currentData.categories?.[0]?.name || 'N/A'}</span>
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-3 justify-center">

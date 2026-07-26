@@ -22,32 +22,18 @@ interface OrderDetail {
 export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.id as string;
-  const [order, setOrder] = useState<OrderDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<OrderDetail>(url);
+  
+  const { data: order, isLoading: loading, mutate } = useSWR(`/orders/${orderId}`, fetcher, { revalidateOnFocus: true });
   const [updating, setUpdating] = useState(false);
-
-  useEffect(() => {
-    fetchOrder();
-  }, [orderId]);
-
-  const fetchOrder = async () => {
-    try {
-      setLoading(true);
-      const data = await apiGet<OrderDetail>(`/orders/${orderId}`);
-      setOrder(data);
-    } catch (err) {
-      console.error('Failed to fetch order:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateStatus = async (newStatus: string) => {
     if (!order) return;
     try {
       setUpdating(true);
       await apiPut(`/orders/${orderId}/status`, { status: newStatus });
-      setOrder({ ...order, status: newStatus });
+      mutate();
     } catch (err) {
       console.error('Failed to update order:', err);
     } finally {

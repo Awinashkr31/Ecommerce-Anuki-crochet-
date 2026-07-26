@@ -22,24 +22,25 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [deliveryEstimate, setDeliveryEstimate] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<any>(url);
+
+  const { data: fetchedData, error: swrError, isLoading: loading } = useSWR(`/products/slug/${params.slug}`, fetcher, { revalidateOnFocus: true });
+  
   useEffect(() => {
-    apiGet<any>(`/products/slug/${params.slug}`)
-      .then(data => {
-        if (data && data.published) {
-          setProduct(data);
-          if (data.variants && data.variants.length > 0) {
-            setSelectedVariant(data.variants[0].id);
-          }
-        } else {
-          setError(true);
+    if (fetchedData) {
+      if (fetchedData.published) {
+        setProduct(fetchedData);
+        if (fetchedData.variants && fetchedData.variants.length > 0 && !selectedVariant) {
+          setSelectedVariant(fetchedData.variants[0].id);
         }
-        setLoading(false);
-      })
-      .catch(() => {
+      } else {
         setError(true);
-        setLoading(false);
-      });
-  }, [params.slug]);
+      }
+    } else if (swrError) {
+      setError(true);
+    }
+  }, [fetchedData, swrError]);
 
   if (loading) {
     return (

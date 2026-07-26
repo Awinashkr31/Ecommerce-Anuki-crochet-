@@ -31,7 +31,7 @@ export async function generateMetadata(
       title: post.title,
       description: post.excerpt,
       type: 'article',
-      url: `http://localhost:3000/blog/${post.slug}`,
+      url: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://anukicrochet.in'}/blog/${post.slug}`,
       images: [
         {
           url: post.imageUrl,

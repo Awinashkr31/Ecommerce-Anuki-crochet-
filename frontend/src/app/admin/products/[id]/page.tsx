@@ -23,9 +23,7 @@ export default function EditProductPage() {
   const params = useParams();
   const id = params.id as string;
   
-  const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -48,47 +46,41 @@ export default function EditProductPage() {
 
   const [variants, setVariants] = useState<any[]>([{ id: Date.now(), name: 'Standard', sku: '', price: 0, stock: 10 }]);
 
+  import useSWR from 'swr';
+  const fetcher = (url: string) => apiGet<any>(url);
+  const { data: categories = [] } = useSWR<Category[]>('/categories', fetcher, { revalidateOnFocus: false });
+  const { data: prod, isLoading: loading, error: swrError } = useSWR<any>(`/products/${id}`, fetcher, { revalidateOnFocus: false });
+
+  const [hasInitialized, setHasInitialized] = useState(false);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [cats, prod] = await Promise.all([
-          apiGet<Category[]>('/categories'),
-          apiGet<any>(`/products/${id}`)
-        ]);
-        setCategories(cats);
-        
-        setName(prod.name);
-        setSlug(prod.slug);
-        setShortDesc(prod.shortDesc || '');
-        setFullDesc(prod.fullDesc || '');
-        setCategoryId(prod.categoryId);
-        setBasePrice(prod.basePrice);
-        setSalePrice(prod.salePrice || '');
-        setPublished(prod.published);
-        setIsMadeToOrder(prod.isMadeToOrder);
-        setProcessingDays(prod.processingDays || 2);
-        setWeight(prod.weight || '');
-        setFeatured(prod.featured);
-        setTrending(prod.trending);
-        setBestseller(prod.bestseller);
-        
-        if (prod.images?.length > 0) setImages(prod.images);
-        if (prod.variants?.length > 0) {
-          setVariants(prod.variants.map((v: any) => ({
-            ...v,
-            name: v.size || v.color || v.sku, // Reverse map
-          })));
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load product.');
-      } finally {
-        setLoading(false);
+    if (prod && !hasInitialized) {
+      setName(prod.name);
+      setSlug(prod.slug);
+      setShortDesc(prod.shortDesc || '');
+      setFullDesc(prod.fullDesc || '');
+      setCategoryId(prod.categoryId);
+      setBasePrice(prod.basePrice);
+      setSalePrice(prod.salePrice || '');
+      setPublished(prod.published);
+      setIsMadeToOrder(prod.isMadeToOrder);
+      setProcessingDays(prod.processingDays || 2);
+      setWeight(prod.weight || '');
+      setFeatured(prod.featured);
+      setTrending(prod.trending);
+      setBestseller(prod.bestseller);
+      
+      if (prod.images?.length > 0) setImages(prod.images);
+      if (prod.variants?.length > 0) {
+        setVariants(prod.variants.map((v: any) => ({
+          ...v,
+          name: v.size || v.color || v.sku, // Reverse map
+        })));
       }
-    };
-    
-    fetchData();
-  }, [id]);
+      setHasInitialized(true);
+    }
+    if (swrError) setError('Failed to load product.');
+  }, [prod, swrError, hasInitialized]);
 
   // Auto-generate slug from name
   useEffect(() => {
