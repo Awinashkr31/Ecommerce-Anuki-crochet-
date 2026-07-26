@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { Suspense, useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
@@ -11,7 +12,6 @@ function ProductsContent() {
   const initialCategory = searchParams.get("category");
   const initialIsMadeToOrder = searchParams.get("isMadeToOrder") === "true";
 
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<Product[]>(url);
 
   const { data: rawProducts = [], isLoading: loading } = useSWR('/products', fetcher, { revalidateOnFocus: true });

@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import { Loader2, Check, X } from 'lucide-react';
@@ -22,7 +23,6 @@ interface ReturnRequest {
 }
 
 export default function AdminReturnsPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<ReturnRequest[]>(url);
   const { data: returns = [], isLoading: loading, mutate } = useSWR('/returns', fetcher, { revalidateOnFocus: true });
 

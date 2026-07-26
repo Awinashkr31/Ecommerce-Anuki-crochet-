@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import { Save, Loader2 } from 'lucide-react';
@@ -26,7 +27,6 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
 
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<Record<string, string>>(url);
   const { data: rawSettings, isLoading: loading } = useSWR('/settings', fetcher, { revalidateOnFocus: false });
 

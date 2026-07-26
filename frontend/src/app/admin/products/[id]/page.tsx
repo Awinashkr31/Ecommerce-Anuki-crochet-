@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -46,7 +47,6 @@ export default function EditProductPage() {
 
   const [variants, setVariants] = useState<any[]>([{ id: Date.now(), name: 'Standard', sku: '', price: 0, stock: 10 }]);
 
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<any>(url);
   const { data: categories = [] } = useSWR<Category[]>('/categories', fetcher, { revalidateOnFocus: false });
   const { data: prod, isLoading: loading, error: swrError } = useSWR<any>(`/products/${id}`, fetcher, { revalidateOnFocus: false });

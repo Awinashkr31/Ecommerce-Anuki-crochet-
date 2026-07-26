@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -19,7 +20,6 @@ interface Coupon {
 }
 
 export default function AdminCouponsPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<Coupon[]>(url);
   const { data: coupons = [], isLoading: loading, mutate } = useSWR('/coupons', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');

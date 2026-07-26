@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Save, Eye, EyeOff, Edit2, Trash2, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
@@ -15,7 +16,6 @@ interface Category {
 }
 
 export default function AdminCategoriesPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<Category[]>(url);
   const { data: rawCategories = [], isLoading: loading, mutate } = useSWR('/categories', fetcher, { revalidateOnFocus: true });
 

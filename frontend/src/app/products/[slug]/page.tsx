@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useEffect, useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Truck, Heart, Share2, Star } from "lucide-react";
@@ -22,7 +23,6 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [deliveryEstimate, setDeliveryEstimate] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<any>(url);
 
   const { data: fetchedData, error: swrError, isLoading: loading } = useSWR(`/products/slug/${params.slug}`, fetcher, { revalidateOnFocus: true });

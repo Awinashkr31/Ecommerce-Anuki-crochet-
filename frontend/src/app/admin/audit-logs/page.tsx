@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -14,7 +15,6 @@ interface AuditLog {
 }
 
 export default function AdminAuditLogsPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<AuditLog[]>(url);
   const { data: logs = [], isLoading: loading } = useSWR('/audit-logs', fetcher, { revalidateOnFocus: true });
 

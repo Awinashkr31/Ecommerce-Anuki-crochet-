@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -15,7 +16,6 @@ interface Post {
 }
 
 export default function AdminBlogPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<Post[]>(url);
   const { data: posts = [], isLoading: loading, mutate } = useSWR('/posts', fetcher, { revalidateOnFocus: true });
 

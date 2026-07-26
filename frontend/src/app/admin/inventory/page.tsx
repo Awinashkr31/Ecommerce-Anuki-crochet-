@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
@@ -15,7 +16,6 @@ interface InventoryItem {
 }
 
 export default function AdminInventoryPage() {
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<InventoryItem[]>(url);
   const { data: items = [], isLoading: loading, mutate } = useSWR('/inventory', fetcher, { revalidateOnFocus: true });
   const [search, setSearch] = useState('');

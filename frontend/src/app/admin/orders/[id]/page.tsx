@@ -1,4 +1,5 @@
 "use client";
+import useSWR from 'swr';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -22,7 +23,6 @@ interface OrderDetail {
 export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.id as string;
-  import useSWR from 'swr';
   const fetcher = (url: string) => apiGet<OrderDetail>(url);
   
   const { data: order, isLoading: loading, mutate } = useSWR(`/orders/${orderId}`, fetcher, { revalidateOnFocus: true });
