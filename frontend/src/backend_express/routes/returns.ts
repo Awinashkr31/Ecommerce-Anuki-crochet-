@@ -49,7 +49,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUP
         orderItem: {
           include: {
             variant: { include: { product: true } },
-            order: { include: { user: { select: { email: true, name: true } } } }
+            order: { include: { user: { select: { email: true, fullName: true } } } }
           }
         }
       },

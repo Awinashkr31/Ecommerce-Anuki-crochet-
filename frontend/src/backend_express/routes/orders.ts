@@ -81,7 +81,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFIL
   try {
     const orders = await prisma.order.findMany({
       include: {
-        user: { select: { name: true, email: true } },
+        user: { select: { fullName: true, email: true } },
         payment: true
       },
       orderBy: { createdAt: 'desc' }
@@ -144,7 +144,7 @@ router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
     const { id } = req.params;
     const timeline = await prisma.orderTimeline.findMany({
       where: { orderId: id },
-      include: { user: { select: { name: true, role: true } } },
+      include: { user: { select: { fullName: true, role: true } } },
       orderBy: { createdAt: 'desc' }
     });
     return res.json(timeline);

@@ -10,7 +10,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req:
     const logs = await prisma.auditLog.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { name: true, email: true, role: true } }
+        user: { select: { fullName: true, email: true, role: true } }
       },
       take: 100 // Limit for performance
     });

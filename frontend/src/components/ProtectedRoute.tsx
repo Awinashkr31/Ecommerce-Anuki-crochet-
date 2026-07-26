@@ -17,7 +17,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
   useEffect(() => {
     if (!isLoading && mounted) {
       if (!profile) {
-        router.push(`/auth?redirect=${encodeURIComponent(pathname)}`);
+        router.push(`/auth?redirect=${encodeURIComponent(pathname || "/")}`);
       } else if (adminOnly && profile.role !== "ADMIN" && profile.role !== "SUPER_ADMIN") {
         router.push("/");
       }

@@ -10,7 +10,7 @@ function AnalyticsTracker() {
   useEffect(() => {
     // Mock analytics tracker
     // In production, this is where you'd trigger posthog.capture('$pageview') or GA gtag()
-    console.log(`[Analytics] PageView: ${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
+    console.log(`[Analytics] PageView: ${pathname}${searchParams?.toString() ? `?${searchParams?.toString()}` : ''}`);
   }, [pathname, searchParams]);
 
   return null;

@@ -9,8 +9,8 @@ import { apiGet } from "@/lib/api";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category");
-  const initialIsMadeToOrder = searchParams.get("isMadeToOrder") === "true";
+  const initialCategory = searchParams?.get("category");
+  const initialIsMadeToOrder = searchParams?.get("isMadeToOrder") === "true";
 
   const fetcher = (url: string) => apiGet<Product[]>(url);
 

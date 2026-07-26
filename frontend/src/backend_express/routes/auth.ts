@@ -94,7 +94,7 @@ router.post('/session', authLimiter, async (req: any, res: any) => {
   } catch (error: any) {
     console.error('Session creation error:', error);
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
+      return res.status(400).json({ error: (error as any).errors });
     }
     return res.status(401).json({ error: 'UNAUTHORIZED REQUEST' });
   }
