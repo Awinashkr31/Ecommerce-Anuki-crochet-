@@ -8,6 +8,9 @@ if (!getApps().length) {
     const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
     if (serviceAccountStr) {
       const serviceAccount = JSON.parse(serviceAccountStr);
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
       app = initializeApp({
         credential: cert(serviceAccount),
       });
