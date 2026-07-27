@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['firebase-admin', 'jwks-rsa', 'jose'],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('firebase-admin', 'jwks-rsa', 'jose');
+    }
+    return config;
+  },
   async rewrites() {
     if (process.env.NODE_ENV !== 'production') {
       return [
