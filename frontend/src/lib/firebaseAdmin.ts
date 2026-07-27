@@ -7,7 +7,11 @@ if (!getApps().length) {
   try {
     const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
     if (serviceAccountStr) {
-      const serviceAccount = JSON.parse(serviceAccountStr);
+      let cleanStr = serviceAccountStr.trim();
+      if (cleanStr.startsWith("'") && cleanStr.endsWith("'")) {
+        cleanStr = cleanStr.slice(1, -1);
+      }
+      const serviceAccount = JSON.parse(cleanStr);
       if (serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
       }
