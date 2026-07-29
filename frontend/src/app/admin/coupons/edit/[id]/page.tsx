@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 
 export default function EditCouponPage() {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   
   // Basic Info
   const [code, setCode] = useState('');
