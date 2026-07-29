@@ -26,7 +26,7 @@ export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params?.id as string;
-  const { data: order, isLoading: loading, mutate } = useSWR(`/orders/${orderId}`, apiGet);
+  const { data: order, isLoading: loading, mutate } = useSWR<OrderDetail>(`/orders/${orderId}`, apiGet);
   
   const [updating, setUpdating] = useState(false);
   const [newNote, setNewNote] = useState('');
@@ -121,7 +121,7 @@ export default function OrderDetailPage() {
     ? order.internalNotes.split('Shipping Address:')[1].trim() 
     : null;
 
-  let extractedName = order.user?.fullName;
+  let extractedName = order.user?.name;
   let extractedPhone = order.user?.phone;
   let extractedStreet = '';
   let extractedCityStateZip = '';
