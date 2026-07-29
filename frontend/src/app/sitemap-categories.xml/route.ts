@@ -28,14 +28,21 @@ export async function GET() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${categories.map((c) => `
+  ${categories.length > 0 ? categories.map((c) => `
     <url>
       <loc>${baseUrl}/categories/${escapeXml(c.slug)}</loc>
       <lastmod>${c.updatedAt.toISOString()}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.7</priority>
     </url>
-  `).join('')}
+  `).join('') : `
+    <url>
+      <loc>${baseUrl}/products</loc>
+      <lastmod>${new Date().toISOString()}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+  `}
 </urlset>
   `;
 

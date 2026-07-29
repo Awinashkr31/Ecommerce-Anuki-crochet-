@@ -28,7 +28,7 @@ export async function GET() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  ${products.map((p) => `
+  ${products.length > 0 ? products.map((p) => `
     <url>
       <loc>${baseUrl}/products/${escapeXml(p.slug)}</loc>
       <lastmod>${p.updatedAt.toISOString()}</lastmod>
@@ -41,7 +41,14 @@ export async function GET() {
       </image:image>
       ` : ''}
     </url>
-  `).join('')}
+  `).join('') : `
+    <url>
+      <loc>${baseUrl}/products</loc>
+      <lastmod>${new Date().toISOString()}</lastmod>
+      <changefreq>daily</changefreq>
+      <priority>0.8</priority>
+    </url>
+  `}
 </urlset>
   `;
 
