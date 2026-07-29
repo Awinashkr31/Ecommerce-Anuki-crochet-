@@ -61,6 +61,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Express Global Error:', err);
+  res.status(500).json({ error: 'Express Internal Error', details: err.message, stack: process.env.NODE_ENV === 'production' ? undefined : err.stack });
+});
+
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

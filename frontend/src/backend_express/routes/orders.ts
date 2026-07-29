@@ -5,7 +5,7 @@ const router = Router();
 import { prisma } from '../lib/prisma';
 
 // POST new order (Checkout)
-router.post('/', async (req: any, res: any) => {
+router.post('/', verifyToken, async (req: any, res: any) => {
   try {
     const body = req.body;
     const { userId, items, address, totalAmount, paymentMethod } = body;
@@ -65,7 +65,7 @@ router.post('/', async (req: any, res: any) => {
       // 2. Create the Order
       const order = await tx.order.create({
         data: {
-          userId: userId || undefined, // undefined for guest checkout if schema allows (our schema currently requires user, so we'd need to adjust or create guest users)
+          userId: req.user.userId,
           totalAmount,
           status: 'PENDING',
           internalNotes: address ? `Shipping Address: ${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}` : null,
@@ -133,6 +133,57 @@ router.get('/my-orders', verifyToken, async (req: any, res: any) => {
   } catch (error: any) {
     console.error("Failed to fetch my orders:", error.message);
     return res.status(400).json({ error: 'Failed to fetch your orders' });
+  }
+});
+
+// GET order by id (Admin/Customer)
+router.get('/:id', verifyToken, async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: { select: { fullName: true, email: true, phone: true } },
+        items: {
+          include: {
+            variant: {
+              include: { product: { select: { name: true, images: true } } }
+            }
+          }
+        },
+        payment: true,
+        shipment: true,
+        timeline: {
+          include: { user: { select: { fullName: true, role: true } } },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const userRole = req.user.role;
+    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN' && userRole !== 'ORDER_FULFILLMENT' && userRole !== 'CUSTOMER_SUPPORT') {
+      if (order.userId !== req.user.userId) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    }
+
+    const mappedOrder = {
+      ...order,
+      user: order.user ? { name: order.user.fullName, email: order.user.email } : null,
+      timeline: order.timeline.map((t: any) => ({
+        ...t,
+        user: t.user ? { name: t.user.fullName, role: t.user.role } : null
+      }))
+    };
+
+    return res.json(mappedOrder);
+  } catch (error) {
+    return res.status(400).json({ error: 'Failed to fetch order' });
   }
 });
 

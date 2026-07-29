@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     
     if (res.ok) {
       const product = await res.json();
-      const primaryImage = product.images?.[0] || '';
+      const primaryImage = product.images?.[0]?.url || '';
       
       return {
         title: product.name,

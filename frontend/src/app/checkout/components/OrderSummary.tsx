@@ -46,7 +46,7 @@ export default function OrderSummary({
           <div key={`${item.id}-${idx}`} className="flex gap-4 group">
             <div className="relative w-20 h-20 bg-white rounded-xl overflow-hidden border border-neutral-100 flex-shrink-0">
               {item.image ? (
-                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
               ) : (
                 <div className="w-full h-full bg-neutral-100" />
               )}

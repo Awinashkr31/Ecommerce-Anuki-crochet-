@@ -19,12 +19,16 @@ export default function CheckoutPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
-  // If cart is empty, redirect (moved to useEffect to prevent render crash)
+  // If cart is empty or user is not logged in, redirect
   useEffect(() => {
+    if (!profile) {
+      router.replace('/auth?redirect=/checkout');
+      return;
+    }
     if (items.length === 0 && !isProcessing) {
       router.replace('/cart');
     }
-  }, [items.length, router, isProcessing]);
+  }, [items.length, router, isProcessing, profile]);
 
   // Load Razorpay script safely
   useEffect(() => {
@@ -341,7 +345,7 @@ export default function CheckoutPage() {
                 {items.map(item => (
                   <div key={item.id} className="flex gap-4">
                     <div className="w-16 h-16 bg-neutral-100 rounded-xl overflow-hidden shrink-0 relative">
-                      {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" />}
+                      {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />}
                     </div>
                     <div className="flex-1">
                       <h4 className="text-sm font-serif text-neutral-800 leading-tight">{item.name}</h4>

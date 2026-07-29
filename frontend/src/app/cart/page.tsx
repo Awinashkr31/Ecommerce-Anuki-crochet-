@@ -1,6 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,21 +17,27 @@ export default function CartPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
+  const { profile } = useAuthStore();
+
   useEffect(() => {
-    // Fetch default address on load
+    // Fetch default address on load only if logged in
     const fetchDefaultAddress = async () => {
+      if (!profile) return;
       try {
         const addresses = await apiGet<Address[]>('/addresses');
         if (addresses && addresses.length > 0) {
           const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
           if (defaultAddr) setSelectedAddress(defaultAddr);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        // Suppress 401 Unauthorized errors in the console overlay since it just means session is invalid/expired
+        if (!err.message?.includes('401')) {
+          console.error(err);
+        }
       }
     };
     fetchDefaultAddress();
-  }, []);
+  }, [profile]);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
@@ -125,7 +132,7 @@ export default function CartPage() {
                       {/* Image */}
                       <div className="w-24 h-24 sm:w-28 sm:h-28 bg-neutral-100 rounded-2xl overflow-hidden relative shrink-0">
                         {item.image ? (
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
                         ) : (
                           <div className="w-full h-full bg-neutral-200" />
                         )}
@@ -203,7 +210,7 @@ export default function CartPage() {
                   {/* Cross-sell Item 1 */}
                   <div className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
                     <div className="w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
-                      <Image src="/uploads/634bd601-3837-40fd-9ae5-94769537f777-detail.webp" alt="Claw clip" fill className="object-cover" />
+                      <Image src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80" alt="Claw clip" fill className="object-cover" />
                     </div>
                     <p className="text-xs font-medium text-neutral-800 line-clamp-1">Crochet Flower Claw...</p>
                     <div className="flex items-center justify-between mt-2">
@@ -217,7 +224,7 @@ export default function CartPage() {
                   {/* Cross-sell Item 2 */}
                   <div className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
                     <div className="w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
-                      <Image src="/uploads/389284e1-31dd-4fe0-8145-2bd2ab878701-detail.webp" alt="Single flower" fill className="object-cover" />
+                      <Image src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80" alt="Single flower" fill className="object-cover" />
                     </div>
                     <p className="text-xs font-medium text-neutral-800 line-clamp-1">Single flower crochet...</p>
                     <div className="flex items-center justify-between mt-2">
@@ -291,7 +298,13 @@ export default function CartPage() {
                 </div>
 
                 <button 
-                  onClick={() => router.push('/checkout')}
+                  onClick={() => {
+                    if (!profile) {
+                      router.push('/auth?redirect=/checkout');
+                    } else {
+                      router.push('/checkout');
+                    }
+                  }}
                   className="w-full mt-6 bg-[#FFC107] text-black font-black text-lg py-4 rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] active:scale-[0.98] transition-all"
                 >
                   PLACE ORDER

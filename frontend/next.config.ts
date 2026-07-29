@@ -1,19 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts'],
+  },
   serverExternalPackages: ['firebase-admin', 'jwks-rsa', 'jose'],
   turbopack: {},
-  async rewrites() {
-    if (process.env.NODE_ENV !== 'production') {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:5000/api/:path*'
-        }
-      ];
-    }
-    return [];
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -32,6 +24,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
       }
     ],
   },

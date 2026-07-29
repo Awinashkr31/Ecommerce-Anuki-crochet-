@@ -8,6 +8,10 @@ export const config = {
 };
 
 export default function handler(req: any, res: any) {
-  console.log('Next.js API Handler URL:', req.url);
-  return app(req, res);
+  try {
+    return app(req, res);
+  } catch (error: any) {
+    console.error('CRITICAL NEXT.JS API CRASH:', error);
+    res.status(500).json({ error: 'Express Crash', details: error.message, stack: error.stack });
+  }
 }

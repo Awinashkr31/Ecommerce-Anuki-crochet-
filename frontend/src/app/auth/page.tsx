@@ -54,8 +54,13 @@ export default function LoginPage() {
       setAuth(userCredential.user, res.user);
       
       toast.success("Successfully logged in!");
-      // Redirect admins/staff to admin dashboard, customers to storefront
-      if (ADMIN_ROLES.includes(res.user.role)) {
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectUrl = searchParams.get('redirect');
+      
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else if (ADMIN_ROLES.includes(res.user.role)) {
         router.push("/admin");
       } else {
         router.push("/");
@@ -81,7 +86,13 @@ export default function LoginPage() {
       setAuth(userCredential.user, res.user);
       
       toast.success("Successfully signed in with Google!");
-      if (ADMIN_ROLES.includes(res.user.role)) {
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectUrl = searchParams.get('redirect');
+      
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else if (ADMIN_ROLES.includes(res.user.role)) {
         router.push("/admin");
       } else {
         router.push("/");

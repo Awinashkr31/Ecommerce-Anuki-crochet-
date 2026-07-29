@@ -3,7 +3,7 @@ import useSWR from 'swr';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Save, Eye, EyeOff, Edit2, Trash2, ChevronRight, ChevronDown, Loader2, UploadCloud, X } from 'lucide-react';
-import { apiGet, apiPost, apiPut, apiDelete } from '../../../lib/api';
+import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from '../../../lib/api';
 
 interface Category {
   id: string;
@@ -149,16 +149,7 @@ export default function AdminCategoriesPage() {
         const formData = new FormData();
         formData.append('image', imageFile);
         formData.append('folder', 'categories');
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/upload`, {
-          method: 'POST',
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: formData,
-        });
-        if (!res.ok) throw new Error('Failed to upload image');
-        const data = await res.json();
+        const data = await apiUpload<any>('/upload', formData);
         // The backend returns multiple sizes, but since we already compressed it,
         // we can just use any of them, but let's use 'card' or 'detail' size.
         bannerUrl = data.sizes?.card || data.url;
@@ -265,7 +256,9 @@ export default function AdminCategoriesPage() {
                         </button>
                         <div className="font-bold text-neutral-900">{category.name}</div>
                         <span className="text-xs text-neutral-400 font-medium">/{category.slug}</span>
-                        {category.bannerUrl && <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Has Image</span>}
+                        {category.bannerUrl && (
+                          <img src={category.bannerUrl} alt="Category" className="w-8 h-8 rounded-lg object-cover shadow-sm border border-neutral-200" />
+                        )}
                         {!category.isActive && <span className="bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Hidden</span>}
                       </div>
                       <div className="flex items-center gap-2">
@@ -282,7 +275,9 @@ export default function AdminCategoriesPage() {
                             <div className="flex items-center gap-3">
                               <div className="font-medium text-sm text-neutral-700">{child.name}</div>
                               <span className="text-xs text-neutral-400 font-medium">/{child.slug}</span>
-                              {child.bannerUrl && <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Has Image</span>}
+                              {child.bannerUrl && (
+                                <img src={child.bannerUrl} alt="Category" className="w-6 h-6 rounded-md object-cover shadow-sm border border-neutral-200" />
+                              )}
                             </div>
                             <div className="flex items-center gap-2">
                               <button onClick={() => handleEdit(child)} className="p-1.5 text-neutral-400 hover:text-neutral-900 bg-white hover:bg-neutral-100 rounded-lg transition-colors"><Edit2 size={14} /></button>

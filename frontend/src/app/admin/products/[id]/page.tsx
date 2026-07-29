@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, UploadCloud, Plus, X, Loader2, Save, CheckCircle, Trash2 } from 'lucide-react';
-import { apiGet, apiPut } from '../../../../lib/api';
+import { apiGet, apiPut, apiUpload } from '../../../../lib/api';
 
 interface Category { id: string; name: string; slug: string; }
 interface UploadedImage { url: string; altText: string; id?: string; }
@@ -127,13 +127,7 @@ export default function EditProductPage() {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('folder', 'products');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://anukicrochet.in/api'}/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
+      const data = await apiUpload('/upload', formData);
       setImages([...images, { url: data.url, altText: name || 'Product image' }]);
     } catch (err) {
       console.error(err);

@@ -76,13 +76,14 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
 
         {/* Images */}
-        <Link href={`/products/${product.slug}`} className="block w-full h-full">
+        <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
           <Image 
             src={primaryImage} 
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className={`object-cover transition-all duration-700 ${product.images?.length > 1 ? 'group-hover:opacity-0' : 'group-hover:scale-110'}`}
+            unoptimized
           />
           {product.images?.length > 1 && (
             <Image 
@@ -91,6 +92,7 @@ export function ProductCard({ product }: { product: Product }) {
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
               className="object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+              unoptimized
             />
           )}
         </Link>

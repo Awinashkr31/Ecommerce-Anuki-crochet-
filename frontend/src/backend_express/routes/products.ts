@@ -361,6 +361,11 @@ const cleanVariantData = (data: any) => {
     delete cleaned.imageUrl;
   }
   
+  // Auto-generate SKU if empty to prevent unique constraint violation
+  if (!cleaned.sku || cleaned.sku.trim() === '') {
+    cleaned.sku = `VAR-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 1000)}`;
+  }
+  
   return cleaned;
 };
 

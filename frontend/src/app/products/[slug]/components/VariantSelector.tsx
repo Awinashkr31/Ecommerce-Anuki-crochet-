@@ -64,16 +64,21 @@ export default function VariantSelector({
           <div className="flex flex-wrap gap-3">
             {colors.map((c: any) => {
               const isSelected = currentVariant?.color === c;
+              const variantForColor = allVariants.find(v => v.color === c);
+              const imgUrl = variantForColor?.imageUrls?.[0] || variantForColor?.imageUrl || (variantForColor?.id === 'base' && baseProduct?.images?.[0]?.url);
               return (
                 <button
                   key={c}
                   onClick={() => handleSelect('color', c)}
-                  className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all ${isSelected ? 'ring-2 ring-rose-500 ring-offset-2' : 'ring-1 ring-neutral-200 hover:ring-neutral-400'}`}
+                  className={`relative w-12 h-14 rounded-lg flex items-center justify-center transition-all ${isSelected ? 'ring-2 ring-rose-500 ring-offset-2' : 'ring-1 ring-neutral-200 hover:ring-neutral-400'}`}
+                  title={c}
                 >
                   <span 
-                    className="w-8 h-8 rounded-full border border-black/10" 
+                    className="w-10 h-12 rounded-md border border-black/10 overflow-hidden block" 
                     style={{ backgroundColor: colorMap[c] || c }}
-                  />
+                  >
+                    {imgUrl && <img src={imgUrl} alt={c} className="w-full h-full object-cover" />}
+                  </span>
                 </button>
               );
             })}

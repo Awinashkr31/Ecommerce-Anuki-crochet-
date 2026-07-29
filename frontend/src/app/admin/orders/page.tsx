@@ -167,7 +167,7 @@ export default function AdminOrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-3 transition-opacity">
                       <Link href={`/admin/orders/${order.id}`} className="text-neutral-400 hover:text-rose-600 transition-colors" title="View Details"><MoreHorizontal size={18} /></Link>
                     </div>
                   </td>
