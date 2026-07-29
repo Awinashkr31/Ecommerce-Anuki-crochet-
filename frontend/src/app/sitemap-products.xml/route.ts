@@ -30,7 +30,7 @@ export async function GET() {
     <url>
       <loc>${baseUrl}/products/${escapeXml(p.slug)}</loc>
       <lastmod>${p.updatedAt.toISOString()}</lastmod>
-      <changefrequency>daily</changefrequency>
+      <changefreq>daily</changefreq>
       <priority>0.8</priority>
       ${p.images && p.images.length > 0 ? `
       <image:image>

@@ -22,7 +22,7 @@ export async function GET() {
     <url>
       <loc>${baseUrl}${p.loc}</loc>
       <lastmod>${now}</lastmod>
-      <changefrequency>${p.freq}</changefrequency>
+      <changefreq>${p.freq}</changefreq>
       <priority>${p.prio}</priority>
     </url>
   `).join('')}

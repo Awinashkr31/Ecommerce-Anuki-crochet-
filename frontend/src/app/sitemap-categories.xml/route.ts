@@ -30,7 +30,7 @@ export async function GET() {
     <url>
       <loc>${baseUrl}/categories/${escapeXml(c.slug)}</loc>
       <lastmod>${c.updatedAt.toISOString()}</lastmod>
-      <changefrequency>weekly</changefrequency>
+      <changefreq>weekly</changefreq>
       <priority>0.7</priority>
     </url>
   `).join('')}
