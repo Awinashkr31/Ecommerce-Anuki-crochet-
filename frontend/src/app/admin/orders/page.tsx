@@ -26,7 +26,7 @@ export default function AdminOrdersPage() {
   const limit = 20;
 
   // Fetch Analytics
-  const { data: analytics, mutate: refreshAnalytics } = useSWR('/orders/analytics', apiGet);
+  const { data: analytics, mutate: refreshAnalytics } = useSWR<any>('/orders/analytics', apiGet);
 
   // Fetch Orders
   const queryParams = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
@@ -34,7 +34,7 @@ export default function AdminOrdersPage() {
   if (statusFilter) queryParams.set('status', statusFilter);
   if (paymentFilter) queryParams.set('paymentStatus', paymentFilter);
 
-  const { data: ordersData, isLoading: loading, mutate: refreshOrders } = useSWR(`/orders?${queryParams.toString()}`, apiGet, { keepPreviousData: true });
+  const { data: ordersData, isLoading: loading, mutate: refreshOrders } = useSWR<{ orders: Order[], pagination: { total: number, totalPages: number } }>(`/orders?${queryParams.toString()}`, apiGet, { keepPreviousData: true });
 
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const orders: Order[] = ordersData?.orders || [];

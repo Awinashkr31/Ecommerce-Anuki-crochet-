@@ -136,15 +136,17 @@ router.post('/', verifyToken, async (req: any, res: any) => {
 
     // Fire notifications AFTER transaction succeeds
     // Notify Customer
-    NotificationService.send({
-      userId: result.userId,
-      role: 'customer',
-      title: 'Order Placed Successfully',
-      message: `Thank you for your order! Your order ID is ${result.id.slice(-8).toUpperCase()}.`,
-      category: 'orders',
-      priority: 'high',
-      actionUrl: `/account`
-    }).catch(console.error);
+    if (result.userId) {
+      NotificationService.send({
+        userId: result.userId,
+        role: 'customer',
+        title: 'Order Placed Successfully',
+        message: `Thank you for your order! Your order ID is ${result.id.slice(-8).toUpperCase()}.`,
+        category: 'orders',
+        priority: 'high',
+        actionUrl: `/account`
+      }).catch(console.error);
+    }
 
     // Notify Admins
     NotificationService.sendAdminAlert({
@@ -498,15 +500,17 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     });
     
     // Notify customer about status change
-    NotificationService.send({
-      userId: order.userId,
-      role: 'customer',
-      title: `Order Status Updated: ${status}`,
-      message: `Your order is now ${status}. ${note || ''}`,
-      category: 'orders',
-      priority: 'medium',
-      actionUrl: `/account`
-    }).catch(console.error);
+    if (order.userId) {
+      NotificationService.send({
+        userId: order.userId,
+        role: 'customer',
+        title: `Order Status Updated: ${status}`,
+        message: `Your order is now ${status}. ${note || ''}`,
+        category: 'orders',
+        priority: 'medium',
+        actionUrl: `/account`
+      }).catch(console.error);
+    }
 
     return res.json(order);
   } catch (error) {
@@ -550,7 +554,7 @@ router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADM
 
     // Send notification
     await NotificationService.send({
-      userId: order.userId,
+      userId: order.userId as string,
       role: 'customer',
       title: title || 'Message regarding your order',
       message: message,
@@ -626,15 +630,17 @@ router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
     const shipment = await ShippingService.generateLabel(id);
     
     // Notify customer
-    NotificationService.send({
-      userId: order.userId,
-      role: 'customer',
-      title: 'Order Shipped',
-      message: `Your order has been shipped via ${shipment.courierName}. Tracking: ${shipment.awbNumber}`,
-      category: 'orders',
-      priority: 'high',
-      actionUrl: `/account`
-    }).catch(console.error);
+    if (order.userId) {
+      NotificationService.send({
+        userId: order.userId,
+        role: 'customer',
+        title: 'Order Shipped',
+        message: `Your order has been shipped via ${shipment.courierName}. Tracking: ${shipment.awbNumber}`,
+        category: 'orders',
+        priority: 'high',
+        actionUrl: `/account`
+      }).catch(console.error);
+    }
 
     return res.json(shipment);
   } catch (error) {
