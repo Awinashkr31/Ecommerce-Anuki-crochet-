@@ -17,6 +17,8 @@ export interface Product {
   variants?: any[];
   bestseller?: boolean;
   status?: string;
+  stockStatus?: string;
+  stock?: number;
 }
 
 export function ProductCard({ product }: { product: Product }) {
@@ -24,7 +26,10 @@ export function ProductCard({ product }: { product: Product }) {
   const secondaryImage = product.images?.[1]?.url || primaryImage; // Fallback to zoom on hover if no second image
 
   const discount = product.salePrice ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100) : null;
-  const inStock = product.variants ? product.variants.some(v => v.stock > 0) : true;
+  const hasVariants = product.variants && product.variants.length > 0;
+  const inStock = hasVariants 
+    ? product.variants!.some(v => v.stock > 0) 
+    : product.stockStatus !== 'OUT_OF_STOCK';
 
   // Extract unique colors for swatches
   const colors = Array.from(new Set((product.variants || []).filter(v => v.color).map(v => v.color)));
