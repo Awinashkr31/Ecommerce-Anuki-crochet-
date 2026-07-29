@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSidebar } from './Sidebar';
 import { Menu, X, Loader2 } from "lucide-react";
+import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
 import { useAuthStore } from "../../store/authStore";
 import { toast } from "sonner";
 
@@ -51,17 +52,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Mobile Top Bar */}
         <div className="md:hidden bg-neutral-900 text-white h-16 flex items-center justify-between px-6 sticky top-0 z-40">
           <h1 className="font-bold text-rose-500">Admin Panel</h1>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 -mr-2">
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="bg-white/10 rounded-full">
+              <AdminNotificationBell />
+            </div>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 -mr-2">
+              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8 w-full md:w-auto">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Desktop Top Bar */}
+          <div className="hidden md:flex h-16 border-b border-neutral-200 bg-white items-center justify-end px-8 sticky top-0 z-30">
+            <div className="flex items-center gap-4">
+              <AdminNotificationBell />
+              <div className="flex items-center gap-3 border-l border-neutral-200 pl-4">
+                <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold text-xs">
+                  {profile.fullName.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-sm">
+                  <p className="font-bold">{profile.fullName}</p>
+                  <p className="text-xs text-neutral-500 capitalize">{profile.role.replace('_', ' ')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <main className="flex-1 p-4 md:p-8">
+            {children}
+          </main>
+        </div>
       </div>
     );
   }

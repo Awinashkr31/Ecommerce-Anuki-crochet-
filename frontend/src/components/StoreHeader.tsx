@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Search, User, LogOut, Shield, ChevronDown, ShoppingCart, Menu, ArrowLeft } from "lucide-react";
+import CustomerNotificationBell from "./CustomerNotificationBell";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import { auth } from "../lib/firebase";
@@ -196,6 +197,7 @@ export function StoreHeader() {
               Log in
             </Link>
           )}
+          {profile && <CustomerNotificationBell />}
           <Link 
             href="/cart"
             className="relative p-2 text-neutral-600 hover:text-neutral-900 transition-colors"

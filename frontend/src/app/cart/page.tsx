@@ -9,10 +9,11 @@ import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, Sparkles
 import { useState, useEffect } from "react";
 import AddressModal, { Address } from "@/components/AddressModal";
 import { apiGet } from "@/lib/api";
+import CouponSection from "@/components/CouponSection";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity } = useCartStore();
+  const { items, removeItem, updateQuantity, appliedCoupon } = useCartStore();
   const [isGiftPacked, setIsGiftPacked] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -53,7 +54,8 @@ export default function CartPage() {
   const freeDeliveryThreshold = 500;
   const deliveryCharge = subtotal >= freeDeliveryThreshold ? 0 : 50;
   const amountToFreeDelivery = freeDeliveryThreshold - subtotal;
-  const totalAmount = subtotal + giftCharge + deliveryCharge;
+  const appliedDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const totalAmount = Math.max(0, subtotal + giftCharge + deliveryCharge - appliedDiscount);
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] py-10 px-4 md:px-8">
@@ -238,13 +240,7 @@ export default function CartPage() {
               </div>
 
               {/* Apply Coupon */}
-              <button className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between hover:bg-neutral-50 transition-colors w-full text-left">
-                <div className="flex items-center gap-3 text-neutral-800 font-medium">
-                  <Tag size={20} className="text-neutral-400" />
-                  Apply Coupon
-                </div>
-                <ChevronRightIcon />
-              </button>
+              <CouponSection subtotal={subtotal} />
 
             </div>
 
@@ -283,6 +279,13 @@ export default function CartPage() {
                     <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed">
                       <span>Gift Packaging</span>
                       <span className="font-medium text-neutral-900">+ ₹29</span>
+                    </div>
+                  )}
+
+                  {appliedDiscount > 0 && (
+                    <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed text-emerald-600">
+                      <span>Coupon Discount</span>
+                      <span className="font-medium">- ₹{appliedDiscount}</span>
                     </div>
                   )}
 

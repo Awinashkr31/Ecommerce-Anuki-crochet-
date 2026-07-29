@@ -38,6 +38,33 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
   }
 };
 
+export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const sessionCookie = req.cookies.session;
+  
+  if (!sessionCookie) {
+    return next();
+  }
+
+  try {
+    const decodedClaims = await authAdmin.verifySessionCookie(sessionCookie, true);
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decodedClaims.sub },
+      select: { id: true, role: true }
+    });
+
+    if (user) {
+      req.user = {
+        userId: user.id,
+        role: user.role,
+      };
+    }
+  } catch (error) {
+    // Silently fail for optional auth
+  }
+  next();
+};
+
 export const requireRoles = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

@@ -9,10 +9,11 @@ import { ArrowLeft, MapPin, Truck, ShieldCheck, Tag, Circle, CheckCircle2 } from
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import AddressModal, { Address } from "@/components/AddressModal";
+import CouponSection from "@/components/CouponSection";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, clearCart } = useCartStore();
+  const { items, clearCart, appliedCoupon } = useCartStore();
   const { profile } = useAuthStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
@@ -64,7 +65,8 @@ export default function CheckoutPage() {
   const isGiftPacked = false; // Could read from store in a real app
   const giftCharge = isGiftPacked ? 29 : 0;
   const codCharge = paymentMethod === 'cod' ? 40 : 0;
-  const totalAmount = subtotal + giftCharge + codCharge;
+  const discount = appliedCoupon ? appliedCoupon.discount : 0;
+  const totalAmount = Math.max(0, subtotal + giftCharge + codCharge - discount);
 
   const handlePay = async () => {
     if (paymentMethod === 'upi' || paymentMethod === 'cards') {
@@ -93,12 +95,15 @@ export default function CheckoutPage() {
         street: selectedAddress.street, 
         city: selectedAddress.city, 
         state: selectedAddress.state, 
-        pincode: selectedAddress.zipCode 
+        pincode: selectedAddress.zipCode,
+        phone: selectedAddress.phone
       };
       const payload = {
         userId: profile?.id,
         items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization })),
-        address, totalAmount, paymentMethod: 'cod'
+        address, totalAmount, paymentMethod: 'cod',
+        couponCode: appliedCoupon?.code,
+        discountAmount: discount
       };
       await apiPost('/orders', payload);
       clearCart();
@@ -126,7 +131,8 @@ export default function CheckoutPage() {
         street: selectedAddress.street, 
         city: selectedAddress.city, 
         state: selectedAddress.state, 
-        pincode: selectedAddress.zipCode 
+        pincode: selectedAddress.zipCode,
+        phone: selectedAddress.phone
       };
       
       // Wait, our backend doesn't have a dedicated "create-order" that also creates the database order yet. 
@@ -138,7 +144,9 @@ export default function CheckoutPage() {
       const orderPayload = {
         userId: profile?.id,
         items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization })),
-        address, totalAmount, paymentMethod: 'online'
+        address, totalAmount, paymentMethod: 'online',
+        couponCode: appliedCoupon?.code,
+        discountAmount: discount
       };
       
       const dbOrder = await apiPost('/orders', orderPayload);
@@ -325,14 +333,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Apply Coupon Dropdown (Mock) */}
-            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between cursor-pointer hover:bg-neutral-50 transition-colors">
-              <div className="flex items-center gap-3 text-neutral-800 font-medium">
-                <Tag size={20} className="text-neutral-400" />
-                Apply Coupon
-              </div>
-              <ChevronDownIcon />
-            </div>
+            <CouponSection subtotal={subtotal} />
 
           </div>
 
@@ -371,6 +372,12 @@ export default function CheckoutPage() {
                   <span>Shipping</span>
                   <span className="font-medium text-[#059669]">Free</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between border-b border-neutral-100 pb-4 text-[#059669]">
+                    <span>Discount applied</span>
+                    <span className="font-medium">-₹{discount}</span>
+                  </div>
+                )}
                 {paymentMethod === 'cod' && (
                   <div className="flex justify-between border-b border-neutral-100 pb-4 text-[#E11D48]">
                     <span>COD Charge</span>

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save, Tag, Settings2, Calendar, Info, Loader2, Package, Layers } from 'lucide-react';
-import { apiPost } from '@/lib/api';
+import { apiGet, apiPut } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-export default function NewCouponPage() {
+export default function EditCouponPage() {
   const router = useRouter();
+  const { id } = useParams();
   
   // Basic Info
   const [code, setCode] = useState('');
@@ -38,7 +39,48 @@ export default function NewCouponPage() {
   // Schedule
   const [validFrom, setValidFrom] = useState('');
   const [validTo, setValidTo] = useState('');
+  const [status, setStatus] = useState('ACTIVE');
+  
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      apiGet(`/coupons/${id}`)
+        .then((data: any) => {
+          setCode(data.code || '');
+          setName(data.name || '');
+          setDescription(data.description || '');
+          setDiscountType(data.type || 'PERCENTAGE');
+          setValue(data.value ? data.value.toString() : '');
+          setMaxDiscount(data.maxDiscount ? data.maxDiscount.toString() : '');
+          setAutoApply(!!data.autoApply);
+          
+          setMinOrderValue(data.minOrderValue ? data.minOrderValue.toString() : '');
+          setMinQuantity(data.minQuantity ? data.minQuantity.toString() : '');
+          
+          setBuyQuantity(data.buyQuantity ? data.buyQuantity.toString() : '');
+          setGetQuantity(data.getQuantity ? data.getQuantity.toString() : '');
+          
+          if (data.usageLimit) {
+            setLimitUsage(true);
+            setUsageLimit(data.usageLimit.toString());
+          }
+          setMaxUsesPerUser(data.maxUsesPerUser ? data.maxUsesPerUser.toString() : '');
+          setFirstOrderOnly(!!data.firstOrderOnly);
+          
+          if (data.validFrom) {
+            setValidFrom(new Date(data.validFrom).toISOString().slice(0, 16));
+          }
+          if (data.validTo) {
+            setValidTo(new Date(data.validTo).toISOString().slice(0, 16));
+          }
+          setStatus(data.status || 'ACTIVE');
+        })
+        .catch(() => toast.error('Failed to load coupon'))
+        .finally(() => setIsLoading(false));
+    }
+  }, [id]);
 
   const handleSave = async () => {
     if (!code) {
@@ -53,13 +95,12 @@ export default function NewCouponPage() {
       toast.error('Please enter Buy and Get quantities');
       return;
     }
-
     setIsSaving(true);
     try {
       const payload = {
         code: code.toUpperCase(),
-        name: name || undefined,
-        description: description || undefined,
+        name: name || null,
+        description: description || null,
         type: discountType,
         value: (discountType === 'FREE_SHIPPING' || discountType === 'BOGO') ? 0 : Number(value),
         maxDiscount: maxDiscount ? Number(maxDiscount) : null,
@@ -77,18 +118,22 @@ export default function NewCouponPage() {
         
         validFrom: validFrom ? new Date(validFrom).toISOString() : new Date().toISOString(),
         validTo: validTo ? new Date(validTo).toISOString() : null,
-        status: 'ACTIVE',
+        status,
+        isActive: status === 'ACTIVE',
       };
-      
-      await apiPost('/coupons', payload);
-      toast.success('Coupon created successfully');
+      await apiPut(`/coupons/${id}`, payload);
+      toast.success('Coupon updated successfully');
       router.push('/admin/coupons');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create coupon');
+      toast.error(err.message || 'Failed to update coupon');
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-neutral-400" size={32} /></div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto pb-24 relative">
@@ -100,18 +145,27 @@ export default function NewCouponPage() {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-black tracking-tight">Create Campaign</h1>
-            <p className="text-sm font-medium text-neutral-500">Configure advanced enterprise discounts.</p>
+            <h1 className="text-2xl font-black tracking-tight">Edit Campaign</h1>
+            <p className="text-sm font-medium text-neutral-500">Update advanced enterprise discounts.</p>
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
+          <select 
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-4 py-2.5 bg-white border border-neutral-200 rounded-xl font-bold text-neutral-700 outline-none focus:ring-2 focus:ring-rose-500"
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="PAUSED">Paused</option>
+            <option value="DISABLED">Disabled</option>
+          </select>
           <button 
             onClick={handleSave} 
             disabled={isSaving}
             className="flex-1 md:flex-none px-6 py-2.5 bg-neutral-900 text-white rounded-xl font-bold hover:bg-neutral-800 transition-colors shadow-md shadow-neutral-200 flex items-center justify-center gap-2 disabled:bg-neutral-400"
           >
             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} 
-            {isSaving ? 'Saving...' : 'Save Campaign'}
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

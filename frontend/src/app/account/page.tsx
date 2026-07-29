@@ -10,6 +10,7 @@ import { signOut } from "firebase/auth";
 import { apiPost, apiGet } from "../../lib/api";
 import useSWR from "swr";
 import toast from "react-hot-toast";
+import CustomerOrders from "../../components/orders/CustomerOrders";
 
 const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
 
@@ -19,7 +20,10 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("orders");
   const { profile, isLoading, logout: clearAuthStore } = useAuthStore();
   const router = useRouter();
-  const { data: myOrders, mutate: mutateOrders } = useSWR(profile ? '/orders/my-orders' : null, fetcher);
+  const { data: walletData, isLoading: isWalletLoading } = useSWR(
+    activeTab === "wallet" && profile ? "/wallet" : null,
+    fetcher
+  );
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,28 +56,6 @@ export default function AccountPage() {
   const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
   // Mocked Data
-  const mockOrders = [
-    {
-      id: "ORD-84392",
-      date: "2026-06-25",
-      status: "Processing",
-      total: 2450,
-      items: [
-        { name: "Sunflower Bouquet", qty: 1 },
-        { name: "Crochet Bunny", qty: 1 }
-      ]
-    },
-    {
-      id: "ORD-71023",
-      date: "2026-05-12",
-      status: "Delivered",
-      total: 1200,
-      items: [
-        { name: "Custom Name Keychain", qty: 3 }
-      ]
-    }
-  ];
-
   const mockWishlist = [
     { id: 1, name: "Lavender Fields Blanket", price: 4500, image: "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=200" },
     { id: 2, name: "Amigurumi Bear", price: 850, image: "https://images.unsplash.com/photo-1598282928509-000c4068593a?auto=format&fit=crop&q=80&w=200" }
@@ -183,84 +165,7 @@ export default function AccountPage() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             {activeTab === "orders" && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
-                {!myOrders ? (
-                  <p className="text-neutral-500">Loading orders...</p>
-                ) : myOrders.length === 0 ? (
-                  <p className="text-neutral-500">You have no recent orders.</p>
-                ) : myOrders.map((order: any) => (
-                  <div key={order.id} className="bg-white border border-neutral-200 rounded-3xl p-6 md:p-8 hover:border-neutral-300 transition-colors">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6 pb-6 border-b border-neutral-100 gap-4">
-                      <div>
-                        <p className="font-black text-lg">Order #{order.id.slice(0, 8).toUpperCase()}</p>
-                        <p className="text-sm text-neutral-500 mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="md:text-right flex flex-row md:flex-col justify-between items-center md:items-end">
-                        <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === "DELIVERED" ? "bg-emerald-100 text-emerald-800" : order.status === "CANCELLED" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"}`}>
-                          {order.status}
-                        </span>
-                        <p className="font-bold text-lg mt-2 hidden md:block">₹{order.totalAmount}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {order.items.map((item: any) => (
-                        <div key={item.id} className="flex justify-between items-center text-sm text-neutral-700">
-                          <span className="font-medium">
-                            <span className="text-neutral-400 mr-2">{item.quantity}x</span> 
-                            {item.variant?.product?.name || 'Unknown Product'} {item.customization ? `(Custom: ${item.customization})` : ''}
-                          </span>
-                          <div className="flex items-center gap-4">
-                            <span>₹{item.price * item.quantity}</span>
-                            {order.status === 'DELIVERED' && (
-                              <button 
-                                onClick={async () => {
-                                  const reason = window.prompt("Reason for return?");
-                                  if (reason) {
-                                    try {
-                                      await apiPost('/returns', { orderItemId: item.id, reason, refundMethod: 'WALLET' });
-                                      toast.success("Return requested successfully!");
-                                    } catch(e: any) {
-                                      toast.error(e.message || "Failed to request return");
-                                    }
-                                  }
-                                }}
-                                className="text-xs text-rose-600 font-bold hover:underline"
-                              >
-                                Request Return
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {expandedTimeline === order.id && order.timeline && (
-                      <div className="mt-6 pt-4 border-t border-neutral-100 space-y-4">
-                        <h4 className="font-bold text-sm text-neutral-700 mb-2">Order Timeline</h4>
-                        {order.timeline.map((event: any) => (
-                          <div key={event.id} className="flex items-start gap-4">
-                            <div className="w-2 h-2 mt-1.5 rounded-full bg-neutral-300"></div>
-                            <div>
-                              <p className="text-sm font-bold text-neutral-800">{event.status}</p>
-                              <p className="text-xs text-neutral-500">{new Date(event.createdAt).toLocaleString()} - {event.note}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    <div className="mt-6 pt-6 border-t border-neutral-100 flex flex-wrap gap-4">
-                      <button 
-                        onClick={() => setExpandedTimeline(expandedTimeline === order.id ? null : order.id)}
-                        className="bg-neutral-100 text-neutral-900 px-6 py-2 rounded-xl text-sm font-bold hover:bg-neutral-200 transition-colors"
-                      >
-                        {expandedTimeline === order.id ? "Hide Tracking" : "Track Order"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <CustomerOrders />
             )}
 
             {activeTab === "profile" && (
@@ -328,18 +233,30 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-1">Available Balance</h2>
-                    <p className="text-4xl font-black">₹1,250.00</p>
+                    <p className="text-4xl font-black">₹{isWalletLoading ? "..." : (walletData?.balance || 0).toFixed(2)}</p>
                   </div>
                 </div>
                 <h3 className="font-bold mb-4">Recent Transactions</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-4 border border-neutral-100 rounded-2xl">
-                    <div>
-                      <p className="font-bold text-sm">Refund for ORD-71023</p>
-                      <p className="text-xs text-neutral-500">2026-06-01</p>
+                  {isWalletLoading ? (
+                    <p className="text-neutral-500 text-sm">Loading transactions...</p>
+                  ) : walletData?.transactions?.length > 0 ? (
+                    walletData.transactions.map((tx: any) => (
+                      <div key={tx.id} className="flex justify-between items-center p-4 border border-neutral-100 rounded-2xl">
+                        <div>
+                          <p className="font-bold text-sm">{tx.description || (tx.type === 'CREDIT' ? 'Refund/Credit' : 'Debit')}</p>
+                          <p className="text-xs text-neutral-500">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <p className={`font-bold ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toFixed(2)}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+                      <p className="text-sm font-medium text-neutral-500">No transactions found.</p>
                     </div>
-                    <p className="text-emerald-600 font-bold">+₹1,250.00</p>
-                  </div>
+                  )}
                 </div>
               </div>
             )}

@@ -50,6 +50,9 @@ model User {
   auditLogs      AuditLog[]
   orderTimelines OrderTimeline[]
   inventoryLogs  InventoryLog[]
+  couponUsages   CouponUsage[]
+  notifications  Notification[]
+  notificationPref NotificationPreference?
 }
 
 model Address {
@@ -247,6 +250,7 @@ model Order {
   payment  Payment?
   shipment Shipment?
   timeline OrderTimeline[]
+  couponUsages CouponUsage[]
 }
 
 model Shipment {
@@ -328,16 +332,63 @@ model ReturnRequest {
 model Coupon {
   id            String    @id @default(uuid())
   code          String    @unique
-  type          String // "PERCENTAGE", "FLAT"
+  name          String?
+  description   String?
+  internalNotes String?
+  type          String // "PERCENTAGE", "FLAT", "FREE_SHIPPING", "BOGO"
   value         Float
+  maxDiscount   Float?
   minOrderValue Float     @default(0)
-  usageLimit    Int?
-  usedCount     Int       @default(0)
+  minQuantity   Int?
+  
+  // Usage limits
+  usageLimit       Int?
+  usedCount        Int       @default(0)
+  maxUsesPerUser   Int?
+  firstOrderOnly   Boolean   @default(false)
+  
+  // Date window
   validFrom     DateTime  @default(now())
   validTo       DateTime?
-  isActive      Boolean   @default(true)
+  
+  // BOGO / Target logic
+  buyQuantity   Int?
+  getQuantity   Int?
+  
+  // Arrays for restrictions (storing IDs)
+  applicableProductIds  String[] @default([])
+  applicableCategoryIds String[] @default([])
+  excludeProductIds     String[] @default([])
+  excludeCategoryIds    String[] @default([])
+  
+  // Behaviors
+  autoApply     Boolean   @default(false)
+  stackable     Boolean   @default(false)
+  priority      Int       @default(0)
+  
+  // Status (DRAFT, SCHEDULED, ACTIVE, PAUSED, EXPIRED, DISABLED)
+  status        String    @default("ACTIVE")
+  isActive      Boolean   @default(true) // Kept for backward compatibility
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  usages        CouponUsage[]
+}
+
+model CouponUsage {
+  id              String   @id @default(uuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  couponId        String
+  coupon          Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  discountAmount  Float
+  orderTotal      Float
+  ipAddress       String?
+  deviceId        String?
+  createdAt       DateTime @default(now())
 }
 
 model Post {
@@ -363,14 +414,16 @@ model AuditLog {
 }
 
 model OrderTimeline {
-  id        String   @id @default(uuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
-  status    String
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  note      String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  status     String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  note       String?
+  isInternal Boolean  @default(false)
+  type       String   @default("STATUS_CHANGE") // STATUS_CHANGE, NOTE, COMMUNICATION
+  createdAt  DateTime @default(now())
 }
 
 model InventoryLog {
@@ -389,4 +442,57 @@ model StoreSettings {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String   @default("customer") // admin, customer, staff
+  title       String
+  message     String
+  category    String   // orders, payments, customers, inventory, etc.
+  priority    String   @default("low") // low, medium, high, critical
+  channel     String   // in-app, email, sms, push, all
+  actionUrl   String?  @map("action_url")
+  image       String?
+  icon        String?
+  status      String   @default("sent") // pending, sent, failed
+  isRead      Boolean  @default(false) @map("is_read")
+  isArchived  Boolean  @default(false) @map("is_archived")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  logs        NotificationLog[]
+}
+
+model NotificationPreference {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled     Boolean  @default(true) @map("email_enabled")
+  smsEnabled       Boolean  @default(false) @map("sms_enabled")
+  whatsappEnabled  Boolean  @default(false) @map("whatsapp_enabled")
+  pushEnabled      Boolean  @default(true) @map("push_enabled")
+  
+  marketingEnabled Boolean  @default(true) @map("marketing_enabled")
+  orderEnabled     Boolean  @default(true) @map("order_enabled")
+  securityEnabled  Boolean  @default(true) @map("security_enabled")
+  reviewEnabled    Boolean  @default(true) @map("review_enabled")
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+}
+
+model NotificationLog {
+  id               String   @id @default(uuid())
+  notificationId   String   @map("notification_id")
+  notification     Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  deliveryChannel  String   @map("delivery_channel") // IN_APP, EMAIL, SMS, PUSH
+  status           String   // DELIVERED, FAILED
+  deliveredAt      DateTime? @map("delivered_at")
+  openedAt         DateTime? @map("opened_at")
+  clickedAt        DateTime? @map("clicked_at")
+  failureReason    String?   @map("failure_reason")
+  createdAt        DateTime @default(now()) @map("created_at")
 }

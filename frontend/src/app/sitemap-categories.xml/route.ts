@@ -1,25 +1,37 @@
+import { prisma } from '@/lib/prisma';
+
 export async function GET() {
-  const baseUrl = 'https://anukicrochet.in';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://anukicrochet.in';
   
-  const categories = [
-    { slug: 'bouquets', updatedAt: new Date() },
-    { slug: 'plushies', updatedAt: new Date() }
-  ];
+  const escapeXml = (unsafe: string) => unsafe.replace(/[<>&'"]/g, c => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+
+  let categories: any[] = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true }
+    });
+  } catch (error) {
+    console.error('Failed to fetch categories for sitemap:', error);
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}/products</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefrequency>daily</changefrequency>
-    <priority>0.9</priority>
-  </url>
-  ${categories.map(c => `
+  ${categories.map((c) => `
     <url>
-      <loc>${baseUrl}/categories/${c.slug}</loc>
+      <loc>${baseUrl}/categories/${escapeXml(c.slug)}</loc>
       <lastmod>${c.updatedAt.toISOString()}</lastmod>
       <changefrequency>weekly</changefrequency>
-      <priority>0.8</priority>
+      <priority>0.7</priority>
     </url>
   `).join('')}
 </urlset>
