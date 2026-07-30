@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiPost, apiGet } from "@/lib/api";
 import { ArrowLeft, MapPin, Truck, ShieldCheck, Tag, Circle, CheckCircle2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import AddressModal, { Address } from "@/components/AddressModal";
 import CouponSection from "@/components/CouponSection";
+import { load } from "@cashfreepayments/cashfree-js";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const processingRef = useRef(false); // Double-click protection
 
   // If cart is empty or user is not logged in, redirect
   useEffect(() => {
@@ -30,16 +32,6 @@ export default function CheckoutPage() {
       router.replace('/cart');
     }
   }, [items.length, router, isProcessing, profile]);
-
-  // Load Razorpay script safely
-  useEffect(() => {
-    if (typeof window !== "undefined" && !(window as any).Razorpay) {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
 
   useEffect(() => {
     // Fetch default address on load
@@ -68,12 +60,21 @@ export default function CheckoutPage() {
   const discount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalAmount = Math.max(0, subtotal + giftCharge + codCharge - discount);
 
+  // Browser beforeunload warning during payment
+  useEffect(() => {
+    if (isProcessing) {
+      const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+      window.addEventListener('beforeunload', handler);
+      return () => window.removeEventListener('beforeunload', handler);
+    }
+  }, [isProcessing]);
+
   const handlePay = async () => {
+    // Double-click protection
+    if (processingRef.current || isProcessing) return;
+    processingRef.current = true;
+
     if (paymentMethod === 'upi' || paymentMethod === 'cards') {
-      if (typeof window === 'undefined' || !(window as any).Razorpay) {
-        toast.error("Payment gateway is still loading. Please wait or refresh the page.");
-        return;
-      }
       await processOnlinePayment();
     } else {
       await processCodOrder();
@@ -112,6 +113,7 @@ export default function CheckoutPage() {
     } catch (err: any) {
       toast.error(err.message || "Failed to place order.");
       setIsProcessing(false);
+      processingRef.current = false;
     }
   };
 
@@ -124,7 +126,6 @@ export default function CheckoutPage() {
     }
     
     try {
-      // 1. Create order internally and get Razorpay order_id
       const address = { 
         firstName: selectedAddress.fullName.split(' ')[0], 
         lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '', 
@@ -134,12 +135,6 @@ export default function CheckoutPage() {
         pincode: selectedAddress.zipCode,
         phone: selectedAddress.phone
       };
-      
-      // Wait, our backend doesn't have a dedicated "create-order" that also creates the database order yet. 
-      // Wait, the backend /api/payments/create-order just calls Razorpay.
-      // And our POST /orders creates the DB order.
-      // We should first create the DB order as PENDING, then create the Razorpay order with that totalAmount, or vice versa.
-      // Actually, POST /orders already creates an order with PENDING status!
       
       const orderPayload = {
         userId: profile?.id,
@@ -151,65 +146,76 @@ export default function CheckoutPage() {
       
       const dbOrder = await apiPost('/orders', orderPayload);
       
-      // Now create Razorpay order
-      const rzpOrder = await apiPost('/payments/create-order', {
+      // Now create Cashfree order
+      const cashfreeOrder = await apiPost('/payments/cashfree/create-order', {
         amount: totalAmount,
-        internalOrderId: dbOrder.id
+        internalOrderId: dbOrder.id,
+        user: profile
       });
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TIFdGVUKCE4VcF", // fallback for testing
-        amount: rzpOrder.amount,
-        currency: rzpOrder.currency,
-        name: "Anuki Crochet",
-        description: "Order Payment",
-        order_id: rzpOrder.id,
-        handler: (response: any) => {
-          // Razorpay payment success
-          toast.loading("Verifying payment...", { id: "verify" });
-          
-          apiPost('/payments/verify', {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            internalOrderId: dbOrder.id
-          }).then((verifyRes) => {
-            // Verification logic
-            toast.success("Payment Successful!", { id: "verify" });
-            clearCart();
-            router.push('/account');
-          }).catch((err) => {
-            console.error("Verify error:", err);
-            toast.error("Payment Verification Failed", { id: "verify" });
-            setIsProcessing(false);
-          });
-        },
-        prefill: {
-          name: "Awinash Kumar",
-          email: "customer@anukicrochet.in",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#059669"
-        },
-        modal: {
-          ondismiss: function() {
-            setIsProcessing(false);
-            toast.error("Payment Cancelled");
-          }
-        }
+      // Check if already paid (duplicate protection)
+      if (cashfreeOrder.alreadyPaid) {
+        toast.success("This order was already paid!");
+        clearCart();
+        router.push(`/order-status/${dbOrder.id}`);
+        return;
+      }
+
+      const cashfree = await load({
+        mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
+      });
+
+      if (!cashfree) {
+        throw new Error("Cashfree initialization failed");
+      }
+
+      const checkoutOptions: any = {
+        paymentSessionId: cashfreeOrder.payment_session_id,
+        redirectTarget: "_modal",
       };
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any) {
-        toast.error("Payment Failed: " + response.error.description);
-        setIsProcessing(false);
+      cashfree.checkout(checkoutOptions).then((result: any) => {
+        if (result.error) {
+          // User may have dropped — verify actual status
+          toast.loading("Checking payment status...", { id: "verify" });
+          apiPost('/payments/cashfree/verify', {
+            order_id: cashfreeOrder.order_id,
+            internalOrderId: dbOrder.id
+          }).then(() => {
+            toast.dismiss("verify");
+            router.push(`/order-status/${dbOrder.id}`);
+          }).catch(() => {
+            toast.dismiss("verify");
+            router.push(`/order-status/${dbOrder.id}`);
+          });
+          return;
+        }
+        if (result.paymentDetails) {
+          toast.loading("Verifying payment...", { id: "verify" });
+          apiPost('/payments/cashfree/verify', {
+            order_id: cashfreeOrder.order_id,
+            internalOrderId: dbOrder.id
+          }).then(() => {
+            toast.dismiss("verify");
+            clearCart();
+            router.push(`/order-status/${dbOrder.id}`);
+          }).catch(() => {
+            toast.dismiss("verify");
+            router.push(`/order-status/${dbOrder.id}`);
+          });
+        } else {
+          // Modal closed without completing — redirect to status page
+          router.push(`/order-status/${dbOrder.id}`);
+        }
+        if (result.redirect) {
+          console.log("Redirection");
+        }
       });
-      rzp.open();
 
     } catch (err: any) {
       toast.error(err.message || "Failed to initialize payment.");
       setIsProcessing(false);
+      processingRef.current = false;
     }
   };
 

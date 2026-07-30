@@ -7,6 +7,7 @@ import { ChevronRight, ShieldCheck, Heart } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 import { useCartStore } from '../../../store/cartStore';
+import { useAuthStore } from '../../../store/authStore';
 
 import ImageGallery from './components/ImageGallery';
 import ProductInfo from './components/ProductInfo';
@@ -22,6 +23,8 @@ function calculateDiscount(base: number, sale: number | null) {
 export default function ProductDetailClient({ product }: { product: any }) {
   const router = useRouter();
   const { addItem } = useCartStore();
+  const { profile } = useAuthStore();
+  const isB2B = profile?.role === 'B2B_CUSTOMER';
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     product.variants && product.variants.length > 0 ? product.variants[0].id : null
@@ -38,9 +41,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }
   
   // Pricing logic
-  const displayPrice = currentVariant ? currentVariant.price : (product.salePrice || product.basePrice);
-  const originalPrice = product.salePrice ? product.basePrice : null;
-  const discount = calculateDiscount(product.basePrice, product.salePrice);
+  let displayPrice = currentVariant ? (currentVariant.salePrice || currentVariant.price) : (product.salePrice || product.basePrice);
+  let originalPrice = currentVariant ? (currentVariant.salePrice ? currentVariant.price : null) : (product.salePrice ? product.basePrice : null);
+  
+  if (isB2B) {
+    const b2bPrice = currentVariant?.wholesalePrice || product.wholesalePrice;
+    if (b2bPrice) {
+      displayPrice = b2bPrice;
+      originalPrice = currentVariant?.price || product.basePrice; // Show retail price as strikethrough for B2B
+    }
+  }
+
+  const discount = calculateDiscount(originalPrice || (currentVariant?.price || product.basePrice), displayPrice);
   const inStock = product.stockStatus !== 'OUT_OF_STOCK' && (!currentVariant || currentVariant.stock > 0);
 
   const handleAddToCart = () => {

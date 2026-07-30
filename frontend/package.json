@@ -10,12 +10,15 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
     "@hookform/resolvers": "^5.4.0",
     "@prisma/client": "^5.22.0",
+    "@serwist/next": "^9.5.12",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
     "axios": "^1.18.1",
     "bcryptjs": "^3.0.3",
+    "cashfree-pg": "^6.0.4",
     "clsx": "^2.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -42,6 +45,7 @@
     "recharts": "^3.9.1",
     "redis": "^6.1.0",
     "resend": "^6.18.0",
+    "serwist": "^9.5.12",
     "sharp": "^0.35.3",
     "sonner": "^2.0.7",
     "swr": "^2.4.2",

@@ -371,6 +371,37 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
+          {/* Payment Details */}
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50 flex justify-between items-center">
+              <h2 className="font-bold text-neutral-900 flex items-center gap-2"><CreditCard size={16}/> Payment Details</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-neutral-500">Method</span>
+                <span className="text-sm font-bold text-neutral-900 uppercase">{order.payment?.gateway || 'COD'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-neutral-500">Status</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase border ${getStatusColor(order.payment?.status || 'PENDING')}`}>
+                  {order.payment?.status || 'PENDING'}
+                </span>
+              </div>
+              {order.payment?.transactionId && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-neutral-500">Transaction ID</span>
+                  <span className="text-sm font-mono text-neutral-700">{order.payment.transactionId}</span>
+                </div>
+              )}
+              {order.payment?.amount && (
+                <div className="flex justify-between items-center pt-3 border-t border-neutral-100">
+                  <span className="text-sm font-medium text-neutral-900">Total Paid</span>
+                  <span className="font-black text-neutral-900">₹{order.payment.amount.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Shipping Address */}
           <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50 flex justify-between items-center">

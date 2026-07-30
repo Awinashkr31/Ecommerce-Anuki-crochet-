@@ -4,12 +4,40 @@ import { verifyToken, requireRoles } from '../middleware/auth';
 const router = Router();
 import { prisma } from '../lib/prisma';
 import { NotificationService } from '../services/notification';
+import { PaymentService } from '../services/paymentService';
+
+async function awardLoyaltyPoints(orderId: string, tx: any = prisma) {
+  const order = await tx.order.findUnique({ where: { id: orderId } });
+  if (order && order.userId && order.status === 'DELIVERED') {
+    const existingTx = await tx.rewardTransaction.findFirst({
+      where: { orderId: order.id, type: 'EARNED' }
+    });
+    if (!existingTx) {
+      const points = Math.floor(order.totalAmount / 100); // 1% back
+      if (points > 0) {
+        await tx.user.update({
+          where: { id: order.userId },
+          data: { pointsBalance: { increment: points } }
+        });
+        await tx.rewardTransaction.create({
+          data: {
+            userId: order.userId,
+            orderId: order.id,
+            points,
+            type: 'EARNED',
+            description: `Earned for order ${order.id.slice(-8).toUpperCase()}`
+          }
+        });
+      }
+    }
+  }
+}
 
 // POST new order (Checkout)
 router.post('/', verifyToken, async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { userId, items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0 } = body;
+    const { userId, items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0 } = body;
     
     // In a real scenario, we'd calculate totalAmount securely here by fetching variant prices from DB
     // rather than trusting the client's totalAmount.
@@ -83,7 +111,7 @@ router.post('/', verifyToken, async (req: any, res: any) => {
         data: {
           userId: req.user.userId,
           totalAmount,
-          status: 'PENDING',
+          status: paymentMethod === 'cod' ? 'PENDING' : 'AWAITING_PAYMENT',
           internalNotes: address ? `Shipping Address: ${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}, Phone: ${address.phone || 'N/A'}` : null,
           items: {
             create: items.map((item: any) => ({
@@ -93,16 +121,6 @@ router.post('/', verifyToken, async (req: any, res: any) => {
               customization: item.customization || null
             }))
           },
-          ...(paymentMethod === 'cod' ? {
-            payment: {
-              create: {
-                gateway: 'COD',
-                transactionId: `cod_${Date.now()}`,
-                status: 'PENDING',
-                amount: totalAmount
-              }
-            }
-          } : {})
         },
         include: { items: true, payment: true }
       });
@@ -120,19 +138,43 @@ router.post('/', verifyToken, async (req: any, res: any) => {
           }
         });
       }
-      
-      
-      // Update order status if COD
-      if (paymentMethod === 'cod') {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { status: 'PROCESSING' }
+
+      // 4. Redeem Points if any
+      if (redeemPoints > 0) {
+        const user = await tx.user.findUnique({ where: { id: req.user.userId } });
+        if (!user || user.pointsBalance < redeemPoints) {
+          throw new Error('Insufficient points balance');
+        }
+        await tx.user.update({
+          where: { id: req.user.userId },
+          data: { pointsBalance: { decrement: redeemPoints } }
         });
-        order.status = 'PROCESSING';
+        await tx.rewardTransaction.create({
+          data: {
+            userId: req.user.userId,
+            orderId: order.id,
+            points: redeemPoints,
+            type: 'REDEEMED',
+            description: `Redeemed for order ${order.id.slice(-8).toUpperCase()}`
+          }
+        });
       }
       
       return order;
     });
+
+    // Handle COD payment via PaymentService (outside transaction)
+    if (paymentMethod === 'cod') {
+      await PaymentService.createCodPayment(result.id, totalAmount, {
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      await prisma.order.update({
+        where: { id: result.id },
+        data: { status: 'PROCESSING' }
+      });
+      result.status = 'PROCESSING' as any;
+    }
 
     // Fire notifications AFTER transaction succeeds
     // Notify Customer
@@ -489,6 +531,10 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
       data: { status }
     });
 
+    if (status === 'DELIVERED') {
+      await awardLoyaltyPoints(id);
+    }
+
     // Create a timeline log for this status change
     await prisma.orderTimeline.create({
       data: {
@@ -665,6 +711,7 @@ router.post('/webhooks/shipping', async (req: any, res: any) => {
         where: { id: shipment.orderId },
         data: { status: 'DELIVERED' }
       });
+      await awardLoyaltyPoints(shipment.orderId);
     }
 
     return res.json({ success: true });

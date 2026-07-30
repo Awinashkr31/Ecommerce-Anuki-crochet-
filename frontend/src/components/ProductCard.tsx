@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, ShoppingBag, Star } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
 
 export interface Product {
   id: string;
@@ -11,6 +12,7 @@ export interface Product {
   slug: string;
   basePrice: number;
   salePrice?: number;
+  wholesalePrice?: number;
   isMadeToOrder: boolean;
   images: { url: string; altText: string }[];
   category?: { name: string; slug?: string };
@@ -22,10 +24,21 @@ export interface Product {
 }
 
 export function ProductCard({ product }: { product: Product }) {
+  const { profile } = useAuthStore();
+  const isB2B = profile?.role === 'B2B_CUSTOMER';
+
   const primaryImage = product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600";
   const secondaryImage = product.images?.[1]?.url || primaryImage; // Fallback to zoom on hover if no second image
 
-  const discount = product.salePrice ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100) : null;
+  let displayPrice = product.salePrice || product.basePrice;
+  let originalPrice = product.salePrice ? product.basePrice : null;
+
+  if (isB2B && product.wholesalePrice) {
+    displayPrice = product.wholesalePrice;
+    originalPrice = product.basePrice;
+  }
+
+  const discount = originalPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : null;
   const hasVariants = product.variants && product.variants.length > 0;
   const inStock = hasVariants 
     ? product.variants!.some(v => v.stock > 0) 
@@ -129,13 +142,13 @@ export function ProductCard({ product }: { product: Product }) {
         
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-2">
-            {product.salePrice ? (
+            {originalPrice ? (
               <>
-                <span className="text-base font-black text-rose-600">₹{product.salePrice}</span>
-                <span className="text-sm font-semibold text-neutral-400 line-through">₹{product.basePrice}</span>
+                <span className="text-base font-black text-rose-600">₹{displayPrice}</span>
+                <span className="text-sm font-semibold text-neutral-400 line-through">₹{originalPrice}</span>
               </>
             ) : (
-              <span className="text-base font-black text-neutral-900">₹{product.basePrice}</span>
+              <span className="text-base font-black text-neutral-900">₹{displayPrice}</span>
             )}
           </div>
 

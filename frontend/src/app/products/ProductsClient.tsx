@@ -48,7 +48,12 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
         )
       );
     }
-    if (categoryFilter !== "all") result = result.filter(p => p.category?.name?.toLowerCase() === categoryFilter.toLowerCase());
+    if (categoryFilter !== "all") {
+      result = result.filter(p => 
+        p.category?.slug === categoryFilter || 
+        p.category?.name?.toLowerCase() === categoryFilter.toLowerCase()
+      );
+    }
     if (colorFilter !== "all") result = result.filter(p => p.variants?.some(v => v.color?.toLowerCase() === colorFilter));
     if (sizeFilter !== "all") result = result.filter(p => p.variants?.some(v => v.size?.toLowerCase() === sizeFilter));
     

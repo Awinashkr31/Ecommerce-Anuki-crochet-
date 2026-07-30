@@ -39,7 +39,7 @@ router.post('/create', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER
         units: item.quantity,
         selling_price: item.price,
       })),
-      payment_method: order.payment?.status === 'PAID' ? 'Prepaid' : 'COD',
+      payment_method: order.payment?.status === 'SUCCESS' ? 'Prepaid' : 'COD',
       sub_total: order.totalAmount,
       length: 10,
       breadth: 10,
