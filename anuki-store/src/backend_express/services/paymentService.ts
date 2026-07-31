@@ -574,20 +574,26 @@ export class PaymentService {
     amount: number,
     user: { id: string; email?: string; phone?: string; name?: string }
   ) {
-    const request = {
-      order_amount: amount,
-      order_currency: 'INR',
-      order_id: `ord_${orderId.replace(/-/g, '').slice(0, 12)}_${Date.now()}`,
-      customer_details: {
-        customer_id: user.id || 'guest',
-        customer_phone: user.phone || '9999999999',
-        customer_name: user.name || 'Guest User',
-        customer_email: user.email || 'support@anukicrochet.in',
-      },
-      order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3000'}/order-status/${orderId}?cf_order_id={order_id}`
-      }
-    };
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')
+        || (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` : null)
+        || (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : null)
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+        || 'https://www.anukicrochet.in';
+
+      const request = {
+        order_amount: amount,
+        order_currency: 'INR',
+        order_id: `ord_${orderId.replace(/-/g, '').slice(0, 12)}_${Date.now()}`,
+        customer_details: {
+          customer_id: user.id || 'guest',
+          customer_phone: user.phone || '9999999999',
+          customer_name: user.name || 'Guest User',
+          customer_email: user.email || 'support@anukicrochet.in',
+        },
+        order_meta: {
+          return_url: `${baseUrl}/order-status/${orderId}?cf_order_id={order_id}`
+        }
+      };
 
     const response = await cashfreeClient.PGCreateOrder(request as any);
     return {
