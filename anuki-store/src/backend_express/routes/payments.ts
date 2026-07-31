@@ -89,8 +89,9 @@ router.post('/cashfree/create-order', verifyToken, validate(createPaymentSchema)
       retryCount: result.payment.retryCount,
     });
   } catch (error: any) {
+    const errorMsg = error?.response?.data?.message || error?.response?.data || error.message || 'Unknown Cashfree Error';
     console.error('Cashfree Create Order Error:', error?.response?.data || error.message);
-    return res.status(500).json({ error: 'Failed to create payment order. Please try again.' });
+    return res.status(500).json({ error: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg) });
   }
 });
 
