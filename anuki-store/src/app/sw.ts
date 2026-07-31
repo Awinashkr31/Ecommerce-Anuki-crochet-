@@ -22,7 +22,7 @@ const serwist = new Serwist({
 serwist.addEventListeners();
 
 self.addEventListener("push", (event) => {
-  if (!(self.Notification && self.Notification.permission === "granted")) {
+  if (!((self as any).Notification && (self as any).Notification.permission === "granted")) {
     return;
   }
 
