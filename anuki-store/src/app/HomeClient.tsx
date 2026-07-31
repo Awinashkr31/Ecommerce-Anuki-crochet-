@@ -293,7 +293,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         <EpicDeals products={featuredProducts} />
 
         {/* Promotional Banners */}
-        <section className="py-2 md:py-12 bg-white overflow-hidden">
+        <section className="pt-2 pb-0 md:pt-12 md:pb-4 bg-white overflow-hidden">
           <div className="max-w-[100vw] px-4 md:px-6 xl:px-0 xl:max-w-7xl mx-auto">
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar -mx-4 px-4 md:-mx-6 md:px-6 xl:mx-0 xl:px-0">
               
@@ -359,7 +359,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
 
 
         {/* Latest Additions */}
-        <section className="py-12 md:py-24 bg-white">
+        <section className="pt-4 pb-12 md:pt-10 md:pb-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
               <motion.div

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { runSeoAudit } from "./actions";
 import {
   Globe, Search, FileText, AlertTriangle, CheckCircle2, 
   ExternalLink, TrendingUp, BarChart3, Clock, RefreshCw,
@@ -23,133 +24,18 @@ export default function SEODashboardPage() {
 
   const runAudit = async () => {
     setIsRunning(true);
-    const results: HealthCheck[] = [];
-
-    // 1. Robots.txt check
+    
     try {
-      const res = await fetch(`${baseUrl}/robots.txt`);
-      results.push({
-        label: "robots.txt",
-        status: res.ok ? "pass" : "fail",
-        detail: res.ok ? "Accessible and returns 200" : `HTTP ${res.status}`,
-        category: "Crawlability",
-      });
-    } catch {
-      results.push({ label: "robots.txt", status: "fail", detail: "Unreachable", category: "Crawlability" });
+      // Use the current origin dynamically, defaulting to the production URL if not available
+      const targetUrl = typeof window !== 'undefined' ? window.location.origin : baseUrl;
+      const results = await runSeoAudit(targetUrl);
+      setChecks(results as HealthCheck[]);
+    } catch (error) {
+      console.error("Audit failed:", error);
+    } finally {
+      setLastRun(new Date().toLocaleString());
+      setIsRunning(false);
     }
-
-    // 2. Sitemap index check
-    try {
-      const res = await fetch(`${baseUrl}/sitemap.xml`);
-      const text = await res.text();
-      const sitemapCount = (text.match(/<sitemap>/g) || []).length;
-      results.push({
-        label: "Sitemap Index",
-        status: res.ok && sitemapCount > 0 ? "pass" : "warn",
-        detail: res.ok ? `Found ${sitemapCount} child sitemaps` : "Not accessible",
-        category: "Crawlability",
-      });
-    } catch {
-      results.push({ label: "Sitemap Index", status: "fail", detail: "Unreachable", category: "Crawlability" });
-    }
-
-    // 3. HTTPS check
-    results.push({
-      label: "HTTPS / SSL",
-      status: baseUrl.startsWith("https") ? "pass" : "fail",
-      detail: baseUrl.startsWith("https") ? "Site uses HTTPS" : "Not using HTTPS",
-      category: "Security",
-    });
-
-    // 4. Schema validation (check homepage for JSON-LD)
-    try {
-      const res = await fetch(baseUrl);
-      const html = await res.text();
-      const schemaCount = (html.match(/application\/ld\+json/g) || []).length;
-      results.push({
-        label: "JSON-LD Schema (Homepage)",
-        status: schemaCount > 0 ? "pass" : "warn",
-        detail: schemaCount > 0 ? `${schemaCount} schema block(s) found` : "No JSON-LD found",
-        category: "Structured Data",
-      });
-      // 5. Meta title check
-      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-      results.push({
-        label: "Homepage <title>",
-        status: titleMatch && titleMatch[1].length > 10 ? "pass" : "warn",
-        detail: titleMatch ? `"${titleMatch[1].substring(0, 60)}"` : "No title tag found",
-        category: "On-Page",
-      });
-      // 6. Meta description
-      const descMatch = html.match(/<meta\s+name="description"\s+content="(.*?)"/i);
-      results.push({
-        label: "Homepage Meta Description",
-        status: descMatch && descMatch[1].length > 50 ? "pass" : "warn",
-        detail: descMatch ? `${descMatch[1].length} chars` : "No meta description found",
-        category: "On-Page",
-      });
-      // 7. H1 check
-      const h1Count = (html.match(/<h1[\s>]/gi) || []).length;
-      results.push({
-        label: "Homepage H1 Tags",
-        status: h1Count === 1 ? "pass" : h1Count === 0 ? "fail" : "warn",
-        detail: `${h1Count} H1 tag(s) found ${h1Count === 1 ? "(ideal)" : h1Count === 0 ? "(missing!)" : "(multiple — should be 1)"}`,
-        category: "On-Page",
-      });
-      // 8. Image alt text check (sample)
-      const imgTags = html.match(/<img[^>]*>/gi) || [];
-      const noAlt = imgTags.filter(t => !t.includes('alt=')).length;
-      results.push({
-        label: "Image Alt Text",
-        status: noAlt === 0 ? "pass" : "warn",
-        detail: `${imgTags.length} images found, ${noAlt} missing alt text`,
-        category: "Accessibility",
-      });
-    } catch {
-      results.push({ label: "Homepage Fetch", status: "fail", detail: "Could not fetch homepage", category: "General" });
-    }
-
-    // 9. Key page accessibility checks
-    const keyPages = [
-      { path: "/products", name: "Products Page" },
-      { path: "/about", name: "About Page" },
-      { path: "/contact", name: "Contact Page" },
-      { path: "/blog", name: "Blog Index" },
-      { path: "/faq", name: "FAQ Page" },
-    ];
-    for (const page of keyPages) {
-      try {
-        const res = await fetch(`${baseUrl}${page.path}`);
-        results.push({
-          label: page.name,
-          status: res.ok ? "pass" : "fail",
-          detail: `HTTP ${res.status}`,
-          category: "Page Health",
-        });
-      } catch {
-        results.push({ label: page.name, status: "fail", detail: "Unreachable", category: "Page Health" });
-      }
-    }
-
-    // 10. Product sitemap image check
-    try {
-      const res = await fetch(`${baseUrl}/sitemap-products.xml`);
-      const text = await res.text();
-      const imageNs = text.includes("xmlns:image");
-      const urlCount = (text.match(/<url>/g) || []).length;
-      results.push({
-        label: "Product Sitemap",
-        status: res.ok && urlCount > 0 ? "pass" : "warn",
-        detail: `${urlCount} products indexed, Image namespace: ${imageNs ? "Yes ✓" : "No ✗"}`,
-        category: "Crawlability",
-      });
-    } catch {
-      results.push({ label: "Product Sitemap", status: "fail", detail: "Unreachable", category: "Crawlability" });
-    }
-
-    setChecks(results);
-    setLastRun(new Date().toLocaleString());
-    setIsRunning(false);
   };
 
   const statusIcon = (status: string) => {
