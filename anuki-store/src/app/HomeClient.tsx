@@ -192,32 +192,30 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
             </AnimatePresence>
           </div>
 
-          {/* Mobile layout container (Stacked: Image Top, Content Bottom) */}
-          <div className="md:hidden flex flex-col w-full h-full min-h-screen bg-white z-10">
-            {/* Image Slider Area */}
-            <div className="relative w-full h-[60vh] bg-neutral-100 flex-shrink-0">
-              <AnimatePresence initial={false}>
-                <motion.div
-                  key={activeSlide}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0"
-                >
-                  <Image 
-                    src={heroBanners[activeSlide].image} 
-                    alt="Banner"
-                    fill
-                    priority
-                    className="object-cover"
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          {/* Mobile layout container (Floating Card over Image) */}
+          <div className="md:hidden absolute inset-0 z-10">
+            {/* Image Slider Area (Background) */}
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 z-0"
+              >
+                <Image 
+                  src={heroBanners[activeSlide].image} 
+                  alt="Banner"
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              </motion.div>
+            </AnimatePresence>
 
-            {/* Content Area (Solid Background) */}
-            <div className="w-full px-6 flex-grow flex flex-col justify-center bg-white">
+            {/* Content Area (Floating White Card) */}
+            <div className="absolute bottom-6 left-4 right-4 z-20">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeSlide}
@@ -225,29 +223,29 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="w-full flex flex-col"
+                  className="w-full flex flex-col bg-white rounded-3xl p-6 shadow-2xl"
                 >
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold tracking-wide self-start">
+                  <div className="inline-block px-3 py-1 mb-3 rounded-full bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-bold tracking-wide self-start">
                     Handmade Collection
                   </div>
                   
-                  <h1 className="text-[32px] font-[800] leading-[1.1] text-neutral-900 w-full text-left mb-3">
+                  <h1 className="text-[28px] font-[800] leading-[1.1] text-neutral-900 w-full text-left mb-2">
                     {heroBanners[activeSlide].title}
                   </h1>
                   
-                  <p className="text-[15px] font-[500] leading-[1.5] text-neutral-600 text-left mb-[24px]">
+                  <p className="text-[14px] font-[500] leading-[1.4] text-neutral-600 text-left mb-5">
                     {heroBanners[activeSlide].subtitle}
                   </p>
 
-                  <div className="flex flex-col gap-3 w-full">
+                  <div className="flex flex-col gap-2.5 w-full">
                     {heroBanners[activeSlide].cta1 && (
-                      <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[54px] bg-rose-600 text-white rounded-full font-bold text-[16px] flex items-center justify-center gap-2 shadow-md">
+                      <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[50px] bg-rose-600 text-white rounded-full font-bold text-[15px] flex items-center justify-center gap-2 shadow-md">
                         {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
                       </Link>
                     )}
                     
                     {heroBanners[activeSlide].cta2 && (
-                      <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[54px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[16px] flex items-center justify-center">
+                      <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[50px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[15px] flex items-center justify-center">
                         {heroBanners[activeSlide].cta2.text}
                       </Link>
                     )}
