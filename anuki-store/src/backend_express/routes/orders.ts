@@ -67,7 +67,7 @@ async function awardLoyaltyPoints(orderId: string, tx: any = prisma) {
 }
 
 // POST new order (Checkout)
-router.post('/', verifyToken, validate(createOrderSchema), async (req: any, res: any) => {
+router.post('/', verifyToken, validate(createOrderSchema), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const body = req.body;
     const { items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0 } = body;
@@ -236,14 +236,14 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: any, res:
     }).catch(console.error);
 
     return res.status(201).json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Order creation failed:", error.message);
     const msg = error.message && !error.message.includes('\n') ? error.message : 'Failed to create order. Please try again.';
     return res.status(400).json({ error: msg });
   }
 });
 // GET my orders analytics (Customer)
-router.get('/my-orders/analytics', verifyToken, async (req: any, res: any) => {
+router.get('/my-orders/analytics', verifyToken, async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const userId = req.user.userId;
     const [
@@ -276,14 +276,14 @@ router.get('/my-orders/analytics', verifyToken, async (req: any, res: any) => {
       totalSpent: revenueData._sum.totalAmount || 0,
       totalSaved: couponUsages._sum.discountAmount || 0
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to fetch my orders analytics:", error.message);
     return res.status(400).json({ error: 'Failed to fetch analytics' });
   }
 });
 
 // GET my orders (Customer)
-router.get('/my-orders', verifyToken, async (req: any, res: any) => {
+router.get('/my-orders', verifyToken, async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const userId = req.user.userId;
     const { status, timeRange, search } = req.query;
@@ -344,14 +344,14 @@ router.get('/my-orders', verifyToken, async (req: any, res: any) => {
       orderBy: { createdAt: 'desc' }
     });
     return res.json(orders);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to fetch my orders:", error.message);
     return res.status(400).json({ error: 'Failed to fetch your orders' });
   }
 });
 
 // POST cancel order (Customer)
-router.post('/:id/cancel', verifyToken, async (req: any, res: any) => {
+router.post('/:id/cancel', verifyToken, async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
@@ -377,14 +377,14 @@ router.post('/:id/cancel', verifyToken, async (req: any, res: any) => {
     });
 
     return res.json({ success: true, message: 'Order cancelled successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to cancel order:", error.message);
     return res.status(400).json({ error: 'Failed to cancel order' });
   }
 });
 
 // GET order analytics (Admin)
-router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'FINANCE']), async (req: any, res: any) => {
+router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'FINANCE']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -435,7 +435,7 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
 });
 
 // GET order by id (Admin/Customer)
-router.get('/:id', verifyToken, async (req: any, res: any) => {
+router.get('/:id', verifyToken, async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     
@@ -510,7 +510,7 @@ router.get('/:id', verifyToken, async (req: any, res: any) => {
 });
 
 // GET all orders (Admin) with Pagination & Filtering
-router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT', 'FINANCE']), async (req: any, res: any) => {
+router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT', 'FINANCE']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { page = 1, limit = 50, status, search, paymentStatus } = req.query;
     
@@ -558,7 +558,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFIL
 });
 
 // PUT update order status (Admin)
-router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: any, res: any) => {
+router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const body = req.body;
@@ -603,7 +603,7 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
 });
 
 // POST create order timeline note (Admin)
-router.post('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: any, res: any) => {
+router.post('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const body = req.body;
@@ -628,7 +628,7 @@ router.post('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
 });
 
 // POST trigger communication (Admin)
-router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: any, res: any) => {
+router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const { channel, message, title } = req.body; // e.g. channel: email, sms, whatsapp
@@ -667,7 +667,7 @@ router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADM
 });
 
 // PUT update internal notes
-router.put('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: any, res: any) => {
+router.put('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const body = req.body;
@@ -685,7 +685,7 @@ router.put('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
 });
 
 // GET order timeline
-router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: any, res: any) => {
+router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     const timeline = await prisma.orderTimeline.findMany({
@@ -702,7 +702,7 @@ router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
 import { ShippingService } from '../services/shipping';
 
 // POST fulfill order (Generate Label) (Admin only)
-router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: any, res: any) => {
+router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     
@@ -733,7 +733,7 @@ router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
 });
 
 // POST mock shipping webhook
-router.post('/webhooks/shipping', async (req: any, res: any) => {
+router.post('/webhooks/shipping', async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const body = req.body;
     const { awbNumber, status } = body; // e.g., 'OUT_FOR_DELIVERY', 'DELIVERED'
@@ -759,7 +759,7 @@ router.post('/webhooks/shipping', async (req: any, res: any) => {
 });
 
 // DELETE order
-router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req: any, res: any) => {
+router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     
@@ -800,7 +800,7 @@ router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async
     });
 
     return res.json({ success: true, message: 'Order deleted successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete order error:', error);
     return res.status(400).json({ error: 'Failed to delete order' });
   }
