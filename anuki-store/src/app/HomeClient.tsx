@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -153,105 +152,87 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
             <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
           </div>
 
-          <AnimatePresence initial={false}>
-            {activeSlide !== 0 && (
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-                className="absolute inset-0 z-0"
-              >
-                <Image 
-                  src={heroBanners[activeSlide].image} 
-                  alt="Banner"
-                  fill
-                  priority={false}
-                  className="object-cover md:opacity-80"
-                  sizes="100vw"
-                />
-                {/* Desktop Gradient */}
-                <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
-                {/* Mobile Gradient */}
-                <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {activeSlide !== 0 && (
+            <div
+              key={activeSlide}
+              className="absolute inset-0 z-0 animate-fade-in"
+            >
+              <Image 
+                src={heroBanners[activeSlide].image} 
+                alt="Banner"
+                fill
+                priority={false}
+                className="object-cover md:opacity-80"
+                sizes="100vw"
+              />
+              {/* Desktop Gradient */}
+              <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
+              {/* Mobile Gradient */}
+              <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+            </div>
+          )}
 
           {/* Desktop layout container (hidden on mobile) */}
           <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 w-full hidden md:block">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-              >
-                <h1 className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 text-white leading-tight drop-shadow-lg">
-                  {heroBanners[activeSlide].title}
-                </h1>
-                <p className="text-base md:text-xl text-neutral-200 mb-8 md:mb-10 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
-                  {heroBanners[activeSlide].subtitle}
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
-                  {heroBanners[activeSlide].cta1 && (
-                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full sm:w-auto bg-rose-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2">
-                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={20} />
-                    </Link>
-                  )}
-                  {heroBanners[activeSlide].cta2 && (
-                    <Link href={heroBanners[activeSlide].cta2.link} className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-white/20 transition-all flex items-center justify-center">
-                      {heroBanners[activeSlide].cta2.text}
-                    </Link>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+            <div
+              key={activeSlide}
+              className="animate-fade-in-up"
+            >
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 text-white leading-tight drop-shadow-lg">
+                {heroBanners[activeSlide].title}
+              </h1>
+              <p className="text-base md:text-xl text-neutral-200 mb-8 md:mb-10 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
+                {heroBanners[activeSlide].subtitle}
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
+                {heroBanners[activeSlide].cta1 && (
+                  <Link href={heroBanners[activeSlide].cta1.link} className="w-full sm:w-auto bg-rose-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={20} />
+                  </Link>
+                )}
+                {heroBanners[activeSlide].cta2 && (
+                  <Link href={heroBanners[activeSlide].cta2.link} className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-white/20 transition-all flex items-center justify-center">
+                    {heroBanners[activeSlide].cta2.text}
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Mobile layout container */}
           <div className="md:hidden relative w-full h-full flex flex-col justify-end z-10 pb-[24px] px-[20px]">
+            <div
+              key={activeSlide}
+              className="w-full flex flex-col items-start text-left relative z-10 animate-fade-in-up-mobile"
+            >
+              {/* Text Content Container (Max Width 85%) */}
+              <div className="w-[85%] flex flex-col items-start">
+                
+                <h2 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
+                  {heroBanners[activeSlide].title}
+                </h2>
+                
+                <p className="text-[13px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[16px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
+                  {heroBanners[activeSlide].subtitle}
+                </p>
+              </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="w-full flex flex-col items-start text-left relative z-10"
-              >
-                {/* Text Content Container (Max Width 85%) */}
-                <div className="w-[85%] flex flex-col items-start">
-                  
-                  <h2 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
-                    {heroBanners[activeSlide].title}
-                  </h2>
-                  
-                  <p className="text-[13px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[16px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
-                    {heroBanners[activeSlide].subtitle}
-                  </p>
-                </div>
-
-                {/* Buttons Container (100% Width) */}
-                <div className="flex flex-col w-full">
-                  {heroBanners[activeSlide].cta1 && (
-                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[46px] bg-rose-600 text-white rounded-full font-[700] text-[15px] flex items-center justify-center gap-2 shadow-lg">
-                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={16} />
-                    </Link>
-                  )}
-                  
-                  {heroBanners[activeSlide].cta2 && (
-                    <Link href={heroBanners[activeSlide].cta2.link} className="mt-[10px] w-full h-[44px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[15px] flex items-center justify-center">
-                      {heroBanners[activeSlide].cta2.text}
-                    </Link>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+              {/* Buttons Container (100% Width) */}
+              <div className="flex flex-col w-full">
+                {heroBanners[activeSlide].cta1 && (
+                  <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[46px] bg-rose-600 text-white rounded-full font-[700] text-[15px] flex items-center justify-center gap-2 shadow-lg">
+                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={16} />
+                  </Link>
+                )}
+                
+                {heroBanners[activeSlide].cta2 && (
+                  <Link href={heroBanners[activeSlide].cta2.link} className="mt-[10px] w-full h-[44px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[15px] flex items-center justify-center">
+                    {heroBanners[activeSlide].cta2.text}
+                  </Link>
+                )}
+              </div>
+            </div>
 
             {/* Slider Indicators for Mobile */}
             <div className="w-full flex justify-center gap-2.5 mt-[24px] relative z-10">
@@ -360,13 +341,9 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         <section className="pt-4 pb-12 md:pt-10 md:pb-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-              >
+              <div className="mb-4">
                 <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Latest Additions</h2>
-              </motion.div>
+              </div>
               <Link href="/products?sort=newest" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
                 See All <ChevronRight size={18} />
               </Link>
@@ -384,13 +361,9 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         <section className="py-12 md:py-24 bg-rose-50/50 border-t border-neutral-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-              >
+              <div className="mb-4">
                 <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Bestsellers</h2>
-              </motion.div>
+              </div>
               <Link href="/products?sort=bestselling" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
                 See All <ChevronRight size={18} />
               </Link>
@@ -408,36 +381,27 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         <section className="py-12 md:py-24 bg-neutral-900 text-white">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="flex flex-col items-center"
-              >
+              <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
                   <span className="text-2xl">🧶</span>
                 </div>
                 <h3 className="text-xl font-bold mb-3">100% Handmade</h3>
                 <p className="text-neutral-400">Every single stitch is crafted by hand with premium, non-toxic yarn.</p>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-                className="flex flex-col items-center"
-              >
+              </div>
+              <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
                   <span className="text-2xl">✨</span>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Bespoke Customization</h3>
                 <p className="text-neutral-400">Want a different color? Adding a name? We build exactly what you envision.</p>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-                className="flex flex-col items-center"
-              >
+              </div>
+              <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
                   <span className="text-2xl">🎁</span>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Ready to Gift</h3>
                 <p className="text-neutral-400">Premium unboxing experience with personalized gift notes included.</p>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -446,7 +410,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
-                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                <div>
                   <h2 className="text-3xl md:text-5xl font-black mb-6 text-neutral-900">Make it <span className="text-rose-600">Yours.</span></h2>
                   <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
                     Looking for a specific color palette? Want to add a name tag or a special accessory to a plushie? 
@@ -460,7 +424,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                   <Link href="/products?isMadeToOrder=true" className="inline-flex items-center gap-2 bg-neutral-900 text-white px-8 py-4 rounded-full font-bold hover:bg-neutral-800 transition-colors shadow-lg">
                     Start a Custom Order <ArrowRight size={18} />
                   </Link>
-                </motion.div>
+                </div>
               </div>
               <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl">
                 <Image 
