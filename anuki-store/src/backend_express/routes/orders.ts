@@ -70,7 +70,7 @@ async function awardLoyaltyPoints(orderId: string, tx: any = prisma) {
 router.post('/', verifyToken, validate(createOrderSchema), async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { userId, items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0 } = body;
+    const { items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0 } = body;
     
     // In a real scenario, we'd calculate totalAmount securely here by fetching variant prices from DB
     // rather than trusting the client's totalAmount.
@@ -194,6 +194,9 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: any, res:
       }
       
       return order;
+    }, {
+      maxWait: 10000,
+      timeout: 20000
     });
 
     // Handle COD payment via PaymentService (outside transaction)
@@ -285,7 +288,7 @@ router.get('/my-orders', verifyToken, async (req: any, res: any) => {
     const userId = req.user.userId;
     const { status, timeRange, search } = req.query;
 
-    let whereClause: any = { userId };
+    const whereClause: any = { userId };
 
     if (status && status !== 'ALL') {
       if (status === 'ACTIVE') {
