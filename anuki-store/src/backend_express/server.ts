@@ -113,9 +113,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     url: req.originalUrl,
     method: req.method,
   });
-  // Never send internal error details to clients
+  
+  // Return the error message to the client temporarily for debugging the 500 error
   const statusCode = err.status || err.statusCode || 500;
-  res.status(statusCode).json({ error: 'Something went wrong. Please try again later.' });
+  res.status(statusCode).json({ 
+    error: 'Something went wrong.',
+    details: err.message,
+    stack: err.stack
+  });
 });
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {

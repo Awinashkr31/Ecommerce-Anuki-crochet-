@@ -12,6 +12,9 @@ const authLimiter = rateLimit({
   message: { error: 'Too many requests, try again later' },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || (req.headers['x-forwarded-for'] as string) || (req.headers['x-real-ip'] as string) || 'unknown';
+  }
 });
 
 const sessionSchema = z.object({
