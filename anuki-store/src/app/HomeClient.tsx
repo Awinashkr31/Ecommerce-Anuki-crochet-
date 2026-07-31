@@ -193,8 +193,8 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
           </div>
 
           {/* Mobile layout container (Floating Card over Image) */}
-          <div className="md:hidden absolute inset-0 z-10">
-            {/* Image Slider Area (Background) */}
+          <div className="md:hidden relative w-full h-[80vh] min-h-[500px] w-full flex flex-col justify-end z-10 pb-8 px-5">
+            {/* Background Image Slider */}
             <AnimatePresence initial={false}>
               <motion.div
                 key={activeSlide}
@@ -202,7 +202,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 z-0"
+                className="absolute inset-0 -z-10"
               >
                 <Image 
                   src={heroBanners[activeSlide].image} 
@@ -214,45 +214,43 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
               </motion.div>
             </AnimatePresence>
 
-            {/* Content Area (Floating White Card) */}
-            <div className="absolute bottom-6 left-4 right-4 z-20">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSlide}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="w-full flex flex-col bg-white rounded-3xl p-6 shadow-2xl"
-                >
-                  <div className="inline-block px-3 py-1 mb-3 rounded-full bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-bold tracking-wide self-start">
-                    Handmade Collection
-                  </div>
-                  
-                  <h1 className="text-[28px] font-[800] leading-[1.1] text-neutral-900 w-full text-left mb-2">
-                    {heroBanners[activeSlide].title}
-                  </h1>
-                  
-                  <p className="text-[14px] font-[500] leading-[1.4] text-neutral-600 text-left mb-5">
-                    {heroBanners[activeSlide].subtitle}
-                  </p>
+            {/* Floating Content Card */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="w-full bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl flex flex-col"
+              >
+                <div className="inline-block px-3 py-1 mb-3 rounded-full bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold tracking-wide self-start">
+                  Handmade Collection
+                </div>
+                
+                <h1 className="text-[28px] font-[800] leading-[1.15] text-neutral-900 w-full text-left mb-2.5">
+                  {heroBanners[activeSlide].title}
+                </h1>
+                
+                <p className="text-[14px] font-[500] leading-[1.5] text-neutral-600 text-left mb-5">
+                  {heroBanners[activeSlide].subtitle}
+                </p>
 
-                  <div className="flex flex-col gap-2.5 w-full">
-                    {heroBanners[activeSlide].cta1 && (
-                      <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[50px] bg-rose-600 text-white rounded-full font-bold text-[15px] flex items-center justify-center gap-2 shadow-md">
-                        {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
-                      </Link>
-                    )}
-                    
-                    {heroBanners[activeSlide].cta2 && (
-                      <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[50px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[15px] flex items-center justify-center">
-                        {heroBanners[activeSlide].cta2.text}
-                      </Link>
-                    )}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                <div className="flex flex-col gap-3 w-full">
+                  {heroBanners[activeSlide].cta1 && (
+                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[50px] bg-rose-600 text-white rounded-full font-bold text-[15px] flex items-center justify-center gap-2 shadow-md">
+                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
+                    </Link>
+                  )}
+                  
+                  {heroBanners[activeSlide].cta2 && (
+                    <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[50px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[15px] flex items-center justify-center">
+                      {heroBanners[activeSlide].cta2.text}
+                    </Link>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Dots Indicator Desktop ONLY */}
@@ -268,8 +266,8 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
           </div>
         </section>
 
-        {/* Slider Indicators for Mobile (Below Image) */}
-        <div className="md:hidden flex justify-center gap-2.5 pt-6 pb-2 bg-white">
+        {/* Slider Indicators for Mobile (Below Image/Card) */}
+        <div className="md:hidden flex justify-center gap-2.5 pt-4 pb-4 bg-white">
           {heroBanners.map((_, index) => (
             <button
               key={index}
