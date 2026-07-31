@@ -252,9 +252,9 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                 {/* Text Content Container (Max Width 85%) */}
                 <div className="w-[85%] flex flex-col items-start">
                   
-                  <h1 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
+                  <h2 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
                     {heroBanners[activeSlide].title}
-                  </h1>
+                  </h2>
                   
                   <p className="text-[13px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[16px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
                     {heroBanners[activeSlide].subtitle}
