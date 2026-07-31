@@ -1,11 +1,19 @@
 import { prisma } from '../lib/prisma';
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@anukicrochet.in',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-);
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:admin@anukicrochet.in',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  } catch (error) {
+    console.error('Failed to initialize web-push VAPID details:', error);
+  }
+} else {
+  console.warn('VAPID keys are missing, push notifications will be disabled.');
+}
 export interface NotificationPayload {
   userId: string;
   role?: string;

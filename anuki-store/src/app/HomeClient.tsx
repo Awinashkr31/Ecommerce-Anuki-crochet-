@@ -138,7 +138,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
         {/* Hero Section Carousel */}
-        <section className="relative min-h-screen md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
+        <section className="relative h-[65vh] min-h-[480px] md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
           <AnimatePresence initial={false}>
             <motion.div
               key={activeSlide}
@@ -192,9 +192,9 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
             </AnimatePresence>
           </div>
 
-          {/* Mobile layout container (Floating Card over Image) */}
-          <div className="md:hidden relative w-full h-[80vh] min-h-[500px] w-full flex flex-col justify-end z-10 pb-8 px-5">
-            {/* Background Image Slider */}
+          {/* Mobile layout container */}
+          <div className="md:hidden relative w-full h-[65vh] min-h-[480px] flex flex-col justify-end z-10 pb-[32px] px-[24px]">
+            {/* Background Image Slider with Premium Gradient */}
             <AnimatePresence initial={false}>
               <motion.div
                 key={activeSlide}
@@ -214,7 +214,6 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
               </motion.div>
             </AnimatePresence>
 
-            {/* Floating Content Card */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSlide}
@@ -222,64 +221,53 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="w-full bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl flex flex-col"
+                className="w-full flex flex-col items-start text-left relative z-10"
               >
-                <div className="inline-block px-3 py-1 mb-3 rounded-full bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold tracking-wide self-start">
-                  Handmade Collection
+                {/* Text Content Container (Max Width 75%) */}
+                <div className="w-[75%] flex flex-col items-start">
+                  <div className="inline-block px-3 py-1.5 mb-[16px] rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-white text-[12px] font-medium tracking-wide shadow-lg">
+                    ✨ Handmade Collection
+                  </div>
+                  
+                  <h1 className="text-[32px] font-[800] leading-[1.1] text-white w-full mb-[12px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
+                    {heroBanners[activeSlide].title}
+                  </h1>
+                  
+                  <p className="text-[15px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[20px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
+                    {heroBanners[activeSlide].subtitle}
+                  </p>
                 </div>
-                
-                <h1 className="text-[28px] font-[800] leading-[1.15] text-neutral-900 w-full text-left mb-2.5">
-                  {heroBanners[activeSlide].title}
-                </h1>
-                
-                <p className="text-[14px] font-[500] leading-[1.5] text-neutral-600 text-left mb-5">
-                  {heroBanners[activeSlide].subtitle}
-                </p>
 
-                <div className="flex flex-col gap-3 w-full">
+                {/* Buttons Container (100% Width) */}
+                <div className="flex flex-col w-full">
                   {heroBanners[activeSlide].cta1 && (
-                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[50px] bg-rose-600 text-white rounded-full font-bold text-[15px] flex items-center justify-center gap-2 shadow-md">
+                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[52px] bg-rose-600 text-white rounded-full font-[700] text-[16px] flex items-center justify-center gap-2 shadow-lg">
                       {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
                     </Link>
                   )}
                   
                   {heroBanners[activeSlide].cta2 && (
-                    <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[50px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[15px] flex items-center justify-center">
+                    <Link href={heroBanners[activeSlide].cta2.link} className="mt-[12px] w-full h-[50px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[16px] flex items-center justify-center">
                       {heroBanners[activeSlide].cta2.text}
                     </Link>
                   )}
                 </div>
               </motion.div>
             </AnimatePresence>
-          </div>
 
-          {/* Dots Indicator Desktop ONLY */}
-          <div className="absolute bottom-8 left-0 right-0 hidden md:flex justify-center gap-2 z-20">
-            {heroBanners.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveSlide(index)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-8" : "bg-white/50 hover:bg-white/80 w-2.5"}`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+            {/* Slider Indicators for Mobile */}
+            <div className="w-full flex justify-center gap-2.5 mt-[24px] relative z-10">
+              {heroBanners.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveSlide(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-6" : "bg-white/40 w-2"}`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </section>
-
-        {/* Slider Indicators for Mobile (Below Image/Card) */}
-        <div className="md:hidden flex justify-center gap-2.5 pt-4 pb-4 bg-white">
-          {heroBanners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveSlide(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-neutral-800 w-6" : "bg-neutral-300 w-2"}`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Epic Deals Section */}
-        <EpicDeals products={featuredProducts} />
 
         {/* Shop by Category */}
         <section className="py-12 md:py-24 bg-neutral-50 border-b border-neutral-100">
@@ -301,6 +289,9 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
             </div>
           </div>
         </section>
+
+        {/* Epic Deals Section (SWAG SAVINGS) */}
+        <EpicDeals products={featuredProducts} />
 
         {/* Promotional Banners */}
         <section className="py-8 md:py-16 bg-white overflow-hidden">
