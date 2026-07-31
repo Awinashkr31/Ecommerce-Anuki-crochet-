@@ -1,14 +1,14 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Returns & Exchanges',
-  description: 'Read the Returns and Exchanges policy for Anuki Crochet. Understand our policies for handmade customized products.',
+  title: 'Refunds & Cancellations',
+  description: 'Read the Refunds and Cancellations policy for Anuki Crochet. Understand our policies for handmade customized products.',
   alternates: {
-    canonical: '/policies/returns-and-exchanges'
+    canonical: '/policies/refunds-and-cancellations'
   }
 };
 
-export default function ReturnsAndExchangesPage() {
+export default function RefundsAndCancellationsPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'MerchantReturnPolicy',
@@ -29,7 +29,7 @@ export default function ReturnsAndExchangesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <h1 className="text-3xl font-black mb-6">Returns &amp; Exchanges</h1>
+      <h1 className="text-3xl font-black mb-6">Refunds &amp; Cancellations</h1>
       <p className="text-sm text-neutral-500 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
       
       <h3>1. General Return Policy</h3>
@@ -42,9 +42,9 @@ export default function ReturnsAndExchangesPage() {
         If your item arrives defective, damaged, or you receive the incorrect item, we sincerely apologize! Please contact us within 48 hours of delivery at support@anukicrochet.in with clear photos of the issue. We will evaluate the problem and make it right by offering a replacement or refund.
       </p>
 
-      <h3>3. Custom Orders</h3>
+      <h3>3. Cancellations & Custom Orders</h3>
       <p>
-        All custom and personalized orders are final sale. We cannot accept returns, exchanges, or cancellations on customized items once production has started.
+        Orders can be cancelled within 24 hours of placement for a full refund. After 24 hours, custom and personalized orders cannot be cancelled as production may have already started. All customized orders are final sale and we cannot accept returns or exchanges.
       </p>
 
       <h3>4. Non-Returnable Items</h3>

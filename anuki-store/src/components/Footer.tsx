@@ -104,7 +104,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li><Link href="/contact" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Contact Us</Link></li>
               <li><Link href="/policies/shipping-policy" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Shipping Policy</Link></li>
-              <li><Link href="/policies/returns-and-exchanges" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Returns & Exchanges</Link></li>
+              <li><Link href="/policies/refunds-and-cancellations" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Refunds &amp; Cancellations</Link></li>
               <li><Link href="/policies/payment-policy" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Payment & Security</Link></li>
               <li><Link href="/faq" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">FAQs</Link></li>
             </ul>
@@ -119,7 +119,7 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-6 text-sm text-neutral-500">
             <Link href="/policies/privacy-policy" className="hover:text-neutral-900 transition-colors">Privacy Policy</Link>
-            <Link href="/policies/terms-of-service" className="hover:text-neutral-900 transition-colors">Terms of Service</Link>
+            <Link href="/policies/terms-of-service" className="hover:text-neutral-900 transition-colors">Terms &amp; Conditions</Link>
           </div>
         </div>
       </div>

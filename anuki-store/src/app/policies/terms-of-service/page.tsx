@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service',
-  description: 'Read the Terms of Service for Anuki Crochet. Learn about the rules, guidelines, and agreements for using our website.',
+  title: 'Terms & Conditions',
+  description: 'Read the Terms & Conditions for Anuki Crochet. Learn about the rules, guidelines, and agreements for using our website.',
   alternates: {
     canonical: '/policies/terms-of-service'
   }
@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 export default function TermsOfServicePage() {
   return (
     <>
-      <h1 className="text-3xl font-black mb-6">Terms of Service</h1>
+      <h1 className="text-3xl font-black mb-6">Terms &amp; Conditions</h1>
       <p className="text-sm text-neutral-500 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
       
       <h3>1. Agreement to Terms</h3>
       <p>
-        By accessing or using the Anuki Crochet website, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions, then you may not access the website or use any services.
+        By accessing or using the Anuki Crochet website, you agree to be bound by these Terms & Conditions. If you do not agree to all the terms and conditions, then you may not access the website or use any services.
       </p>
 
       <h3>2. Handmade Products</h3>
@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
 
       <h3>6. Contact Information</h3>
       <p>
-        Questions about the Terms of Service should be sent to us at support@anukicrochet.in.
+        Questions about the Terms & Conditions should be sent to us at support@anukicrochet.in.
       </p>
     </>
   );
