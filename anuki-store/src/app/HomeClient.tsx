@@ -5,9 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { ProductCard, Product } from "@/components/ProductCard";
-import { Footer } from "@/components/Footer";
-import { EpicDeals } from "@/components/EpicDeals";
+import dynamic from "next/dynamic";
+import type { Product } from "@/components/ProductCard";
+
+const ProductCard = dynamic(() => import("@/components/ProductCard").then(mod => mod.ProductCard), { ssr: true });
+const EpicDeals = dynamic(() => import("@/components/EpicDeals").then(mod => mod.EpicDeals), { ssr: true });
+const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Footer), { ssr: true });
 import useSWR from 'swr';
 import { apiGet } from '@/lib/api';
 
@@ -130,18 +133,24 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
         {/* Hero Section Carousel */}
-        <section className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
-          {/* Static First Image for LCP (Desktop) */}
-          <div className={`absolute inset-0 z-0 hidden md:block ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
+        <section className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex flex-col md:flex-row items-center justify-center overflow-hidden bg-neutral-900">
+          
+          {/* Unified Background Images */}
+          {/* Static First Image for LCP */}
+          <div className={`absolute inset-0 z-0 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
             <Image 
               src={heroBanners[0].image} 
               alt="Banner"
               fill
               priority
-              className="object-cover opacity-80"
+              fetchPriority="high"
+              className="object-cover md:opacity-80"
               sizes="100vw"
             />
-            <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
+            {/* Desktop Gradient */}
+            <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
+            {/* Mobile Gradient */}
+            <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
           </div>
 
           <AnimatePresence initial={false}>
@@ -152,17 +161,20 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.8 }}
-                className="absolute inset-0 z-0 hidden md:block"
+                className="absolute inset-0 z-0"
               >
                 <Image 
                   src={heroBanners[activeSlide].image} 
                   alt="Banner"
                   fill
                   priority={false}
-                  className="object-cover opacity-80"
+                  className="object-cover md:opacity-80"
                   sizes="100vw"
                 />
-                <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
+                {/* Desktop Gradient */}
+                <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
+                {/* Mobile Gradient */}
+                <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -201,44 +213,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
           </div>
 
           {/* Mobile layout container */}
-          <div className="md:hidden relative w-full h-[55vh] min-h-[400px] flex flex-col justify-end z-10 pb-[24px] px-[20px]">
-            {/* Static First Image for LCP (Mobile) */}
-            <div className={`absolute inset-0 -z-10 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
-              <Image 
-                src={heroBanners[0].image} 
-                alt="Banner"
-                fill
-                priority
-                className="object-cover"
-                sizes="100vw"
-              />
-              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-            </div>
-
-            {/* Background Image Slider with Premium Gradient */}
-            <AnimatePresence initial={false}>
-              {activeSlide !== 0 && (
-                <motion.div
-                  key={activeSlide}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0 -z-10"
-                >
-                  <Image 
-                    src={heroBanners[activeSlide].image} 
-                    alt="Banner"
-                    fill
-                    priority={false}
-                    className="object-cover"
-                    sizes="100vw"
-                  />
-                  {/* Subtle gradient only on the bottom half for readability */}
-                  <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="md:hidden relative w-full h-full flex flex-col justify-end z-10 pb-[24px] px-[20px]">
 
             <AnimatePresence mode="wait">
               <motion.div
