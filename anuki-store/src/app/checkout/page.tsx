@@ -164,7 +164,7 @@ export default function CheckoutPage() {
         internalOrderId: dbOrder.id,
         user: {
           ...profile,
-          phone: selectedAddress.phone || profile?.phone
+          phone: selectedAddress.phone || (profile as any)?.phone
         }
       });
 
