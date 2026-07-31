@@ -5,6 +5,7 @@ import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { StoreHeader } from "@/components/StoreHeader";
 import { BottomNav } from "@/components/BottomNav";
+import { SWRProvider } from "@/components/SWRProvider";
 import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from 'sonner';
 
@@ -78,13 +79,15 @@ export default function RootLayout({
           }}
         />
         <AnalyticsProvider>
-          <AuthProvider>
-            <StoreHeader />
-            <main className="flex-grow pb-16 md:pb-0">
-              {children}
-            </main>
-            <BottomNav />
-          </AuthProvider>
+          <SWRProvider>
+            <AuthProvider>
+              <StoreHeader />
+              <main className="flex-grow pb-16 md:pb-0">
+                {children}
+              </main>
+              <BottomNav />
+            </AuthProvider>
+          </SWRProvider>
         </AnalyticsProvider>
       </body>
     </html>

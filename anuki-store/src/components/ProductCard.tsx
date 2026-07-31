@@ -18,6 +18,7 @@ export interface Product {
   category?: { name: string; slug?: string };
   variants?: any[];
   bestseller?: boolean;
+  isNew?: boolean;
   status?: string;
   stockStatus?: string;
   stock?: number;
@@ -62,24 +63,29 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-[4/5] bg-neutral-100 rounded-[20px] overflow-hidden block">
         
         {/* Badges */}
-        <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+        <div className="absolute top-0 left-0 z-20 flex flex-col items-start gap-1">
           {product.bestseller && (
-            <span className="bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-              Best Seller
+            <span className="bg-orange-100 text-orange-600 text-[11px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+              Bestseller
+            </span>
+          )}
+          {product.isNew && !product.bestseller && (
+            <span className="bg-orange-100 text-orange-600 text-[11px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+              New
             </span>
           )}
           {product.isMadeToOrder && (
-            <span className="bg-white/90 backdrop-blur text-neutral-800 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+            <span className="bg-white/90 backdrop-blur text-neutral-800 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
               Handmade
             </span>
           )}
-          {discount && (
-            <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+          {discount && !product.bestseller && (
+            <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
               -{discount}%
             </span>
           )}
           {!inStock && (
-            <span className="bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+            <span className="bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
               Out of Stock
             </span>
           )}

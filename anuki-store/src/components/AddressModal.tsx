@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle2, Edit2, Loader2, MapPin } from 'lucide-react';
+import { X, CheckCircle2, Edit2, Loader2, MapPin, Trash2 } from 'lucide-react';
 import { api, apiGet, apiPost } from '@/lib/api';
 
 export interface Address {
@@ -21,13 +21,47 @@ interface AddressModalProps {
   onClose: () => void;
   onSelect: (address: Address) => void;
   selectedAddressId?: string;
+  hideDelete?: boolean;
 }
 
-export default function AddressModal({ isOpen, onClose, onSelect, selectedAddressId }: AddressModalProps) {
+const FloatingInput = ({ label, type = 'text', value, onChange, className = '', maxLength }: any) => (
+  <div className={`relative ${className}`}>
+    <input 
+      type={type}
+      value={value}
+      onChange={onChange}
+      maxLength={maxLength}
+      className="block px-4 pb-2 pt-6 w-full text-sm text-neutral-900 bg-white rounded-xl shadow-sm border-0 appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500 peer"
+      placeholder=" "
+    />
+    <label className="absolute text-xs text-neutral-500 duration-200 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
+      {label}
+    </label>
+  </div>
+);
+
+const FloatingTextarea = ({ label, value, onChange, rows = 3, className = '' }: any) => (
+  <div className={`relative ${className}`}>
+    <textarea 
+      value={value}
+      onChange={onChange}
+      rows={rows}
+      className="block px-4 pb-2 pt-6 w-full text-sm text-neutral-900 bg-white rounded-xl shadow-sm border-0 appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500 peer resize-none"
+      placeholder=" "
+    />
+    <label className="absolute text-xs text-neutral-500 duration-200 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
+      {label}
+    </label>
+  </div>
+);
+
+export default function AddressModal({ isOpen, onClose, onSelect, selectedAddressId, hideDelete }: AddressModalProps) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form states
   const [fullName, setFullName] = useState('');
@@ -46,6 +80,13 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
       const data = await apiGet<Address[]>('/addresses');
       if (data) {
         setAddresses(data);
+        // Automatically show the form if they have zero addresses
+        if (data.length === 0) {
+          setShowForm(true);
+        } else if (!editingAddress) {
+          // Only force close the form if we aren't currently editing
+          setShowForm(false);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -56,9 +97,8 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
 
   useEffect(() => {
     if (isOpen) {
-      fetchAddresses();
-      setShowForm(false);
       resetForm();
+      fetchAddresses();
     }
   }, [isOpen]);
 
@@ -71,6 +111,7 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
     setStreet('');
     setLandmark('');
     setEditingAddress(null);
+    setAddressToDelete(null);
     setError('');
   };
 
@@ -110,6 +151,11 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
       setError('Please fill all required fields');
       return;
     }
+
+    if (phone.length !== 10) {
+      setError('Mobile Number must be exactly 10 digits');
+      return;
+    }
     
     setIsSaving(true);
     setError('');
@@ -138,17 +184,34 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
         onSelect(updatedData);
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to save address');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!addressToDelete) return;
+    try {
+      setIsDeleting(true);
+      await api(`/addresses/${addressToDelete}`, { method: 'DELETE' });
+      await fetchAddresses();
+      if (selectedAddressId === addressToDelete) {
+        onSelect({} as Address); 
+      }
+      setAddressToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete address:', err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-[#f9f9f9] w-full max-w-md rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-[100] bg-black/40 flex items-end md:items-center justify-center md:p-4 transition-opacity">
+      <div className="bg-[#f9f9f9] w-full md:max-w-md rounded-t-3xl md:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300 md:fade-in md:zoom-in md:slide-in-from-bottom-0">
         
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
@@ -195,21 +258,36 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
                             </p>
                           </div>
                           
-                          <div className="flex flex-col items-end gap-3">
+                          <div className="flex flex-col items-end gap-2">
                             {isSelected && (
-                              <CheckCircle2 className="text-rose-500 fill-rose-50" size={22} />
+                              <CheckCircle2 className="text-rose-500 fill-rose-50 mb-1" size={22} />
                             )}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(addr);
-                              }}
-                              className={`p-1.5 rounded-full hover:bg-neutral-100 transition-colors ${
-                                isSelected ? 'text-rose-500' : 'text-neutral-400'
-                              }`}
-                            >
-                              <Edit2 size={16} />
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEdit(addr);
+                                }}
+                                className={`p-1.5 rounded-full hover:bg-neutral-100 transition-colors ${
+                                  isSelected ? 'text-rose-500' : 'text-neutral-400'
+                                }`}
+                                title="Edit"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              {!hideDelete && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setAddressToDelete(addr.id);
+                                  }}
+                                  className="p-1.5 rounded-full hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-red-500"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -245,62 +323,51 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
               {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>}
 
               <div className="space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="Full Name *" 
+                <FloatingInput 
+                  label="Full Name *" 
                   value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                  onChange={(e: any) => setFullName(e.target.value)}
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <input 
+                  <FloatingInput 
                     type="tel" 
-                    placeholder="Mobile Number *" 
+                    label="Mobile Number *" 
                     value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                    maxLength={10}
+                    onChange={(e: any) => setPhone(e.target.value.replace(/\D/g, ''))}
                   />
-                  <input 
-                    type="text" 
-                    placeholder="Pincode *" 
+                  <FloatingInput 
+                    label="Pincode *" 
                     value={pincode}
-                    onChange={e => setPincode(e.target.value)}
-                    className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                    onChange={(e: any) => setPincode(e.target.value)}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <input 
-                    type="text" 
-                    placeholder="City *" 
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
-                  />
-                  <input 
-                    type="text" 
-                    placeholder="State *" 
-                    value={state}
-                    onChange={e => setState(e.target.value)}
-                    className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
-                  />
-                </div>
-
-                <textarea 
-                  placeholder="Address (House / Flat / Block, Area, Colony) *" 
+                <FloatingTextarea 
+                  label="Address (House / Flat / Block, Area, Colony) *" 
                   value={street}
-                  onChange={e => setStreet(e.target.value)}
+                  onChange={(e: any) => setStreet(e.target.value)}
                   rows={3}
-                  className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none resize-none"
                 />
 
-                <input 
-                  type="text" 
-                  placeholder="Landmark (Optional)" 
+                <div className="grid grid-cols-2 gap-4">
+                  <FloatingInput 
+                    label="City *" 
+                    value={city}
+                    onChange={(e: any) => setCity(e.target.value)}
+                  />
+                  <FloatingInput 
+                    label="State *" 
+                    value={state}
+                    onChange={(e: any) => setState(e.target.value)}
+                  />
+                </div>
+
+                <FloatingInput 
+                  label="Landmark (Optional)" 
                   value={landmark}
-                  onChange={e => setLandmark(e.target.value)}
-                  className="w-full bg-white border-0 px-4 py-3.5 rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-rose-500 outline-none"
+                  onChange={(e: any) => setLandmark(e.target.value)}
                 />
               </div>
 
@@ -315,8 +382,34 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
             </div>
           )}
         </div>
-
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {addressToDelete && (
+        <div className="fixed inset-0 z-[110] bg-black/40 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-neutral-900 mb-2">Delete Address</h3>
+            <p className="text-neutral-500 text-sm mb-6">Are you sure you want to delete this address? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                disabled={isDeleting}
+                onClick={() => setAddressToDelete(null)}
+                className="px-5 py-2.5 rounded-xl font-bold text-neutral-600 hover:bg-neutral-100 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                disabled={isDeleting}
+                onClick={confirmDelete}
+                className="px-5 py-2.5 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isDeleting && <Loader2 className="animate-spin" size={16} />}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

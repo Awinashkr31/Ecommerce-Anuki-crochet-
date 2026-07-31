@@ -59,12 +59,12 @@ export default function CheckoutPage() {
     }
   }, [isProcessing]);
 
+  const fetcher = (url: string) => apiGet<Record<string, string>>(url);
+  const { data: settings } = useSWR('/settings/public', fetcher, { revalidateOnFocus: false });
+
   if (items.length === 0) {
     return null;
   }
-
-  const fetcher = (url: string) => apiGet<Record<string, string>>(url);
-  const { data: settings } = useSWR('/settings/public', fetcher, { revalidateOnFocus: false });
 
   const minOrderValue = Number(settings?.['min_order_value']) || 0;
   const freeDeliveryThreshold = Number(settings?.['free_delivery_threshold']) || 0;
@@ -271,29 +271,30 @@ export default function CheckoutPage() {
             )}
             
             {/* Delivery Address */}
-            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 relative overflow-hidden">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
-                  <MapPin size={16} />
-                </div>
-                <h3 className="font-serif text-lg text-neutral-900">Delivery Address</h3>
-              </div>
-              
+            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 relative overflow-hidden flex items-start justify-between gap-4">
               {selectedAddress ? (
-                <div className="bg-neutral-50 rounded-xl p-4 flex items-start justify-between gap-4 border border-neutral-100">
+                <>
                   <div>
-                    <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">{selectedAddress.fullName}, {selectedAddress.zipCode}</span></p>
-                    <p className="text-sm text-neutral-500 mt-0.5">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">Phone: {selectedAddress.phone}</p>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-6 h-6 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                        <MapPin size={12} />
+                      </div>
+                      <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">{selectedAddress.fullName}, {selectedAddress.zipCode}</span></p>
+                    </div>
+                    <p className="text-sm text-neutral-500 mt-0.5 ml-8">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}</p>
+                    <p className="text-xs text-neutral-400 mt-0.5 ml-8">Phone: {selectedAddress.phone}</p>
                   </div>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors bg-white">
+                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors bg-white shrink-0 mt-1">
                     Change
                   </button>
-                </div>
+                </>
               ) : (
-                <div className="bg-neutral-50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 border border-neutral-100 py-6">
+                <div className="flex flex-col items-center justify-center gap-3 w-full py-2">
+                  <div className="w-10 h-10 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                    <MapPin size={20} />
+                  </div>
                   <p className="text-sm text-neutral-500">No delivery address selected</p>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+                  <button onClick={() => setIsAddressModalOpen(true)} className="px-5 py-2.5 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
                     Add New Address
                   </button>
                 </div>
@@ -306,7 +307,7 @@ export default function CheckoutPage() {
                 <Truck size={24} />
               </div>
               <div>
-                <p className="text-[#059669] font-bold">Delivery Estimate: 3-5 Days</p>
+                <p className="text-[#059669] font-bold">Delivery Estimate: 5-7 Days</p>
                 <p className="text-xs text-[#059669]/80 font-medium mt-0.5">
                   {shippingCost === 0 ? "Free shipping applied" : `+ ₹${shippingCost} for shipping`}
                 </p>
@@ -335,7 +336,21 @@ export default function CheckoutPage() {
                           RECOMMENDED ⚡
                         </span>
                       </div>
-                      <p className="text-xs text-neutral-500 mt-1">GPay, PhonePe, Paytm, Visa, RuPay</p>
+                      <div className="flex items-center gap-2 mt-2 bg-white/50 p-1.5 rounded-lg w-fit border border-neutral-100">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-3.5 object-contain" />
+                        <div className="w-px h-3 bg-neutral-200"></div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="h-3.5 object-contain" />
+                        <div className="w-px h-3 bg-neutral-200"></div>
+                        <div className="flex font-black tracking-tight text-[11px] leading-none">
+                          <span className="text-[#002970]">Pay</span><span className="text-[#00BAF2]">tm</span>
+                        </div>
+                        <div className="w-px h-3 bg-neutral-200"></div>
+                        <div className="font-black italic text-[#1434CB] text-[11px] leading-none tracking-tighter">VISA</div>
+                        <div className="w-px h-3 bg-neutral-200"></div>
+                        <div className="flex font-black italic text-[11px] leading-none tracking-tight">
+                          <span className="text-[#F37021]">Ru</span><span className="text-[#008C36]">Pay</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />

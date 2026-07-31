@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { ProductCard, Product } from "@/components/ProductCard";
 import { Footer } from "@/components/Footer";
@@ -48,10 +48,11 @@ const InstagramEmbed = ({ url }: { url: string }) => {
 
 interface HomeClientProps {
   featuredProducts: Product[];
+  latestProducts: Product[];
   categories: any[];
 }
 
-export default function HomeClient({ featuredProducts, categories }: HomeClientProps) {
+export default function HomeClient({ featuredProducts, latestProducts, categories }: HomeClientProps) {
   const [activeSlide, setActiveSlide] = useState(0);
 
   const fallbackImage1 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
@@ -138,7 +139,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
         {/* Hero Section Carousel */}
-        <section className="relative h-[65vh] min-h-[480px] md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
+        <section className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
           <AnimatePresence initial={false}>
             <motion.div
               key={activeSlide}
@@ -193,7 +194,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
           </div>
 
           {/* Mobile layout container */}
-          <div className="md:hidden relative w-full h-[65vh] min-h-[480px] flex flex-col justify-end z-10 pb-[32px] px-[24px]">
+          <div className="md:hidden relative w-full h-[55vh] min-h-[400px] flex flex-col justify-end z-10 pb-[24px] px-[20px]">
             {/* Background Image Slider with Premium Gradient */}
             <AnimatePresence initial={false}>
               <motion.div
@@ -211,6 +212,8 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                   priority
                   className="object-cover"
                 />
+                {/* Subtle gradient only on the bottom half for readability */}
+                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
               </motion.div>
             </AnimatePresence>
 
@@ -223,17 +226,14 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="w-full flex flex-col items-start text-left relative z-10"
               >
-                {/* Text Content Container (Max Width 75%) */}
-                <div className="w-[75%] flex flex-col items-start">
-                  <div className="inline-block px-3 py-1.5 mb-[16px] rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-white text-[12px] font-medium tracking-wide shadow-lg">
-                    ✨ Handmade Collection
-                  </div>
+                {/* Text Content Container (Max Width 85%) */}
+                <div className="w-[85%] flex flex-col items-start">
                   
-                  <h1 className="text-[32px] font-[800] leading-[1.1] text-white w-full mb-[12px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
+                  <h1 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
                     {heroBanners[activeSlide].title}
                   </h1>
                   
-                  <p className="text-[15px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[20px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
+                  <p className="text-[13px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[16px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
                     {heroBanners[activeSlide].subtitle}
                   </p>
                 </div>
@@ -241,13 +241,13 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
                 {/* Buttons Container (100% Width) */}
                 <div className="flex flex-col w-full">
                   {heroBanners[activeSlide].cta1 && (
-                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[52px] bg-rose-600 text-white rounded-full font-[700] text-[16px] flex items-center justify-center gap-2 shadow-lg">
-                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
+                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[46px] bg-rose-600 text-white rounded-full font-[700] text-[15px] flex items-center justify-center gap-2 shadow-lg">
+                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={16} />
                     </Link>
                   )}
                   
                   {heroBanners[activeSlide].cta2 && (
-                    <Link href={heroBanners[activeSlide].cta2.link} className="mt-[12px] w-full h-[50px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[16px] flex items-center justify-center">
+                    <Link href={heroBanners[activeSlide].cta2.link} className="mt-[10px] w-full h-[44px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[15px] flex items-center justify-center">
                       {heroBanners[activeSlide].cta2.text}
                     </Link>
                   )}
@@ -270,11 +270,10 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
         </section>
 
         {/* Shop by Category */}
-        <section className="py-12 md:py-24 bg-neutral-50 border-b border-neutral-100">
+        <section className="py-8 md:py-20 bg-neutral-50 border-b border-neutral-100">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-              <p className="text-neutral-500 max-w-xl mx-auto">Explore our wide range of handcrafted items, made for every occasion.</p>
+            <div className="text-center mb-6 md:mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold">Shop by Category</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {categories.slice(0, 4).map((cat) => (
@@ -294,7 +293,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
         <EpicDeals products={featuredProducts} />
 
         {/* Promotional Banners */}
-        <section className="py-8 md:py-16 bg-white overflow-hidden">
+        <section className="py-2 md:py-12 bg-white overflow-hidden">
           <div className="max-w-[100vw] px-4 md:px-6 xl:px-0 xl:max-w-7xl mx-auto">
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar -mx-4 px-4 md:-mx-6 md:px-6 xl:mx-0 xl:px-0">
               
@@ -357,51 +356,49 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
           `}} />
         </section>
 
-        {/* Featured Products (Latest Additions) */}
+
+
+        {/* Latest Additions */}
         <section className="py-12 md:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-end justify-between mb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-8 md:mb-12">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Latest Additions</h2>
-                <p className="text-neutral-500">Fresh off the hook and ready for a new home.</p>
+                <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Latest Additions</h2>
               </motion.div>
-              <Link href="/products" className="hidden sm:flex items-center gap-2 text-rose-600 font-semibold hover:text-rose-700 transition-colors">
-                View All <ArrowRight size={16} />
+              <Link href="/products?sort=newest" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
+                See All <ChevronRight size={18} />
               </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
             </div>
             
-            <div className="mt-12 text-center sm:hidden">
-              <Link href="/products" className="inline-flex items-center gap-2 text-neutral-900 border border-neutral-200 px-6 py-3 rounded-full font-semibold hover:bg-neutral-50 transition-colors">
-                View All Products <ArrowRight size={16} />
-              </Link>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
+              {latestProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
           </div>
         </section>
 
         {/* Bestsellers */}
         <section className="py-12 md:py-24 bg-rose-50/50 border-t border-neutral-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-end justify-between mb-12">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Bestsellers</h2>
-                <p className="text-neutral-500">The crowd favorites. Handcrafted perfection loved by everyone.</p>
-              </div>
-              <Link href="/products?sort=bestselling" className="hidden sm:flex items-center gap-2 text-rose-600 font-semibold hover:text-rose-700 transition-colors">
-                View All <ArrowRight size={16} />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-8 md:mb-12">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Bestsellers</h2>
+              </motion.div>
+              <Link href="/products?sort=bestselling" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
+                See All <ChevronRight size={18} />
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
               {featuredProducts.slice().reverse().map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -17,7 +17,9 @@ const orderItemSchema = z.object({
 });
 
 const addressSchema = z.object({
-  fullName: z.string().min(1).max(100),
+  fullName: z.string().min(1).max(100).optional(),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
   phone: z.string().min(10).max(15),
   street: z.string().min(1).max(200),
   city: z.string().min(1).max(100),
@@ -31,7 +33,7 @@ const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1).max(50),
   address: addressSchema,
   totalAmount: z.number().positive(),
-  paymentMethod: z.enum(['COD', 'ONLINE', 'UPI', 'WALLET']),
+  paymentMethod: z.string().transform(v => v.toLowerCase()),
   couponCode: z.string().max(30).optional(),
   discountAmount: z.number().min(0).optional(),
   redeemPoints: z.number().int().min(0).optional(),

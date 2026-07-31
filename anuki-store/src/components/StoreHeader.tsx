@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, User, LogOut, Shield, ChevronDown, ShoppingCart, Menu, ArrowLeft, Truck, Sparkles, ShoppingBag } from "lucide-react";
+import { Search, User, LogOut, Shield, ChevronDown, ShoppingCart, Menu, ArrowLeft, Truck, Sparkles, ShoppingBag, X, ChevronRight } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import { auth } from "../lib/firebase";
@@ -22,7 +22,13 @@ export function StoreHeader() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(pathname !== "/");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsMobileSearchExpanded(pathname !== "/");
+  }, [pathname]);
 
 
   const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
@@ -86,8 +92,12 @@ export function StoreHeader() {
       .slice(0, 2);
   };
 
+  if (pathname === '/checkout') {
+    return null;
+  }
+
   return (
-    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-neutral-100 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-neutral-100 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${pathname === '/cart' ? 'hidden md:block' : 'block'}`}>
       
       {/* Top Shipping Banner */}
       <div className="bg-[#781f33] text-white py-2 px-4 flex items-center justify-center gap-2 text-[11px] sm:text-xs font-bold tracking-widest">
@@ -99,36 +109,72 @@ export function StoreHeader() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
         
         {/* --- MOBILE LAYOUT --- */}
-        <div className="flex md:hidden items-center justify-between w-full relative">
-          {/* Left: Hamburger or Back */}
-          <div className="flex items-center">
-            {pathname !== "/" ? (
-              <button onClick={() => router.back()} className="p-2 -ml-2 text-neutral-800">
-                <ArrowLeft size={24} />
-              </button>
-            ) : (
-              <button className="p-2 -ml-2 text-neutral-800">
-                <Menu size={26} strokeWidth={2} />
-              </button>
-            )}
-          </div>
+        <div className="flex md:hidden items-center justify-between w-full relative h-full">
+          <div className="flex w-full items-center gap-2">
+            <div className="flex items-center shrink-0">
+              {pathname !== "/" ? (
+                <button onClick={() => router.back()} className="p-1 -ml-1 mr-2 text-neutral-700 active:scale-95 transition-transform">
+                  <ArrowLeft size={24} strokeWidth={1.5} />
+                </button>
+              ) : (
+                <Link href="/" className="flex-shrink-0 mr-2 flex items-center group">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-rose-200 blur-md opacity-0 group-hover:opacity-50 transition-opacity rounded-full"></div>
+                    <img src="/logo2.webp" alt="Anuki Logo" className={`relative h-9 w-9 object-contain rounded-xl border-[1.5px] border-rose-100 shadow-sm p-0.5 bg-white transition-transform group-hover:scale-105 ${isMobileSearchExpanded ? '' : 'mr-2.5'}`} />
+                  </div>
+                  <div className={`flex flex-col -gap-1 transition-all duration-300 overflow-hidden ${isMobileSearchExpanded ? 'w-0 opacity-0' : 'opacity-100'}`}>
+                    <span className="font-black text-[#781f33] tracking-tighter text-[17px] leading-none whitespace-nowrap">
+                      Anuki<span className="font-medium text-rose-400 tracking-tight ml-1.5">Crochet</span>
+                    </span>
+                  </div>
+                </Link>
+              )}
+            </div>
 
-          {/* Center: Logo */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="Anuki Logo" className="h-10 w-auto object-contain" />
-            </Link>
-          </div>
+            <div className="flex items-center justify-end transition-all duration-300 flex-1 min-w-0">
+              {isMobileSearchExpanded ? (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const query = new FormData(e.currentTarget).get('q')?.toString().trim();
+                    if (query) {
+                      router.push(`/products?search=${encodeURIComponent(query)}`);
+                      setIsMobileSearchExpanded(false);
+                    }
+                  }}
+                  className="flex-1 flex items-center bg-white border-[1.5px] border-[#3b82f6] rounded-full px-2 py-1.5 shadow-sm w-full min-w-0"
+                >
+                  <Search size={18} className="text-neutral-500 mx-1 shrink-0" strokeWidth={1.5} />
+                  <input 
+                    ref={mobileInputRef}
+                    name="q"
+                    type="text" 
+                    placeholder="Search..." 
+                    className="w-full bg-transparent text-sm focus:outline-none placeholder:text-neutral-500 text-neutral-900 min-w-0"
+                  />
+                  {pathname === "/" && (
+                    <button type="button" onClick={() => setIsMobileSearchExpanded(false)} className="text-neutral-400 p-1 shrink-0 active:scale-95 transition-transform">
+                      <X size={16} strokeWidth={2} />
+                    </button>
+                  )}
+                </form>
+              ) : (
+                <button 
+                  onClick={() => {
+                    setIsMobileSearchExpanded(true);
+                    setTimeout(() => mobileInputRef.current?.focus(), 50);
+                  }} 
+                  className="p-2 mr-1 text-neutral-700 active:scale-95 transition-transform"
+                >
+                  <Search size={22} strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
 
-          {/* Right: Actions (Search, Cart) */}
-          <div className="flex items-center gap-2">
-            <button className="p-1.5 text-neutral-800">
-              <Search size={22} strokeWidth={2} />
-            </button>
-            <Link href="/cart" className="relative p-1.5 text-neutral-800">
-              <ShoppingBag size={22} strokeWidth={2} />
+            <Link href="/cart" className="relative p-1 text-neutral-700 shrink-0">
+              <ShoppingCart size={24} strokeWidth={1.5} />
               {totalCartItems > 0 && (
-                <span className="absolute top-0 right-0 bg-[#781f33] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">
+                <span className="absolute -top-1 -right-1 bg-[#e11d48] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white">
                   {totalCartItems}
                 </span>
               )}

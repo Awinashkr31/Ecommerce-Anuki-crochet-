@@ -11,6 +11,7 @@ import { apiPost, apiGet } from "../../lib/api";
 import useSWR from "swr";
 import toast from "react-hot-toast";
 import CustomerOrders from "../../components/orders/CustomerOrders";
+import AddressModal from "../../components/AddressModal";
 
 const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
 
@@ -24,7 +25,14 @@ export default function AccountPage() {
     activeTab === "wallet" && profile ? "/wallet" : null,
     fetcher
   );
+  
+  const { data: addresses, mutate: mutateAddresses } = useSWR(
+    activeTab === "addresses" && profile ? "/addresses" : null,
+    fetcher
+  );
+
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !profile) {
@@ -182,13 +190,54 @@ export default function AccountPage() {
             )}
 
             {activeTab === "addresses" && (
-              <div className="bg-white border border-neutral-200 rounded-3xl p-6 md:p-8 text-center py-16">
-                <MapPin className="mx-auto text-neutral-300 mb-6" size={64} />
-                <h2 className="text-xl font-bold mb-2">No saved addresses</h2>
-                <p className="text-neutral-500 mb-8">You haven't saved any addresses yet.</p>
-                <button className="border-2 border-neutral-200 text-neutral-900 px-8 py-3 rounded-xl font-bold hover:border-neutral-900 transition-colors">
-                  Add New Address
-                </button>
+              <div className="bg-white border border-neutral-200 rounded-3xl p-6 md:p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold">Saved Addresses</h2>
+                  <button onClick={() => setIsAddressModalOpen(true)} className="flex items-center gap-2 text-sm font-bold text-rose-600 hover:text-rose-700 transition-colors">
+                    <Plus size={16} /> Add New
+                  </button>
+                </div>
+
+                {!addresses ? (
+                   <div className="flex justify-center py-12"><Loader2 className="animate-spin text-neutral-400" size={32} /></div>
+                ) : (addresses as any[]).length === 0 ? (
+                  <div className="text-center py-16">
+                    <MapPin className="mx-auto text-neutral-300 mb-6" size={64} />
+                    <h2 className="text-xl font-bold mb-2">No saved addresses</h2>
+                    <p className="text-neutral-500 mb-8">You haven't saved any addresses yet.</p>
+                    <button onClick={() => setIsAddressModalOpen(true)} className="border-2 border-neutral-200 text-neutral-900 px-8 py-3 rounded-xl font-bold hover:border-neutral-900 transition-colors">
+                      Add New Address
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(addresses as any[]).map((addr: any) => (
+                      <div key={addr.id} className="p-6 rounded-2xl border-2 border-neutral-100 hover:border-neutral-200 transition-colors relative group bg-neutral-50">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-neutral-900">{addr.fullName}</h4>
+                        </div>
+                        <p className="text-sm text-neutral-600 leading-relaxed mb-4">
+                          {addr.street}, {addr.landmark ? `${addr.landmark}, ` : ''}{addr.city}, {addr.state} - {addr.zipCode}
+                        </p>
+                        <p className="text-sm text-neutral-600 mb-4">
+                          Mobile: <span className="font-medium text-neutral-900">{addr.phone}</span>
+                        </p>
+                        <button onClick={() => setIsAddressModalOpen(true)} className="text-sm font-bold text-rose-600 border border-rose-200 px-4 py-1.5 rounded-lg hover:bg-rose-50 transition-colors">
+                          Manage Addresses
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <AddressModal 
+                  isOpen={isAddressModalOpen} 
+                  onClose={() => {
+                    setIsAddressModalOpen(false);
+                    mutateAddresses();
+                  }} 
+                  onSelect={() => setIsAddressModalOpen(false)} 
+                />
               </div>
             )}
 

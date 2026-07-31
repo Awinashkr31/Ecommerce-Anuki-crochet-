@@ -42,6 +42,21 @@ export default async function ProductDetailPage({ params }: Props) {
     }
   });
 
+  const allProducts = await prisma.product.findMany({
+    where: { status: 'PUBLISHED', id: { not: product?.id } },
+    take: 20,
+    include: {
+      category: true,
+      variants: true,
+      images: { orderBy: { order: 'asc' } },
+    }
+  });
+
+  // Basic random shuffle
+  const shuffled = allProducts.sort(() => 0.5 - Math.random());
+  const youMayAlsoLike = shuffled.slice(0, 4);
+  const completeTheGift = shuffled.slice(4, 8);
+
   if (!product || product.status !== 'PUBLISHED') {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 bg-white">
@@ -89,7 +104,11 @@ export default async function ProductDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <ProductDetailClient product={product as any} />
+      <ProductDetailClient 
+        product={product as any} 
+        youMayAlsoLike={youMayAlsoLike as any}
+        completeTheGift={completeTheGift as any}
+      />
     </>
   );
 }

@@ -33,7 +33,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }: { title: string, ch
 );
 
 export default function ProductAccordions({ product }: { product: any }) {
-  const [openSection, setOpenSection] = useState<string>("description");
+  const [openSection, setOpenSection] = useState<string>("specs");
 
   const toggle = (section: string) => {
     setOpenSection(openSection === section ? "" : section);
@@ -42,14 +42,6 @@ export default function ProductAccordions({ product }: { product: any }) {
   return (
     <div className="mt-8 border-t border-neutral-200">
       <AccordionItem 
-        title="Description" 
-        isOpen={openSection === "description"} 
-        onClick={() => toggle("description")}
-      >
-        <p className="whitespace-pre-wrap">{product.fullDesc || product.shortDesc}</p>
-      </AccordionItem>
-
-      <AccordionItem 
         title="Specifications" 
         isOpen={openSection === "specs"} 
         onClick={() => toggle("specs")}
@@ -57,12 +49,20 @@ export default function ProductAccordions({ product }: { product: any }) {
         <ul className="space-y-3">
           {product.material && <li><strong>Material:</strong> {product.material}</li>}
           {product.countryOfOrigin && <li><strong>Origin:</strong> {product.countryOfOrigin}</li>}
-          {product.weight && <li><strong>Weight:</strong> {product.weight}kg</li>}
+          {product.weight && <li><strong>Weight:</strong> {product.weight}g</li>}
           {(product.length || product.width || product.height) && (
             <li><strong>Dimensions:</strong> {product.length || '-'} x {product.width || '-'} x {product.height || '-'} cm</li>
           )}
           <li><strong>Packaging:</strong> Premium Gift Wrap Available</li>
         </ul>
+      </AccordionItem>
+
+      <AccordionItem 
+        title="Description" 
+        isOpen={openSection === "description"} 
+        onClick={() => toggle("description")}
+      >
+        <p className="whitespace-pre-wrap">{product.fullDesc || product.shortDesc}</p>
       </AccordionItem>
 
       <AccordionItem 

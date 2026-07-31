@@ -5,7 +5,17 @@ export const revalidate = 60; // Revalidate every 60 seconds to keep it fast but
 
 export default async function Page() {
   // Fetch data on the server in parallel for maximum speed
-  const [products, categories] = await Promise.all([
+  const [bestsellerProducts, latestProducts, categories] = await Promise.all([
+    prisma.product.findMany({
+      where: { status: 'PUBLISHED', bestseller: true },
+      take: 4,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { order: 'asc' } },
+      }
+    }),
     prisma.product.findMany({
       where: { status: 'PUBLISHED' },
       take: 4,
@@ -57,7 +67,11 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <HomeClient featuredProducts={products as any} categories={categories as any} />
+      <HomeClient 
+        featuredProducts={bestsellerProducts as any} 
+        latestProducts={latestProducts.map(p => ({ ...p, isNew: true })) as any} 
+        categories={categories as any} 
+      />
     </>
   );
 }

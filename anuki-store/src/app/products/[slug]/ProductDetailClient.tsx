@@ -14,13 +14,22 @@ import ProductInfo from './components/ProductInfo';
 import VariantSelector from './components/VariantSelector';
 import ProductAccordions from './components/ProductAccordions';
 import StickyBuyBar from './components/StickyBuyBar';
+import { ProductCard } from '@/components/ProductCard';
 
 function calculateDiscount(base: number, sale: number | null) {
   if (!sale || sale >= base) return null;
   return Math.round(((base - sale) / base) * 100);
 }
 
-export default function ProductDetailClient({ product }: { product: any }) {
+export default function ProductDetailClient({ 
+  product,
+  youMayAlsoLike = [],
+  completeTheGift = []
+}: { 
+  product: any;
+  youMayAlsoLike?: any[];
+  completeTheGift?: any[];
+}) {
   const router = useRouter();
   const { addItem } = useCartStore();
   const { profile } = useAuthStore();
@@ -78,6 +87,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           color: '#fff',
           fontWeight: 'bold',
           padding: '16px 24px',
+          marginBottom: '100px'
         }
       });
     }, 400); // Simulate micro-interaction delay
@@ -149,6 +159,34 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
         </div>
       </article>
+
+      {/* Complete the Gift Section */}
+      {completeTheGift.length > 0 && (
+        <section className="bg-white border-t border-neutral-100 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">Complete the Gift</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
+              {completeTheGift.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* You May Also Like Section */}
+      {youMayAlsoLike.length > 0 && (
+        <section className="bg-white border-t border-neutral-100 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">You May Also Like</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
+              {youMayAlsoLike.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* EEAT & Trust Signals Section */}
       <section className="bg-white border-y border-neutral-100 py-16">

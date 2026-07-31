@@ -30,6 +30,7 @@ export default function StickyBuyBar({
   const cartItemId = currentVariant ? `${product.id}-${currentVariant.id}` : product.id;
   const cartItem = items.find(i => i.id === cartItemId);
   const inCart = !!cartItem;
+  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
   const increase = () => {
     if (quantity < stockLimit) setQuantity(quantity + 1);
@@ -92,7 +93,7 @@ export default function StickyBuyBar({
                 className="relative flex items-center justify-center px-4 h-full bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] font-bold text-[15px] transition-colors shadow-sm active:scale-[0.98]"
               >
                 <ShoppingCart size={20} strokeWidth={2.5} />
-                <span className="absolute -top-2 -right-2 bg-[#F54B7E] text-white text-[11px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">{cartItem.quantity}</span>
+                <span className="absolute -top-2 -right-2 bg-[#F54B7E] text-white text-[11px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">{totalItems}</span>
                 <span className="ml-2">View Cart</span>
               </Link>
               
@@ -116,12 +117,17 @@ export default function StickyBuyBar({
             </>
           ) : (
             <>
-              {/* Square Cart Button (State 1) */}
+              {/* Square Cart Button (State 1 & 3) */}
               <Link 
                 href="/cart"
-                className="w-[60px] h-full flex items-center justify-center bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] transition-colors shadow-sm active:scale-95 hover:bg-neutral-50"
+                className="relative w-[60px] h-full flex items-center justify-center bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] transition-colors shadow-sm active:scale-95 hover:bg-neutral-50"
               >
                 <ShoppingCart size={22} strokeWidth={2.5} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#F54B7E] text-white text-[11px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">
+                    {totalItems}
+                  </span>
+                )}
               </Link>
               
               {/* Add to Cart Button (State 1) */}

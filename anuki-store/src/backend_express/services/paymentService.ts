@@ -229,7 +229,7 @@ export class PaymentService {
         gatewayStatus,
         failureReason,
         transactionId: relevantPayment?.cf_payment_id?.toString() || payment.transactionId,
-        paymentMethod: relevantPayment?.payment_method?.toString() || null,
+        paymentMethod: relevantPayment?.payment_method ? (typeof relevantPayment.payment_method === 'object' ? Object.keys(relevantPayment.payment_method)[0] : String(relevantPayment.payment_method)) : null,
       }
     });
 
@@ -272,7 +272,7 @@ export class PaymentService {
         gatewayStatus: 'SUCCESS',
         signatureVerified: true,
         transactionId,
-        paymentMethod: gatewayPayment.payment_method?.toString() || null,
+        paymentMethod: gatewayPayment.payment_method ? (typeof gatewayPayment.payment_method === 'object' ? Object.keys(gatewayPayment.payment_method)[0] : String(gatewayPayment.payment_method)) : null,
       }
     });
 

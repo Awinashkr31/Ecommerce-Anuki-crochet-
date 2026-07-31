@@ -59,10 +59,10 @@ app.use(express.json({ limit: '2mb' })); // Reduced from 10mb — uploads use mu
 app.use(cookieParser());
 
 // ── Rate Limiters ──────────────────────────────────
-// Global: 100 requests per 15 minutes per IP
+// Global: 2000 requests per 15 minutes per IP
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 2000,
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
