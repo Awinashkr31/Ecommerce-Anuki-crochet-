@@ -32,6 +32,12 @@ export default async function Page() {
     })
   ]);
 
+  // Preload the LCP hero image so the browser starts downloading it immediately
+  const heroImageUrl = bestsellerProducts[0]?.images?.[0]?.url
+    || "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
+  // Build the Next.js optimized image URL for preloading
+  const preloadHeroUrl = `/_next/image?url=${encodeURIComponent(heroImageUrl)}&w=828&q=75`;
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -63,6 +69,13 @@ export default async function Page() {
 
   return (
     <>
+      <link
+        rel="preload"
+        as="image"
+        href={preloadHeroUrl}
+        type="image/webp"
+        fetchPriority="high"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
