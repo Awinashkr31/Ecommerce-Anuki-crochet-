@@ -30,13 +30,15 @@ const InstagramEmbed = ({ url }: { url: string }) => {
   useEffect(() => {
     if (!isVisible) return;
     const process = () => {
-      if ((window as any).instgrm) {
+      if ((window as unknown as { instgrm?: any }).instgrm) {
         try {
-          (window as any).instgrm.Embeds.process();
-        } catch (e) {}
+          (window as unknown as { instgrm?: any }).instgrm.Embeds.process();
+        } catch {
+          // ignore
+        }
       }
     };
-    if (!(window as any).instgrm) {
+    if (!(window as unknown as { instgrm?: any }).instgrm) {
       if (!document.getElementById('instagram-embed-script')) {
         const script = document.createElement('script');
         script.id = 'instagram-embed-script';
@@ -106,7 +108,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
       setActiveSlide((prev) => (prev + 1) % heroBanners.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroBanners.length]);
 
   const { data: settings } = useSWR('/settings/public', (url: string) => apiGet<Record<string, string>>(url));
   const instagramHandle = settings?.['instagram_handle'] || '@anuki_crochet';
@@ -123,35 +125,6 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
     settings?.['instagram_reel_3'],
     settings?.['instagram_reel_4'],
   ].map(getEmbedUrl).filter(Boolean) as string[];
-
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebSite",
-        "@id": "https://anukicrochet.in/#website",
-        "url": "https://anukicrochet.in/",
-        "name": "Anuki Crochet",
-        "description": "Handmade Crochet Gifts & Custom Bouquets",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://anukicrochet.in/search?query={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      },
-      {
-        "@type": "Organization",
-        "@id": "https://anukicrochet.in/#organization",
-        "name": "Anuki Crochet",
-        "url": "https://anukicrochet.in/",
-        "logo": "https://anukicrochet.in/logo.png",
-        "sameAs": [
-          "https://instagram.com/anukicrochet",
-          "https://facebook.com/anukicrochet"
-        ]
-      }
-    ]
-  };
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
@@ -563,8 +536,8 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         <section className="py-12 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold mb-4">Loved by Crafters & Gifters</h2>
-              <p className="text-neutral-500">Don't just take our word for it.</p>
+              <h2 className="text-3xl font-bold mb-4">Loved by Crafters &amp; Gifters</h2>
+              <p className="text-neutral-500">Don&apos;t just take our word for it.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[1, 2, 3].map((i) => (
@@ -572,7 +545,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                   <div className="flex text-amber-400 mb-4">
                     {"★★★★★"}
                   </div>
-                  <p className="text-neutral-700 italic mb-6">"Absolutely stunning work! The custom bouquet I ordered for my mom's birthday arrived in perfect condition and she cried when she saw it."</p>
+                  <p className="text-neutral-700 italic mb-6">&quot;Absolutely stunning work! The custom bouquet I ordered for my mom&apos;s birthday arrived in perfect condition and she cried when she saw it.&quot;</p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold">
                       S

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { runSeoAudit } from "./actions";
 import {
   Globe, Search, FileText, AlertTriangle, CheckCircle2, 
-  ExternalLink, TrendingUp, BarChart3, Clock, RefreshCw,
+  ExternalLink, BarChart3, Clock, RefreshCw,
   Zap, Image as ImageIcon, Code2, Link2, Shield
 } from "lucide-react";
 
@@ -144,7 +143,7 @@ export default function SEODashboardPage() {
           <Search size={48} className="text-neutral-300 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-neutral-900 mb-2">No audit data yet</h2>
           <p className="text-neutral-500 mb-6 max-w-md mx-auto">
-            Click "Run SEO Audit" to perform an automated health check on your site's crawlability, structured data, on-page signals, and page accessibility.
+            Click &quot;Run SEO Audit&quot; to perform an automated health check on your site&apos;s crawlability, structured data, on-page signals, and page accessibility.
           </p>
         </div>
       )}

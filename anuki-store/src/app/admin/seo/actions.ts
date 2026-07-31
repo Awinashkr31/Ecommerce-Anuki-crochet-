@@ -13,7 +13,8 @@ export async function runSeoAudit(targetUrl: string = "https://anukicrochet.in")
       detail: res.ok ? "Accessible and returns 200" : `HTTP ${res.status}`,
       category: "Crawlability",
     });
-  } catch (err: any) {
+  } catch (error) {
+    const err = error as Error;
     results.push({ label: "robots.txt", status: "fail", detail: err.message || "Unreachable", category: "Crawlability" });
   }
 
@@ -29,7 +30,8 @@ export async function runSeoAudit(targetUrl: string = "https://anukicrochet.in")
       detail: res.ok ? `Found ${sitemapCount} child sitemaps, ${urlCount} URLs` : "Not accessible",
       category: "Crawlability",
     });
-  } catch (err: any) {
+  } catch (error) {
+    const err = error as Error;
     results.push({ label: "Sitemap", status: "fail", detail: err.message || "Unreachable", category: "Crawlability" });
   }
 
@@ -87,7 +89,8 @@ export async function runSeoAudit(targetUrl: string = "https://anukicrochet.in")
       detail: `${imgTags.length} images found, ${noAlt} missing alt text`,
       category: "Accessibility",
     });
-  } catch (err: any) {
+  } catch (error) {
+    const err = error as Error;
     results.push({ label: "Homepage Fetch", status: "fail", detail: err.message || "Could not fetch homepage", category: "General" });
   }
 
@@ -105,7 +108,8 @@ export async function runSeoAudit(targetUrl: string = "https://anukicrochet.in")
         detail: `HTTP ${res.status}`,
         category: "Page Health",
       });
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       results.push({ label: page.name, status: "fail", detail: err.message || "Unreachable", category: "Page Health" });
     }
   }
