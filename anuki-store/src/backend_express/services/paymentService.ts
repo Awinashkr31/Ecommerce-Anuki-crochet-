@@ -577,7 +577,7 @@ export class PaymentService {
     const request = {
       order_amount: amount,
       order_currency: 'INR',
-      order_id: `order_${orderId}_${Date.now()}`,
+      order_id: `ord_${orderId.replace(/-/g, '').slice(0, 12)}_${Date.now()}`,
       customer_details: {
         customer_id: user.id || 'guest',
         customer_phone: user.phone || '9999999999',
