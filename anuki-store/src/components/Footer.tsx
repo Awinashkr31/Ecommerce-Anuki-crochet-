@@ -1,13 +1,22 @@
 "use client";
 
 import Link from 'next/link';
-import { Mail, MapPin, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck } from 'lucide-react';
 import useSWR from 'swr';
 import { apiGet } from '../lib/api';
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  parentId?: string | null;
+}
+
 export function Footer() {
-  const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
-  const activeCategories = categories.filter((c: any) => c.isActive && !c.parentId);
+  const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<Category[]>(url));
+  const activeCategories = categories.filter((c: Category) => c.isActive && !c.parentId);
 
   return (
     <footer className="bg-white border-t border-neutral-200 mt-auto">
@@ -34,7 +43,7 @@ export function Footer() {
           {/* Brand & About */}
           <div className="md:col-span-5 lg:col-span-4 flex flex-col items-start">
             <Link href="/" className="mb-6 inline-block">
-              <img src="/logo.png" alt="Anuki Logo" className="h-12 md:h-16 w-auto object-contain" />
+              <Image src="/logo.png" alt="Anuki Logo" width={200} height={64} className="h-12 md:h-16 w-auto object-contain" />
             </Link>
             <p className="text-neutral-600 leading-relaxed mb-8 max-w-sm">
               Beautiful, bespoke handmade items carefully crafted to bring warmth, elegance, and joy to your everyday life.
@@ -86,7 +95,7 @@ export function Footer() {
             <h3 className="font-bold text-neutral-900 text-lg mb-6">Explore</h3>
             <ul className="space-y-4">
               <li><Link href="/products" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">All Products</Link></li>
-              {activeCategories.slice(0, 4).map((category: any) => (
+              {activeCategories.slice(0, 4).map((category: Category) => (
                 <li key={category.id}>
                   <Link href={`/products?category=${category.slug}`} className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">
                     {category.name}
