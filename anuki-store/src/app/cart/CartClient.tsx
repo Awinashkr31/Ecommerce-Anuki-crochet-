@@ -251,7 +251,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                         {product.images && product.images[0] ? (
                           <Image src={product.images[0].url} alt={product.name} fill className="object-cover" unoptimized />
                         ) : (
-                          <Image src="https://anukicrochet.in/logo.png" alt="Anuki" fill className="object-cover" />
+                          <Image src="/logo.png" alt="Anuki" fill className="object-cover" unoptimized />
                         )}
                       </Link>
                       <Link href={`/products/${product.slug}`} className="block">
@@ -267,7 +267,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                               name: product.name,
                               price: product.salePrice || product.basePrice,
                               quantity: 1,
-                              image: product.images?.[0]?.url || "https://anukicrochet.in/logo.png",
+                              image: product.images?.[0]?.url || "/logo.png",
                               variantId: product.variants?.[0]?.id,
                               variantText: product.variants?.[0]?.name
                             });
