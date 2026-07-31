@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
@@ -12,7 +12,23 @@ import useSWR from 'swr';
 import { apiGet } from '@/lib/api';
 
 const InstagramEmbed = ({ url }: { url: string }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '200px' });
+    
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
     const process = () => {
       if ((window as any).instgrm) {
         try {
@@ -32,16 +48,18 @@ const InstagramEmbed = ({ url }: { url: string }) => {
     } else {
       setTimeout(process, 100);
     }
-  }, [url]);
+  }, [url, isVisible]);
 
   return (
-    <div className="w-full bg-white flex justify-center items-start overflow-hidden rounded-xl">
-      <blockquote
-        className="instagram-media"
-        data-instgrm-permalink={url}
-        data-instgrm-version="14"
-        style={{ background: '#FFF', border: 0, margin: '0', minWidth: '320px', padding: 0, width: '100%' }}
-      />
+    <div ref={ref} className="w-full bg-white flex justify-center items-start overflow-hidden rounded-xl min-h-[400px]">
+      {isVisible && (
+        <blockquote
+          className="instagram-media"
+          data-instgrm-permalink={url}
+          data-instgrm-version="14"
+          style={{ background: '#FFF', border: 0, margin: '0', minWidth: '320px', padding: 0, width: '100%' }}
+        />
+      )}
     </div>
   );
 };
@@ -140,24 +158,40 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
       <main>
         {/* Hero Section Carousel */}
         <section className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
+          {/* Static First Image for LCP (Desktop) */}
+          <div className={`absolute inset-0 z-0 hidden md:block ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
+            <Image 
+              src={heroBanners[0].image} 
+              alt="Banner"
+              fill
+              priority
+              className="object-cover opacity-80"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
+          </div>
+
           <AnimatePresence initial={false}>
-            <motion.div
-              key={activeSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0 z-0 hidden md:block"
-            >
-              <Image 
-                src={heroBanners[activeSlide].image} 
-                alt="Banner"
-                fill
-                priority
-                className="object-cover opacity-80"
-              />
-              <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
-            </motion.div>
+            {activeSlide !== 0 && (
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0 z-0 hidden md:block"
+              >
+                <Image 
+                  src={heroBanners[activeSlide].image} 
+                  alt="Banner"
+                  fill
+                  priority={false}
+                  className="object-cover opacity-80"
+                  sizes="100vw"
+                />
+                <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Desktop layout container (hidden on mobile) */}
@@ -195,26 +229,42 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
 
           {/* Mobile layout container */}
           <div className="md:hidden relative w-full h-[55vh] min-h-[400px] flex flex-col justify-end z-10 pb-[24px] px-[20px]">
+            {/* Static First Image for LCP (Mobile) */}
+            <div className={`absolute inset-0 -z-10 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+              <Image 
+                src={heroBanners[0].image} 
+                alt="Banner"
+                fill
+                priority
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+            </div>
+
             {/* Background Image Slider with Premium Gradient */}
             <AnimatePresence initial={false}>
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 -z-10"
-              >
-                <Image 
-                  src={heroBanners[activeSlide].image} 
-                  alt="Banner"
-                  fill
-                  priority
-                  className="object-cover"
-                />
-                {/* Subtle gradient only on the bottom half for readability */}
-                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-              </motion.div>
+              {activeSlide !== 0 && (
+                <motion.div
+                  key={activeSlide}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 -z-10"
+                >
+                  <Image 
+                    src={heroBanners[activeSlide].image} 
+                    alt="Banner"
+                    fill
+                    priority={false}
+                    className="object-cover"
+                    sizes="100vw"
+                  />
+                  {/* Subtle gradient only on the bottom half for readability */}
+                  <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             <AnimatePresence mode="wait">
