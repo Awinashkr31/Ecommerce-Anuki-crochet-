@@ -235,7 +235,8 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: any, res:
     return res.status(201).json(result);
   } catch (error: any) {
     console.error("Order creation failed:", error.message);
-    return res.status(400).json({ error: 'Failed to create order. Please try again.' });
+    const msg = error.message && !error.message.includes('\n') ? error.message : 'Failed to create order. Please try again.';
+    return res.status(400).json({ error: msg });
   }
 });
 // GET my orders analytics (Customer)
