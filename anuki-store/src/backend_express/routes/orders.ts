@@ -236,7 +236,7 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
     }).catch(console.error);
 
     return res.status(201).json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Order creation failed:", error.message);
     const msg = error.message && !error.message.includes('\n') ? error.message : 'Failed to create order. Please try again.';
     return res.status(400).json({ error: msg });
@@ -276,7 +276,7 @@ router.get('/my-orders/analytics', verifyToken, async (req: import('express').Re
       totalSpent: revenueData._sum.totalAmount || 0,
       totalSaved: couponUsages._sum.discountAmount || 0
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to fetch my orders analytics:", error.message);
     return res.status(400).json({ error: 'Failed to fetch analytics' });
   }
@@ -344,7 +344,7 @@ router.get('/my-orders', verifyToken, async (req: import('express').Request | an
       orderBy: { createdAt: 'desc' }
     });
     return res.json(orders);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to fetch my orders:", error.message);
     return res.status(400).json({ error: 'Failed to fetch your orders' });
   }
@@ -377,7 +377,7 @@ router.post('/:id/cancel', verifyToken, async (req: import('express').Request | 
     });
 
     return res.json({ success: true, message: 'Order cancelled successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to cancel order:", error.message);
     return res.status(400).json({ error: 'Failed to cancel order' });
   }
@@ -429,7 +429,7 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
       totalRevenue,
       avgOrderValue
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to fetch analytics' });
   }
 });
@@ -504,7 +504,7 @@ router.get('/:id', verifyToken, async (req: import('express').Request | any, res
     };
 
     return res.json(mappedOrder);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to fetch order' });
   }
 });
@@ -552,7 +552,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFIL
         totalPages: Math.ceil(total / limitNumber)
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to fetch orders' });
   }
 });
@@ -597,7 +597,7 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     }
 
     return res.json(order);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to update order status' });
   }
 });
@@ -622,7 +622,7 @@ router.post('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     });
     
     return res.json(timeline);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to add note' });
   }
 });
@@ -661,7 +661,7 @@ router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADM
     });
 
     return res.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to send communication' });
   }
 });
@@ -679,7 +679,7 @@ router.put('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
     });
     
     return res.json(order);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to update internal notes' });
   }
 });
@@ -694,7 +694,7 @@ router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
       orderBy: { createdAt: 'desc' }
     });
     return res.json(timeline);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to fetch timeline' });
   }
 });
@@ -727,7 +727,7 @@ router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
     }
 
     return res.json(shipment);
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to fulfill order' });
   }
 });
@@ -753,7 +753,7 @@ router.post('/webhooks/shipping', async (req: import('express').Request | any, r
     }
 
     return res.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     return res.status(400).json({ error: 'Failed to process webhook' });
   }
 });
@@ -800,7 +800,7 @@ router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async
     });
 
     return res.json({ success: true, message: 'Order deleted successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete order error:', error);
     return res.status(400).json({ error: 'Failed to delete order' });
   }
