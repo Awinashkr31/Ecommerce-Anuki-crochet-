@@ -61,11 +61,12 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
           router.push("/admin");
         }
       }, 1500);
-    } catch (error: any) {
-      if (error.code === "auth/invalid-credential") {
+    } catch (error) {
+      const err = error as Error & { code?: string };
+      if (err.code === "auth/invalid-credential") {
         toast.error("Invalid email or password");
       } else {
-        toast.error(error.message || "Failed to log in");
+        toast.error(err.message || "Failed to log in");
       }
     } finally {
       setIsSubmitting(false);
@@ -91,8 +92,9 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
           router.push("/admin");
         }
       }, 1500);
-    } catch (error: any) {
-      toast.error(error.message || "Google sign-in failed");
+    } catch (error) {
+      const err = error as Error & { code?: string };
+      toast.error(err.message || "Google sign-in failed");
     }
   };
 
@@ -130,6 +132,7 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
               type="button"
               className="w-full mb-6 bg-white border border-neutral-200 text-neutral-700 p-3.5 rounded-xl font-bold hover:bg-neutral-50 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
               Continue with Google
             </button>
@@ -189,7 +192,7 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
             </form>
 
             <p className="mt-6 text-center text-sm text-neutral-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/auth/signup" onClick={onClose} className="font-bold text-rose-600 hover:text-rose-500 transition-colors">
                 Create an account
               </Link>

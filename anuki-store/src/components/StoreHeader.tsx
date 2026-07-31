@@ -3,54 +3,40 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Search, User, LogOut, Shield, ChevronDown, ShoppingCart, Menu, ArrowLeft, Truck, Sparkles, ShoppingBag, X, ChevronRight } from "lucide-react";
+import { Search, User, ShoppingCart, ArrowLeft, Truck, Sparkles, ShoppingBag, X } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
-import { auth } from "../lib/firebase";
-import { signOut } from "firebase/auth";
-import { apiGet, apiPost } from "../lib/api";
+import { apiGet } from "../lib/api";
 import useSWR from 'swr';
-import { toast } from "react-hot-toast";
 
 
-const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
 
 export function StoreHeader() {
-  const { profile, logout: clearAuthStore } = useAuthStore();
+  const { profile } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(pathname !== "/");
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setIsMobileSearchExpanded(pathname !== "/");
-  }, [pathname]);
+  }
 
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const activeCategories = categories.filter((c: any) => c.isActive && !c.parentId);
 
   const { data: settings } = useSWR('/settings/public', (url: string) => apiGet<Record<string, string>>(url));
   const freeDeliveryThreshold = settings?.['free_delivery_threshold'] ? Number(settings['free_delivery_threshold']) : 499;
 
   const isLoggedIn = !!profile;
-  const isAdmin = isLoggedIn && ADMIN_ROLES.includes(profile.role);
   const totalCartItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,17 +56,7 @@ export function StoreHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const handleLogout = () => {
-    setDropdownOpen(false);
-    
-    // Fire and forget background tasks
-    apiPost("/auth/logout", {}).catch(() => {});
-    signOut(auth).catch(() => {});
-    
-    // Instant UI update
-    clearAuthStore();
-    router.push("/auth");
-  };
+
 
   // Get user initials for avatar
   const getInitials = (name: string) => {
@@ -120,6 +96,7 @@ export function StoreHeader() {
                 <Link href="/" className="flex-shrink-0 mr-2 flex items-center group">
                   <div className="relative">
                     <div className="absolute inset-0 bg-rose-200 blur-md opacity-0 group-hover:opacity-50 transition-opacity rounded-full"></div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/logo2.webp" alt="Anuki Logo" className={`relative h-9 w-9 object-contain rounded-xl border-[1.5px] border-rose-100 shadow-sm p-0.5 bg-white transition-transform group-hover:scale-105 ${isMobileSearchExpanded ? '' : 'mr-2.5'}`} />
                   </div>
                   <div className={`flex flex-col -gap-1 transition-all duration-300 overflow-hidden ${isMobileSearchExpanded ? 'w-0 opacity-0' : 'opacity-100'}`}>
@@ -187,6 +164,7 @@ export function StoreHeader() {
           
           <div className="flex items-center gap-3 relative z-10">
             <Link href="/" className="flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="Anuki Logo" className="h-16 w-auto object-contain" />
             </Link>
           </div>
@@ -195,6 +173,7 @@ export function StoreHeader() {
             <div className="group relative py-8">
               <Link href="/products" className="hover:text-rose-600 transition-colors">Shop All</Link>
             </div>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {activeCategories.slice(0, 4).map((category: any) => (
               <div key={category.id} className="group relative py-8">
                 <Link href={`/products?category=${category.slug}`} className="hover:text-rose-600 transition-colors">
@@ -230,6 +209,7 @@ export function StoreHeader() {
                 className="flex items-center gap-2 p-1.5 hover:bg-neutral-100 rounded-full transition-colors"
               >
                 {profile.avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={profile.avatarUrl}
                     alt={profile.fullName}

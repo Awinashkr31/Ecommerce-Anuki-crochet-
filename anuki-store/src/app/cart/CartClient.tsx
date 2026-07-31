@@ -12,6 +12,7 @@ import { apiGet } from "@/lib/api";
 import CouponSection from "@/components/CouponSection";
 import { MobileLoginSheet } from "@/components/MobileLoginSheet";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartClient({ crossSellProducts = [] }: { crossSellProducts?: any[] }) {
   const router = useRouter();
   const { items, removeItem, updateQuantity, appliedCoupon, addItem } = useCartStore();
@@ -24,12 +25,15 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
   useEffect(() => {
     if (isLoginSheetOpen && profile) {
-      setIsLoginSheetOpen(false);
-      if (!selectedAddress) {
-        setIsAddressModalOpen(true);
-      } else {
-        router.push('/checkout');
-      }
+      const timer = setTimeout(() => {
+        setIsLoginSheetOpen(false);
+        if (!selectedAddress) {
+          setIsAddressModalOpen(true);
+        } else {
+          router.push('/checkout');
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [profile, isLoginSheetOpen, router, selectedAddress]);
 
@@ -43,10 +47,11 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
           const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
           if (defaultAddr) setSelectedAddress(defaultAddr);
         }
-      } catch (err: any) {
+      } catch (err) {
+        const error = err as Error & { message?: string };
         // Suppress 401 Unauthorized errors in the console overlay since it just means session is invalid/expired
-        if (!err.message?.includes('401')) {
-          console.error(err);
+        if (!error.message?.includes('401')) {
+          console.error(error);
         }
       }
     };
@@ -239,6 +244,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                   Complete Your Gift 🎁
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {crossSellProducts.filter((p: any) => !items.some(i => i.id === p.id)).slice(0, 4).map((product: any) => (
                     <div key={product.id} className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
                       <Link href={`/products/${product.slug}`} className="block w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
@@ -257,6 +263,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                           onClick={() => {
                             addItem({
                               id: product.id,
+                              productId: product.id,
                               name: product.name,
                               price: product.salePrice || product.basePrice,
                               quantity: 1,
@@ -333,7 +340,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
                 <div className="mt-4 bg-[#ECFDF5] text-[#059669] text-sm font-semibold p-3 rounded-xl flex items-center justify-center gap-2 border border-[#D1FAE5]">
                   <Tag size={16} fill="currentColor" />
-                  You'll save ₹{Math.round(discounts)} on this order!
+                  You&apos;ll save ₹{Math.round(discounts)} on this order!
                 </div>
 
                 <button 
@@ -412,13 +419,6 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   );
 }
 
-function ChevronRightIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
-      <path d="m9 18 6-6-6-6"/>
-    </svg>
-  );
-}
 
 function ChevronDownIcon() {
   return (
