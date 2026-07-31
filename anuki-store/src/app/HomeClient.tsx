@@ -137,109 +137,72 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
-        {/* Hero Section Carousel */}
-        <section className="relative min-h-[450px] sm:min-h-[500px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
-          <AnimatePresence initial={false}>
-            <motion.div
-              key={activeSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0 z-0"
-            >
-              <Image 
-                src={heroBanners[activeSlide].image} 
-                alt="Banner"
-                fill
-                priority
-                className="object-cover opacity-80"
-              />
-              <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10 bg-gradient-to-b from-black/10 via-black/40 to-black/95"></div>
-            </motion.div>
-          </AnimatePresence>
+          {/* Mobile layout container (Stacked: Image Top, Content Bottom) */}
+          <div className="md:hidden flex flex-col w-full min-h-screen bg-white">
+            {/* Image Slider Area */}
+            <div className="relative w-full h-[60vh] bg-neutral-100">
+              <AnimatePresence initial={false}>
+                <motion.div
+                  key={activeSlide}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <Image 
+                    src={heroBanners[activeSlide].image} 
+                    alt="Banner"
+                    fill
+                    priority
+                    className="object-cover"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-          {/* Desktop layout container (hidden on mobile) */}
-          <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 w-full hidden md:block">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-              >
-                <h1 className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 text-white leading-tight drop-shadow-lg">
-                  {heroBanners[activeSlide].title}
-                </h1>
-                <p className="text-base md:text-xl text-neutral-200 mb-8 md:mb-10 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
-                  {heroBanners[activeSlide].subtitle}
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
-                  {heroBanners[activeSlide].cta1 && (
-                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full sm:w-auto bg-rose-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2">
-                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={20} />
-                    </Link>
-                  )}
-                  {heroBanners[activeSlide].cta2 && (
-                    <Link href={heroBanners[activeSlide].cta2.link} className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-white/20 transition-all flex items-center justify-center">
-                      {heroBanners[activeSlide].cta2.text}
-                    </Link>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Mobile layout container (visible only on mobile) */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 w-full px-6 pb-6 md:hidden flex flex-col justify-end">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="w-full flex flex-col"
-              >
-                <div className="w-[75%]">
-                  {/* Badge */}
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[11px] font-medium tracking-wide">
+            {/* Content Area (Solid Background) */}
+            <div className="w-full px-6 py-8 flex flex-col bg-white">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeSlide}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="w-full flex flex-col"
+                >
+                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold tracking-wide self-start">
                     Handmade Collection
                   </div>
                   
-                  {/* Heading */}
-                  <h1 className="text-[32px] font-[800] leading-[1.1] text-white w-[80%] text-left mb-3 drop-shadow-lg">
+                  <h1 className="text-[32px] font-[800] leading-[1.1] text-neutral-900 w-full text-left mb-3">
                     {heroBanners[activeSlide].title}
                   </h1>
                   
-                  {/* Description */}
-                  <p className="text-[15px] font-[500] leading-[1.5] text-white line-clamp-2 text-left mb-[20px] drop-shadow-md">
+                  <p className="text-[15px] font-[500] leading-[1.5] text-neutral-600 text-left mb-[24px]">
                     {heroBanners[activeSlide].subtitle}
                   </p>
-                </div>
 
-                {/* Primary Button */}
-                {heroBanners[activeSlide].cta1 && (
-                  <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[52px] bg-rose-600 text-white rounded-full font-bold text-[16px] flex items-center justify-center gap-2 mb-[12px]">
-                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
-                  </Link>
-                )}
-                
-                {/* Secondary Button */}
-                {heroBanners[activeSlide].cta2 && (
-                  <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[50px] bg-white/10 backdrop-blur-md border border-white text-white rounded-full font-bold text-[16px] flex items-center justify-center mb-6">
-                    {heroBanners[activeSlide].cta2.text}
-                  </Link>
-                )}
-              </motion.div>
-            </AnimatePresence>
-
-
+                  <div className="flex flex-col gap-3 w-full">
+                    {heroBanners[activeSlide].cta1 && (
+                      <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[54px] bg-rose-600 text-white rounded-full font-bold text-[16px] flex items-center justify-center gap-2 shadow-md">
+                        {heroBanners[activeSlide].cta1.text} <ArrowRight size={18} />
+                      </Link>
+                    )}
+                    
+                    {heroBanners[activeSlide].cta2 && (
+                      <Link href={heroBanners[activeSlide].cta2.link} className="w-full h-[54px] bg-white border-2 border-neutral-200 text-neutral-900 rounded-full font-bold text-[16px] flex items-center justify-center">
+                        {heroBanners[activeSlide].cta2.text}
+                      </Link>
+                    )}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Dots Indicator Desktop */}
+          {/* Dots Indicator Desktop ONLY */}
           <div className="absolute bottom-8 left-0 right-0 hidden md:flex justify-center gap-2 z-20">
             {heroBanners.map((_, index) => (
               <button
