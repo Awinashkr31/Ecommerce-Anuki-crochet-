@@ -137,10 +137,65 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
+        {/* Hero Section Carousel */}
+        <section className="relative min-h-screen md:min-h-[600px] md:h-[600px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={activeSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="absolute inset-0 z-0 hidden md:block"
+            >
+              <Image 
+                src={heroBanners[activeSlide].image} 
+                alt="Banner"
+                fill
+                priority
+                className="object-cover opacity-80"
+              />
+              <div className="absolute inset-0 md:bg-gradient-to-t md:from-black/80 md:via-black/40 md:to-black/10"></div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Desktop layout container (hidden on mobile) */}
+          <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 w-full hidden md:block">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <h1 className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 text-white leading-tight drop-shadow-lg">
+                  {heroBanners[activeSlide].title}
+                </h1>
+                <p className="text-base md:text-xl text-neutral-200 mb-8 md:mb-10 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
+                  {heroBanners[activeSlide].subtitle}
+                </p>
+                
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
+                  {heroBanners[activeSlide].cta1 && (
+                    <Link href={heroBanners[activeSlide].cta1.link} className="w-full sm:w-auto bg-rose-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                      {heroBanners[activeSlide].cta1.text} <ArrowRight size={20} />
+                    </Link>
+                  )}
+                  {heroBanners[activeSlide].cta2 && (
+                    <Link href={heroBanners[activeSlide].cta2.link} className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-white/20 transition-all flex items-center justify-center">
+                      {heroBanners[activeSlide].cta2.text}
+                    </Link>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
           {/* Mobile layout container (Stacked: Image Top, Content Bottom) */}
-          <div className="md:hidden flex flex-col w-full min-h-screen bg-white">
+          <div className="md:hidden flex flex-col w-full h-full min-h-screen bg-white z-10">
             {/* Image Slider Area */}
-            <div className="relative w-full h-[60vh] bg-neutral-100">
+            <div className="relative w-full h-[60vh] bg-neutral-100 flex-shrink-0">
               <AnimatePresence initial={false}>
                 <motion.div
                   key={activeSlide}
@@ -162,7 +217,7 @@ export default function HomeClient({ featuredProducts, categories }: HomeClientP
             </div>
 
             {/* Content Area (Solid Background) */}
-            <div className="w-full px-6 py-8 flex flex-col bg-white">
+            <div className="w-full px-6 flex-grow flex flex-col justify-center bg-white">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeSlide}
