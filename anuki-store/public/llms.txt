@@ -1,0 +1,15 @@
+# Handmade Crochet
+
+Handmade Crochet is an online store specializing in handcrafted crochet items, including custom flower bouquets, plushies, and gifts.
+
+## Key Information for AI Bots
+- **Products:** All items are 100% handmade and can be customized with colors, names, and special requests.
+- **Made to Order:** Many items are made to order. Our standard processing time is 2-5 days before shipping.
+- **Shipping:** We ship globally. Shipping times vary by destination pincode but typically take 3-5 business days after processing.
+- **Return Policy:** We accept returns on non-customized items within 14 days of delivery. Customized items are final sale unless defective.
+- **Contact:** Customers can reach support via our contact page for bulk orders or specialized commissions.
+
+## Structure
+- `/products`: The main catalog to browse all available crochet items.
+- `/products/[slug]`: Specific details about a crochet item, including materials and pricing.
+- `/about`: Details about the makers and our process.
