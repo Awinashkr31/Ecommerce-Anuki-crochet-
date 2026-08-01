@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { z } from 'zod';
 import { verifyToken, requireRoles } from '../middleware/auth';
 import { validate } from '../middleware/validation';
-
 const router = Router();
 import { prisma } from '../lib/prisma';
 import { NotificationService } from '../services/notification';
 import { PaymentService } from '../services/paymentService';
+import redisClient from '../lib/redis';
+
+const ADMIN_ORDERS_ANALYTICS_CACHE_KEY = 'admin_orders_analytics';
 
 // ── Zod Schemas ──────────────────────────────────
 const orderItemSchema = z.object({
@@ -212,6 +216,28 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
       result.status = 'PROCESSING' as any;
     }
 
+    let paymentSessionId = undefined;
+    let cashfreeOrderId = undefined;
+    if (paymentMethod === 'online') {
+      const user = await prisma.user.findUnique({ where: { id: result.userId || '' } });
+      const paymentResult = await PaymentService.initiatePayment(
+        result.id,
+        totalAmount,
+        {
+          id: result.userId || 'guest',
+          email: user?.email || '',
+          phone: address.phone,
+          name: `${address.firstName || ''} ${address.lastName || ''}`.trim(),
+        },
+        {
+          ipAddress: req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown',
+          userAgent: req.headers['user-agent'] || '',
+        }
+      );
+      paymentSessionId = paymentResult.payment_session_id;
+      cashfreeOrderId = paymentResult.order_id;
+    }
+
     // Fire notifications AFTER transaction succeeds
     // Notify Customer
     if (result.userId) {
@@ -235,10 +261,14 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
       actionUrl: `/admin/orders/${result.id}`
     }).catch(console.error);
 
-    return res.status(201).json(result);
-  } catch (error: any) {
-    console.error("Order creation failed:", error.message);
-    const msg = error.message && !error.message.includes('\n') ? error.message : 'Failed to create order. Please try again.';
+    return res.status(201).json({
+      ...result,
+      payment_session_id: paymentSessionId,
+      cashfree_order_id: cashfreeOrderId
+    });
+  } catch (error: unknown) {
+    console.error("Order creation failed:", (error as Error).message);
+    const msg = (error as Error).message && !(error as Error).message.includes('\n') ? (error as Error).message : 'Failed to create order. Please try again.';
     return res.status(400).json({ error: msg });
   }
 });
@@ -276,8 +306,8 @@ router.get('/my-orders/analytics', verifyToken, async (req: import('express').Re
       totalSpent: revenueData._sum.totalAmount || 0,
       totalSaved: couponUsages._sum.discountAmount || 0
     });
-  } catch (error: any) {
-    console.error("Failed to fetch my orders analytics:", error.message);
+  } catch (error: unknown) {
+    console.error("Failed to fetch my orders analytics:", (error as Error).message);
     return res.status(400).json({ error: 'Failed to fetch analytics' });
   }
 });
@@ -327,7 +357,12 @@ router.get('/my-orders', verifyToken, async (req: import('express').Request | an
             variant: {
               include: { 
                 product: {
-                  include: { images: true }
+                  select: { 
+                    id: true, 
+                    name: true, 
+                    slug: true, 
+                    images: { take: 1, select: { url: true, altText: true } } 
+                  }
                 } 
               }
             }
@@ -344,8 +379,8 @@ router.get('/my-orders', verifyToken, async (req: import('express').Request | an
       orderBy: { createdAt: 'desc' }
     });
     return res.json(orders);
-  } catch (error: any) {
-    console.error("Failed to fetch my orders:", error.message);
+  } catch (error: unknown) {
+    console.error("Failed to fetch my orders:", (error as Error).message);
     return res.status(400).json({ error: 'Failed to fetch your orders' });
   }
 });
@@ -377,8 +412,8 @@ router.post('/:id/cancel', verifyToken, async (req: import('express').Request | 
     });
 
     return res.json({ success: true, message: 'Order cancelled successfully' });
-  } catch (error: any) {
-    console.error("Failed to cancel order:", error.message);
+  } catch (error: unknown) {
+    console.error("Failed to cancel order:", (error as Error).message);
     return res.status(400).json({ error: 'Failed to cancel order' });
   }
 });
@@ -386,6 +421,11 @@ router.post('/:id/cancel', verifyToken, async (req: import('express').Request | 
 // GET order analytics (Admin)
 router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT', 'FINANCE']), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
+    if (redisClient.isReady) {
+      const cached = await redisClient.get(ADMIN_ORDERS_ANALYTICS_CACHE_KEY);
+      if (cached) return res.json(JSON.parse(cached));
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -416,7 +456,7 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
     const totalRevenue = totalRevenueData._sum.totalAmount || 0;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-    return res.json({
+    const result = {
       totalOrders,
       todayOrders,
       pendingOrders,
@@ -428,8 +468,14 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
       failedOrders,
       totalRevenue,
       avgOrderValue
-    });
-  } catch (error: any) {
+    };
+
+    if (redisClient.isReady) {
+      await redisClient.setEx(ADMIN_ORDERS_ANALYTICS_CACHE_KEY, 300, JSON.stringify(result));
+    }
+
+    return res.json(result);
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to fetch analytics' });
   }
 });
@@ -504,7 +550,7 @@ router.get('/:id', verifyToken, async (req: import('express').Request | any, res
     };
 
     return res.json(mappedOrder);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to fetch order' });
   }
 });
@@ -552,7 +598,7 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFIL
         totalPages: Math.ceil(total / limitNumber)
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to fetch orders' });
   }
 });
@@ -597,7 +643,7 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     }
 
     return res.json(order);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to update order status' });
   }
 });
@@ -622,7 +668,7 @@ router.post('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     });
     
     return res.json(timeline);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to add note' });
   }
 });
@@ -661,7 +707,7 @@ router.post('/:id/communication', verifyToken, requireRoles(['ADMIN', 'SUPER_ADM
     });
 
     return res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to send communication' });
   }
 });
@@ -679,7 +725,7 @@ router.put('/:id/notes', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
     });
     
     return res.json(order);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to update internal notes' });
   }
 });
@@ -694,7 +740,7 @@ router.get('/:id/timeline', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
       orderBy: { createdAt: 'desc' }
     });
     return res.json(timeline);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to fetch timeline' });
   }
 });
@@ -727,7 +773,7 @@ router.post('/:id/fulfill', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', '
     }
 
     return res.json(shipment);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to fulfill order' });
   }
 });
@@ -753,7 +799,7 @@ router.post('/webhooks/shipping', async (req: import('express').Request | any, r
     }
 
     return res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to process webhook' });
   }
 });
@@ -800,7 +846,7 @@ router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async
     });
 
     return res.json({ success: true, message: 'Order deleted successfully' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete order error:', error);
     return res.status(400).json({ error: 'Failed to delete order' });
   }

@@ -6,10 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, apiGet } from "@/lib/api";
 import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import AddressModal, { Address } from "@/components/AddressModal";
 import CartOffers from "@/app/cart/CartOffers";
 import { load } from "@cashfreepayments/cashfree-js";
+import useSWR from 'swr';
 
 export default function CheckoutClient({ settings }: { settings: Record<string, string> }) {
   const router = useRouter();
@@ -36,27 +37,21 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     }
   }, [items.length, router, isProcessing, profile, isLoading]);
 
+  const { data: addresses } = useSWR<Address[]>('/addresses', apiGet);
+
   useEffect(() => {
-    // Fetch default address on load
-    const fetchDefaultAddress = async () => {
-      try {
-        const addresses = await apiGet<Address[]>('/addresses');
-        if (addresses && addresses.length > 0) {
-          if (urlAddressId) {
-            const found = addresses.find(a => a.id === urlAddressId);
-            if (found) setSelectedAddress(found);
-            else setSelectedAddress(addresses.find(a => a.isDefault) || addresses[0]);
-          } else {
-            const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
-            if (defaultAddr) setSelectedAddress(defaultAddr);
-          }
-        }
-      } catch (err) {
-        console.error(err);
+    if (addresses && addresses.length > 0 && !selectedAddress) {
+      if (urlAddressId) {
+        const found = addresses.find(a => a.id === urlAddressId);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (found) setSelectedAddress(found);
+        else setSelectedAddress(addresses.find(a => a.isDefault) || addresses[0]);
+      } else {
+        const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
+        if (defaultAddr) setSelectedAddress(defaultAddr);
       }
-    };
-    fetchDefaultAddress();
-  }, [urlAddressId]);
+    }
+  }, [addresses, urlAddressId, selectedAddress]);
 
   // Browser beforeunload warning during payment
   useEffect(() => {
@@ -173,24 +168,10 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       
       const dbOrder = await apiPost('/orders', orderPayload);
       
-      // Now create Cashfree order
-      const cashfreeOrder = await apiPost('/payments/cashfree/create-order', {
-        amount: totalAmount,
-        internalOrderId: dbOrder.id,
-        user: {
-          ...profile,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          phone: selectedAddress.phone || (profile as any)?.phone
-        }
-      });
+      const paymentSessionId = dbOrder.payment_session_id;
 
-      // Check if already paid (duplicate protection)
-      if (cashfreeOrder.alreadyPaid) {
-        toast.dismiss(loadingToastId);
-        toast.success("This order was already paid!");
-        clearCart();
-        router.push(`/order-status/${dbOrder.id}`);
-        return;
+      if (!paymentSessionId) {
+        throw new Error("Failed to initialize secure payment session. Please try again.");
       }
 
       const cashfree = await load({
@@ -203,7 +184,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const checkoutOptions: any = {
-        paymentSessionId: cashfreeOrder.payment_session_id,
+        paymentSessionId: paymentSessionId,
         redirectTarget: "_modal",
       };
 
@@ -215,7 +196,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
           // User may have dropped — verify actual status
           toast.loading("Checking payment status...", { id: "verify" });
           apiPost('/payments/cashfree/verify', {
-            order_id: cashfreeOrder.order_id,
+            order_id: dbOrder.cashfree_order_id,
             internalOrderId: dbOrder.id
           }).then(() => {
             toast.dismiss("verify");
@@ -229,7 +210,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
         if (result.paymentDetails) {
           toast.loading("Verifying payment...", { id: "verify" });
           apiPost('/payments/cashfree/verify', {
-            order_id: cashfreeOrder.order_id,
+            order_id: dbOrder.cashfree_order_id,
             internalOrderId: dbOrder.id
           }).then(() => {
             toast.dismiss("verify");
@@ -259,7 +240,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col relative pb-32">
-      <Toaster />
+      
       
       {/* Header */}
       <header className="bg-white border-b border-neutral-100 py-4 px-4 md:px-8 sticky top-0 z-40">
@@ -514,13 +495,5 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
         startInFormMode={!selectedAddress}
       />
     </div>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
-      <path d="m6 9 6 6 6-6"/>
-    </svg>
   );
 }

@@ -120,6 +120,8 @@ model Category {
   products    Product[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([isActive, parentId])
 }
 
 model Product {
@@ -197,6 +199,9 @@ model Product {
   reviews              Review[]
   images               Image[]
   customizationOptions CustomizationOption[]
+
+  @@index([status, bestseller, createdAt(sort: Desc)])
+  @@index([categoryId])
 }
 
 model Image {
@@ -278,6 +283,9 @@ model Order {
   shipment Shipment?
   timeline OrderTimeline[]
   couponUsages CouponUsage[]
+
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([status])
 }
 
 model Shipment {
@@ -304,6 +312,9 @@ model OrderItem {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   returnRequest ReturnRequest?
+
+  @@index([orderId])
+  @@index([variantId])
 }
 
 model Payment {
@@ -379,6 +390,8 @@ model Review {
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([productId, approved])
 }
 
 model WalletTransaction {

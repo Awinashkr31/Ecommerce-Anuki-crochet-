@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Star } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
+import React from "react";
 
 export interface Product {
   id: string;
@@ -21,10 +22,9 @@ export interface Product {
   isNew?: boolean;
   status?: string;
   stockStatus?: string;
-  stock?: number;
 }
 
-export function ProductCard({ product }: { product: Product }) {
+const ProductCardComponent = ({ product }: { product: Product }) => {
   const { profile } = useAuthStore();
   const isB2B = profile?.role === 'B2B_CUSTOMER';
 
@@ -92,7 +92,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Images */}
-        <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
+        <Link href={`/products/${product.slug}`} prefetch={false} className="relative block w-full h-full">
             <Image 
               src={primaryImage} 
               alt={product.name} 
@@ -132,7 +132,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
         
-        <Link href={`/products/${product.slug}`} className="text-neutral-900 font-bold hover:text-rose-600 transition-colors line-clamp-1 text-base">
+        <Link href={`/products/${product.slug}`} prefetch={false} className="text-neutral-900 font-bold hover:text-rose-600 transition-colors line-clamp-1 text-base">
           {product.name}
         </Link>
         
@@ -167,4 +167,6 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
     </motion.div>
   );
-}
+};
+
+export const ProductCard = React.memo(ProductCardComponent);

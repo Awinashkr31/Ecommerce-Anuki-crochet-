@@ -2,33 +2,61 @@ import { Router } from 'express';
 import { verifyToken, requireRoles } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { startOfDay, startOfWeek, startOfMonth } from 'date-fns';
+import redisClient from '../lib/redis';
 
 const router = Router();
+const ADMIN_ANALYTICS_CACHE_KEY = 'admin_dashboard_analytics';
 
 router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'FINANCE', 'MARKETING', 'ORDER_FULFILLMENT', 'CUSTOMER_SUPPORT', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
-    const orders = await prisma.order.findMany({
-      where: { status: { not: 'CANCELLED' } },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: { product: { include: { category: true } } }
-            }
-          }
-        },
-        user: true
+    // 1. Check Redis Cache
+    if (redisClient.isReady) {
+      const cachedData = await redisClient.get(ADMIN_ANALYTICS_CACHE_KEY);
+      if (cachedData) {
+        return res.json(JSON.parse(cachedData));
       }
-    });
-
-    const variants = await prisma.variant.findMany();
-    const lowStockVariants = variants.filter(v => v.stock < 5).length;
+    }
 
     // Time boundaries
     const now = new Date();
     const todayStart = startOfDay(now);
     const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
     const monthStart = startOfMonth(now);
+
+    const orders = await prisma.order.findMany({
+      where: { 
+        status: { not: 'CANCELLED' },
+        createdAt: { gte: monthStart }
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        status: true,
+        totalAmount: true,
+        items: {
+          select: {
+            quantity: true,
+            price: true,
+            variant: {
+              select: {
+                product: {
+                  select: { name: true, category: { select: { name: true } } }
+                }
+              }
+            }
+          }
+        },
+        user: {
+          select: { id: true }
+        }
+      }
+    });
+
+    const lowStockVariants = await prisma.variant.count({
+      where: { stock: { lt: 5 } }
+    });
+
+    // Time boundaries already defined above
 
     const filterOrders = (start: Date) => orders.filter(o => new Date(o.createdAt) >= start);
     const todayOrders = filterOrders(todayStart);

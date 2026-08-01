@@ -6,7 +6,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { Package, Search, Filter } from "lucide-react";
 import OrderCard from "./OrderCard";
 import OrderDetailsModal from "./OrderDetailsModal";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const fetcher = (url: string) => apiGet(url);
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -8,8 +9,8 @@ import dynamic from "next/dynamic";
 import type { Product } from "@/components/ProductCard";
 
 const ProductCard = dynamic(() => import("@/components/ProductCard").then(mod => mod.ProductCard), { ssr: true });
-const EpicDeals = dynamic(() => import("@/components/EpicDeals").then(mod => mod.EpicDeals), { ssr: true });
-const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Footer), { ssr: true });
+const EpicDeals = dynamic(() => import("@/components/EpicDeals").then(mod => mod.EpicDeals), { ssr: false });
+const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Footer), { ssr: false });
 import useSWR from 'swr';
 import { apiGet } from '@/lib/api';
 
@@ -32,15 +33,15 @@ const InstagramEmbed = ({ url }: { url: string }) => {
   useEffect(() => {
     if (!isVisible) return;
     const process = () => {
-      if ((window as unknown as { instgrm?: any }).instgrm) {
+      if ((window as unknown as { instgrm?: { Embeds?: { process: () => void } } })?.instgrm?.Embeds) {
         try {
-          (window as unknown as { instgrm?: any }).instgrm.Embeds.process();
+          (window as unknown as { instgrm?: { Embeds?: { process: () => void } } }).instgrm?.Embeds?.process();
         } catch {
           // ignore
         }
       }
     };
-    if (!(window as unknown as { instgrm?: any }).instgrm) {
+    if (!(window as unknown as { instgrm?: { Embeds?: { process: () => void } } })?.instgrm?.Embeds) {
       if (!document.getElementById('instagram-embed-script')) {
         const script = document.createElement('script');
         script.id = 'instagram-embed-script';

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ProductCard, Product } from '@/components/ProductCard';
 import { apiGet } from '@/lib/api';
@@ -13,7 +12,7 @@ export default function CategoryPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const [category, setCategory] = useState<any>(null);
+  const [category, setCategory] = useState<Record<string, unknown> | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,14 +20,20 @@ export default function CategoryPage() {
     if (!slug) return;
     
     Promise.all([
-      apiGet<any>(`/categories/slug/${slug}`),
+      apiGet<Record<string, unknown>[]>('/categories'),
       apiGet<Product[]>('/products')
-    ]).then(([catData, prodsData]) => {
+    ]).then(([allCats, prodsData]) => {
+      const catData = allCats?.find(c => c.slug === slug);
       setCategory(catData);
-      if (prodsData) {
+      
+      if (prodsData && catData && allCats) {
+        // Find all child categories
+        const childSlugs = allCats.filter(c => c.parentId === catData.id).map(c => c.slug);
+        const validSlugs = [slug, ...childSlugs];
+
         const filtered = prodsData.filter(p => 
           p.status === 'PUBLISHED' && 
-          p.category?.slug === slug
+          validSlugs.includes(p.category?.slug)
         );
         setProducts(filtered);
       }

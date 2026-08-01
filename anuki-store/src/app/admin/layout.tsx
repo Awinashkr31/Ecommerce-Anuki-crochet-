@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSidebar } from './Sidebar';
 import { Menu, X, Loader2 } from "lucide-react";
+import { SWRConfig } from "swr";
 import { useAuthStore } from "../../store/authStore";
 import { toast } from "sonner";
 
@@ -78,7 +79,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           
           <main className="flex-1 p-4 md:p-8">
-            {children}
+            <SWRConfig value={{ keepPreviousData: true, dedupingInterval: 10000 }}>
+              {children}
+            </SWRConfig>
           </main>
         </div>
       </div>

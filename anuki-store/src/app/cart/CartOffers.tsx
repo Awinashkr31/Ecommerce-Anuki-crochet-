@@ -1,33 +1,24 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Scissors, Tag, ChevronRight } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { apiGet, apiPost } from "@/lib/api";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 import CouponModal from "@/components/CouponModal";
+import useSWR from "swr";
 
 export default function CartOffers({ subtotal }: { subtotal: number }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [applyingCode, setApplyingCode] = useState<string | null>(null);
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const { data: availableCoupons = [] } = useSWR('/coupons/available/cart', (url: string) => apiGet<any[]>(url));
   
   const { appliedCoupon, setAppliedCoupon, items } = useCartStore();
   const { profile } = useAuthStore();
   
-  useEffect(() => {
-    const fetchCoupons = async () => {
-      try {
-        const coupons = await apiGet('/coupons/available/cart');
-        setAvailableCoupons(coupons);
-      } catch (err) {
-        console.error("Failed to load cart coupons", err);
-      }
-    };
-    fetchCoupons();
-  }, []);
-  
+
   const handleApply = async (couponCode: string) => {
     if (!profile) {
       toast.error("Please login to apply coupon codes.", {

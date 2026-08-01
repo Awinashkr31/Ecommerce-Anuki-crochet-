@@ -4,6 +4,8 @@ import ProductDetailClient from './ProductDetailClient';
 import Link from 'next/link';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import { Metadata } from 'next';
+import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 
 export const revalidate = 60; // ISR revalidation
 
@@ -11,12 +13,37 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+const getProduct = cache(async (slug: string) => {
+  return prisma.product.findUnique({
+    where: { slug },
+    include: {
+      category: true,
+      variants: true,
+      images: { orderBy: { order: 'asc' } },
+    }
+  });
+});
+
+const getRelatedProducts = unstable_cache(
+  async () => {
+    return prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      take: 8,
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { order: 'asc' } },
+      }
+    });
+  },
+  ['related-products-cache'],
+  { revalidate: 3600 } // Cache for 1 hour
+);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
-  const product = await prisma.product.findUnique({
-    where: { slug: decodedSlug },
-  });
+  const product = await getProduct(decodedSlug);
 
   if (!product) {
     return { title: 'Product Not Found' };
@@ -36,23 +63,8 @@ export default async function ProductDetailPage({ params }: Props) {
   const decodedSlug = decodeURIComponent(slug);
   
   const [product, allProducts] = await Promise.all([
-    prisma.product.findUnique({
-      where: { slug: decodedSlug },
-      include: {
-        category: true,
-        variants: true,
-        images: { orderBy: { order: 'asc' } },
-      }
-    }),
-    prisma.product.findMany({
-      where: { status: 'PUBLISHED' },
-      take: 8,
-      include: {
-        category: true,
-        variants: true,
-        images: { orderBy: { order: 'asc' } },
-      }
-    })
+    getProduct(decodedSlug),
+    getRelatedProducts()
   ]);
 
   const otherProducts = allProducts.filter(p => p.id !== product?.id);

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartRecommendations({ products = [] }: { products: any[] }) {

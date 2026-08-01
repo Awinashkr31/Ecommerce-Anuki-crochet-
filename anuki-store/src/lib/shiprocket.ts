@@ -1,4 +1,4 @@
-import axios from 'axios';
+
 import redisClient from './redis';
 import dotenv from 'dotenv';
 
@@ -15,12 +15,18 @@ export const getShiprocketToken = async (): Promise<string | null> => {
     }
 
     // Generate new token
-    const response = await axios.post(`${SHIPROCKET_API_BASE}/user/login`, {
-      email: process.env.SHIPROCKET_EMAIL,
-      password: process.env.SHIPROCKET_PASSWORD,
+    const response = await fetch(`${SHIPROCKET_API_BASE}/user/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: process.env.SHIPROCKET_EMAIL,
+        password: process.env.SHIPROCKET_PASSWORD,
+      })
     });
 
-    const token = response.data.token;
+    if (!response.ok) throw new Error('Shiprocket login failed');
+    const data = await response.json();
+    const token = data.token;
 
     // Cache token (Shiprocket tokens usually expire in 24h, cache for 20h)
     if (redisClient.isReady) {
@@ -38,12 +44,15 @@ export const createShiprocketOrder = async (orderData: any) => {
   const token = await getShiprocketToken();
   if (!token) throw new Error('Shiprocket authentication failed');
 
-  const response = await axios.post(`${SHIPROCKET_API_BASE}/orders/create/adhoc`, orderData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+  const response = await fetch(`${SHIPROCKET_API_BASE}/orders/create/adhoc`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
   });
 
-  return response.data;
+  if (!response.ok) throw new Error('Failed to create Shiprocket order');
+  return response.json();
 };

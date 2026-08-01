@@ -7,7 +7,7 @@ import { useCartStore } from "@/store/cartStore";
 import { PAYMENT_STATUS_CONFIG, PAYMENT_ACTIONS, PaymentStatusKey } from "@/lib/paymentConfig";
 import Image from "next/image";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import { load } from "@cashfreepayments/cashfree-js";
 import {
   CheckCircle2, XCircle, Clock, Loader2, LogOut, Ban, Timer,
@@ -195,7 +195,7 @@ export default function OrderStatusPage() {
   if (error || !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-        <Toaster />
+        
         <div className="text-center space-y-4 max-w-md">
           <XCircle className="h-12 w-12 text-red-400 mx-auto" />
           <h2 className="text-xl font-bold text-neutral-900">Something went wrong</h2>
@@ -223,7 +223,7 @@ export default function OrderStatusPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <Toaster />
+      
 
       {/* Header */}
       <header className="bg-white border-b border-neutral-100 py-4 px-4 md:px-8 sticky top-0 z-40">

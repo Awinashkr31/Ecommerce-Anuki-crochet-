@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
@@ -8,8 +13,12 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion'],
   },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  generateEtags: true,
   serverExternalPackages: ['firebase-admin', 'jwks-rsa', 'jose', 'sharp', 'multer'],
   turbopack: {},
   images: {
@@ -54,8 +63,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Immutable cache for all files in the public directory (Edge Cache)
+        source: '/:all*(svg|jpg|png|webp|avif|ico|woff|woff2|ttf|eot)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
 };
 
-export default withSerwist(nextConfig);
+export default withAnalyzer(withSerwist(nextConfig));

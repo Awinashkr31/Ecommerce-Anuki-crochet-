@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router } from 'express';
 import { verifyToken, requireRoles } from '../middleware/auth';
 import redisClient from '../lib/redis';
@@ -6,35 +7,73 @@ const router = Router();
 import { prisma } from '../lib/prisma';
 
 const PRODUCTS_CACHE_KEY = 'products_all';
+const PRODUCTS_MINIMAL_CACHE_KEY = 'products_minimal';
 
 // GET all products
 router.get('/', async (req: any, res: any) => {
   try {
+    const isMinimal = req.query.minimal === 'true';
+    const cacheKey = isMinimal ? PRODUCTS_MINIMAL_CACHE_KEY : PRODUCTS_CACHE_KEY;
+
     // 1. Try Cache
     if (redisClient.isReady) {
-      const cached = await redisClient.get(PRODUCTS_CACHE_KEY);
+      const cached = await redisClient.get(cacheKey);
       if (cached) {
         return res.json(JSON.parse(cached));
       }
     }
 
     // 2. Fetch from DB
-    const products = await prisma.product.findMany({
-      where: {
-        status: {
-          not: 'ARCHIVED'
+    let products;
+    if (isMinimal) {
+      products = await prisma.product.findMany({
+        where: {
+          status: {
+            not: 'ARCHIVED'
+          }
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          basePrice: true,
+          salePrice: true,
+          wholesalePrice: true,
+          isMadeToOrder: true,
+          bestseller: true,
+          stockStatus: true,
+          stock: true,
+          status: true,
+          images: {
+            select: { url: true, altText: true, order: true },
+            orderBy: { order: 'asc' }
+          },
+          category: {
+            select: { name: true, slug: true }
+          },
+          variants: {
+            select: { id: true, stock: true, color: true }
+          }
         }
-      },
-      include: {
-        category: true,
-        images: { orderBy: { order: 'asc' } },
-        variants: true,
-      },
-    });
+      });
+    } else {
+      products = await prisma.product.findMany({
+        where: {
+          status: {
+            not: 'ARCHIVED'
+          }
+        },
+        include: {
+          category: true,
+          images: { orderBy: { order: 'asc' } },
+          variants: true,
+        },
+      });
+    }
 
     // 3. Set Cache (expire in 15 mins)
     if (redisClient.isReady) {
-      await redisClient.setEx(PRODUCTS_CACHE_KEY, 900, JSON.stringify(products));
+      await redisClient.setEx(cacheKey, 900, JSON.stringify(products));
     }
 
     return res.json(products);
@@ -92,6 +131,7 @@ router.get('/:id', async (req: any, res: any) => {
 const invalidateProductsCache = async () => {
   if (redisClient.isReady) {
     await redisClient.del(PRODUCTS_CACHE_KEY);
+    await redisClient.del(PRODUCTS_MINIMAL_CACHE_KEY);
   }
 };
 

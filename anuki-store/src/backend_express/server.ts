@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
@@ -22,11 +25,13 @@ import addressRoutes from './routes/addresses';
 import notificationRoutes from './routes/notifications';
 import walletRoutes from './routes/wallet';
 import bannerRoutes from './routes/banners';
+import os from 'os';
 
 dotenv.config();
 
 const app = express();
 app.set('trust proxy', 1);
+app.set('etag', 'strong'); // Enable strong ETags
 const PORT = process.env.PORT || 5000;
 
 // Security headers — hide Express fingerprint and set strict policies
@@ -44,6 +49,18 @@ app.use(helmet({
 }));
 app.disable('x-powered-by');
 
+// Phase 16: Slow API Detection Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 800) {
+      console.warn(`[SLOW API ALERT] ${req.method} ${req.originalUrl} took ${duration}ms`);
+    }
+  });
+  next();
+});
+
 const allowedOrigins = [
   'http://localhost:3000',
   'http://anukicrochet.in',
@@ -55,6 +72,7 @@ if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(compression()); // Enable Gzip/Brotli compression
 app.use(express.json({ limit: '2mb' })); // Reduced from 10mb — uploads use multipart, not JSON
 app.use(cookieParser());
 
@@ -65,8 +83,7 @@ const globalLimiter = rateLimit({
   max: 2000,
   message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown',
+  legacyHeaders: false
 });
 
 // Strict: 20 requests per 15 minutes (payments, uploads, orders)
@@ -81,28 +98,48 @@ const strictLimiter = rateLimit({
 // Apply global limiter to all API routes
 app.use('/api', globalLimiter);
 
+// ── Caching Middleware ─────────────────────────────
+const apiCache = (req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {
+  // 5 minutes edge cache, 10 minutes stale-while-revalidate
+  res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+  next();
+};
+
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
+app.use('/api/products', apiCache, productRoutes);
+app.use('/api/categories', apiCache, categoryRoutes);
 app.use('/api/orders', strictLimiter, orderRoutes);      // Strict: order creation
 app.use('/api/returns', returnRoutes);
 app.use('/api/coupons', couponRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/posts', apiCache, postRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/upload', strictLimiter, uploadRoutes);      // Strict: file uploads
 app.use('/api/payments', strictLimiter, paymentRoutes);   // Strict: payment creation
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/audit-logs', auditLogsRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api/settings', settingsRoutes);
+app.use('/api/settings', apiCache, settingsRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/banners', bannerRoutes);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const memUsage = process.memoryUsage();
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    metrics: {
+      uptimeSeconds: process.uptime(),
+      memory: {
+        rss: `${Math.round(memUsage.rss / 1024 / 1024)} MB`,
+        heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)} MB`,
+        heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)} MB`,
+      },
+      cpuLoad: os.loadavg()
+    }
+  });
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

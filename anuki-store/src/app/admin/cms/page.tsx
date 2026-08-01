@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api';
 import { Image as ImageIcon, Layout, Type, Globe, Plus, Edit2, GripVertical, CalendarClock, Trash2, Link as LinkIcon, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from "sonner";
 import { useAuthStore } from '@/store/authStore';
 
 export default function AdminCMSPage() {

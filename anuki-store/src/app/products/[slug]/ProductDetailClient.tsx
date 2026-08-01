@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight, ShieldCheck, Heart } from 'lucide-react';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from "sonner";
 
 import { useCartStore } from '../../../store/cartStore';
 import { useAuthStore } from '../../../store/authStore';
@@ -101,7 +101,7 @@ export default function ProductDetailClient({
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
-      <Toaster position="top-center" />
+      
       
       {/* Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">

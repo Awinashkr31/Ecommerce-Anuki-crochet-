@@ -39,7 +39,9 @@ export function StoreHeader() {
   const totalCartItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
 
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updateScrollDir = () => {
       const currentScrollY = window.scrollY;
       
       // If we scroll down past 60px, hide it. If we scroll up, show it.
@@ -50,6 +52,14 @@ export function StoreHeader() {
       }
       
       setLastScrollY(currentScrollY);
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollDir);
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

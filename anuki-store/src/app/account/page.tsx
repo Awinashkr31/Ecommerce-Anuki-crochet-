@@ -9,7 +9,7 @@ import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { apiPost, apiGet } from "../../lib/api";
 import useSWR from "swr";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import CustomerOrders from "../../components/orders/CustomerOrders";
 import AddressModal from "../../components/AddressModal";
 

@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Edit2, Trash2, Copy, Loader2, Image as ImageIcon, Check, ListTree } from 'lucide-react';
 import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from '../../../../../lib/api';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from "sonner";
 
 export default function VariantManagementPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
@@ -144,7 +144,7 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
 
   return (
     <div className="p-8 max-w-7xl mx-auto pb-32">
-      <Toaster position="top-right" />
+      
       <div className="flex items-center justify-between mb-8">
         <div>
           <div className="flex items-center gap-2 text-sm text-neutral-500 mb-2 font-medium">

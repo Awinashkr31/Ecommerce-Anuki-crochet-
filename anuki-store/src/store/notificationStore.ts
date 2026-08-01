@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { apiGet, apiPut } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
-import toast from 'react-hot-toast';
+import { toast } from "sonner";
 
 export interface Notification {
   id: string;

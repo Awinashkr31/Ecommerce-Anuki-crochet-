@@ -1,15 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { verifyToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 import { prisma } from '../lib/prisma';
+import redisClient from '../lib/redis';
+
+const CACHE_KEY = 'categories_all';
 
 // GET all categories
 router.get('/', async (req: any, res: any) => {
   try {
+    if (redisClient.isReady) {
+      const cached = await redisClient.get(CACHE_KEY);
+      if (cached) return res.json(JSON.parse(cached));
+    }
+
     const categories = await prisma.category.findMany({
       include: { children: true },
     });
+
+    if (redisClient.isReady) {
+      await redisClient.setEx(CACHE_KEY, 3600, JSON.stringify(categories)); // 1 hour cache
+    }
+
     return res.json(categories);
   } catch (error) {
     return res.status(400).json({ error: 'Failed to fetch categories' });
@@ -24,6 +39,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
     const category = await prisma.category.create({
       data: { name, slug, description, parentId, bannerUrl },
     });
+    if (redisClient.isReady) await redisClient.del(CACHE_KEY);
     return res.status(201).json(category);
   } catch (error) {
     return res.status(500).json({ error: 'Failed to create category' });
@@ -40,6 +56,7 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
       where: { id },
       data: { name, slug, description, parentId, bannerUrl },
     });
+    if (redisClient.isReady) await redisClient.del(CACHE_KEY);
     return res.json(category);
   } catch (error) {
     return res.status(400).json({ error: 'Failed to update category' });
@@ -50,8 +67,11 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
 router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    await prisma.category.delete({ where: { id } });
-    return res.status(204).send();
+    await prisma.category.delete({
+      where: { id },
+    });
+    if (redisClient.isReady) await redisClient.del(CACHE_KEY);
+    return res.json({ message: 'Category deleted' });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to delete category' });
   }

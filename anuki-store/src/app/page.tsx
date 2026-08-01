@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import HomeClient from "./HomeClient";
 import { prisma } from "@/lib/prisma";
 
@@ -10,25 +11,61 @@ export default async function Page() {
       where: { status: 'PUBLISHED', bestseller: true },
       take: 4,
       orderBy: { createdAt: 'desc' },
-      include: {
-        category: true,
-        variants: true,
-        images: { orderBy: { order: 'asc' } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        basePrice: true,
+        salePrice: true,
+        wholesalePrice: true,
+        isMadeToOrder: true,
+        bestseller: true,
+        stockStatus: true,
+        stock: true,
+        status: true,
+        images: {
+          select: { url: true, altText: true, order: true },
+          orderBy: { order: 'asc' }
+        },
+        category: {
+          select: { name: true, slug: true }
+        },
+        variants: {
+          select: { id: true, stock: true, color: true }
+        }
       }
     }),
     prisma.product.findMany({
       where: { status: 'PUBLISHED' },
       take: 4,
       orderBy: { createdAt: 'desc' },
-      include: {
-        category: true,
-        variants: true,
-        images: { orderBy: { order: 'asc' } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        basePrice: true,
+        salePrice: true,
+        wholesalePrice: true,
+        isMadeToOrder: true,
+        bestseller: true,
+        stockStatus: true,
+        stock: true,
+        status: true,
+        images: {
+          select: { url: true, altText: true, order: true },
+          orderBy: { order: 'asc' }
+        },
+        category: {
+          select: { name: true, slug: true }
+        },
+        variants: {
+          select: { id: true, stock: true, color: true }
+        }
       }
     }),
     prisma.category.findMany({
       where: { isActive: true },
-      orderBy: { createdAt: 'desc' }
+      select: { id: true, name: true, slug: true, bannerUrl: true },
     })
   ]);
 
