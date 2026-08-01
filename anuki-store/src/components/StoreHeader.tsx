@@ -8,8 +8,7 @@ import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import { apiGet } from "../lib/api";
 import useSWR from 'swr';
-
-
+import { InstallPWAButton } from "./InstallPWAButton";
 
 export function StoreHeader() {
   const { profile } = useAuthStore();
@@ -157,6 +156,8 @@ export function StoreHeader() {
                 </button>
               )}
             </div>
+
+            <InstallPWAButton />
 
             <Link href="/cart" className="relative p-1 text-neutral-700 shrink-0">
               <ShoppingCart size={24} strokeWidth={1.5} />

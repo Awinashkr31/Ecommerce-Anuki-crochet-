@@ -88,6 +88,10 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://sdk.cashfree.com" />
         <link rel="preconnect" href="https://api.cashfree.com" />
         <link rel="dns-prefetch" href="https://api.cashfree.com" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#f43f5e" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
         <NextTopLoader 
