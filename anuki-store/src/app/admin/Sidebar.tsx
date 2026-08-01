@@ -1,16 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
-import { apiPost } from "../../lib/api";
+import { apiPost, apiGet } from "../../lib/api";
+import { preload } from "swr";
 import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, RotateCcw, Ticket,
   FileText, BarChart3, Warehouse, ScrollText, Settings, Truck, Star, Palette, LogOut, Search
 } from "lucide-react";
+
+const fetcher = (url: string) => apiGet<any>(url);
+
+const routeToApiMap: Record<string, string> = {
+  "/admin": "/analytics",
+  "/admin/products": "/products",
+  "/admin/categories": "/categories",
+  "/admin/orders": "/orders?page=1&limit=20",
+  "/admin/inventory": "/inventory",
+  "/admin/coupons": "/coupons",
+  "/admin/returns": "/returns",
+  "/admin/settings": "/settings",
+  "/admin/audit-logs": "/audit-logs",
+  "/admin/blog": "/posts",
+};
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,6 +57,11 @@ export function AdminSidebar({ isOpen, onClose }: SidebarProps) {
   const { profile, logout: clearAuthStore } = useAuthStore();
 
   const activeRole = profile?.role || "CUSTOMER";
+
+  // Wake up serverless backend to avoid cold starts when navigating
+  useEffect(() => {
+    apiGet('/health').catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     // Fire and forget
@@ -88,6 +109,11 @@ export function AdminSidebar({ isOpen, onClose }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   onClick={onClose}
+                  onMouseEnter={() => {
+                    if (routeToApiMap[item.href]) {
+                      preload(routeToApiMap[item.href], fetcher);
+                    }
+                  }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     active
                       ? "bg-white/10 text-white font-bold"
