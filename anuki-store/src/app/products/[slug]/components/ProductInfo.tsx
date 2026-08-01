@@ -62,8 +62,6 @@ export default function ProductInfo({
               <span className="text-sm text-neutral-500 font-medium ml-1">No reviews</span>
             )}
           </div>
-          <div className="w-1 h-1 bg-neutral-300 rounded-full"></div>
-          <span className="text-sm font-medium text-emerald-600">300+ Sold</span>
         </div>
       </div>
 
