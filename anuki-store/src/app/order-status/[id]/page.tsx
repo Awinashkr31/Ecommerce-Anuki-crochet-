@@ -222,23 +222,14 @@ export default function OrderStatusPage() {
   const shortOrderId = order?.id?.slice(-8)?.toUpperCase() || 'N/A';
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      
-
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-100 py-4 px-4 md:px-8 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/account')} className="p-2 hover:bg-neutral-50 rounded-full transition-colors -ml-2">
-              <ArrowLeft size={20} className="text-neutral-700" />
-            </button>
-            <h1 className="text-lg font-bold text-neutral-900">Order Status</h1>
-          </div>
-          <span className="text-xs font-mono text-neutral-400">#{shortOrderId}</span>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-neutral-50 pb-12">
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-8 space-y-6">
+        
+        {/* Page Title & Order ID */}
+        <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-neutral-100 shadow-sm">
+          <h1 className="text-lg font-bold text-neutral-900">Order Status</h1>
+          <span className="text-sm font-mono text-neutral-500 bg-neutral-100 px-3 py-1 rounded-full">#{shortOrderId}</span>
+        </div>
 
         {/* ── Status Card ── */}
         <div

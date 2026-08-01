@@ -360,7 +360,10 @@ export class PaymentService {
     user: { id: string; email?: string; phone?: string; name?: string },
     meta: PaymentMeta = {}
   ) {
-    const payment = await prisma.payment.findUnique({ where: { orderId } });
+    const payment = await prisma.payment.findUnique({ 
+      where: { orderId },
+      include: { order: { include: { user: true } } }
+    });
 
     if (!payment) {
       throw new Error('No payment found for this order');
@@ -382,8 +385,31 @@ export class PaymentService {
       throw new Error('Maximum retry attempts reached. Please contact support.');
     }
 
+    // Attempt to parse phone and name from order internal notes if not provided
+    let finalPhone = user.phone;
+    let finalName = user.name || payment.order?.user?.fullName || undefined;
+    let finalEmail = user.email || payment.order?.user?.email || undefined;
+    
+    if (payment.order?.internalNotes) {
+      if (!finalPhone) {
+        const phoneMatch = payment.order.internalNotes.match(/Phone:\s*([^\n,]+)/);
+        if (phoneMatch) finalPhone = phoneMatch[1].trim();
+      }
+      if (!finalName) {
+        const nameMatch = payment.order.internalNotes.match(/Shipping Address:\s*([^,]+)/);
+        if (nameMatch) finalName = nameMatch[1].trim();
+      }
+    }
+
+    const finalUser = {
+      id: user.id || payment.order?.userId || 'guest',
+      email: finalEmail,
+      phone: finalPhone,
+      name: finalName,
+    };
+
     // Re-use initiatePayment which handles retry logic
-    return this.initiatePayment(orderId, payment.amount, user, meta);
+    return this.initiatePayment(orderId, payment.amount, finalUser, meta);
   }
 
   // ── 6. GET PAYMENT STATUS ──────────────────────
