@@ -1,66 +1,75 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { ProductCard, Product } from '@/components/ProductCard';
-import { apiGet } from '@/lib/api';
+import { ProductCard } from '@/components/ProductCard';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
-import { Loader2 } from 'lucide-react';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
-export default function CategoryPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
+export const revalidate = 60; // ISR revalidation
 
-  const [category, setCategory] = useState<any | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export async function generateStaticParams() {
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { slug: true },
+  });
 
-  useEffect(() => {
-    if (!slug) return;
-    
-    Promise.all([
-      apiGet<any[]>('/categories'),
-      apiGet<Product[]>('/products')
-    ]).then(([allCats, prodsData]) => {
-      const catData = allCats?.find(c => c.slug === slug);
-      setCategory(catData || null);
-      
-      if (prodsData && catData && allCats) {
-        // Find all child categories
-        const childSlugs = allCats.filter(c => c.parentId === catData.id).map(c => c.slug);
-        const validSlugs = [slug, ...childSlugs];
+  return categories.map((cat) => ({
+    slug: cat.slug,
+  }));
+}
 
-        const filtered = prodsData.filter(p => 
-          p.status === 'PUBLISHED' && 
-          validSlugs.includes(p.category?.slug)
-        );
-        setProducts(filtered);
-      }
-      setLoading(false);
-    }).catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-  }, [slug]);
+type Props = {
+  params: Promise<{ slug: string }>;
+};
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
-      </div>
-    );
-  }
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
+  const category = await prisma.category.findUnique({
+    where: { slug: decodedSlug },
+  });
 
   if (!category) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-3xl font-bold mb-4">Category Not Found</h1>
-        <Link href="/products" className="text-rose-600 hover:underline">Browse all products</Link>
-      </div>
-    );
+    return { title: 'Category Not Found' };
   }
+
+  return {
+    title: `${category.name} - Anuki Crochet`,
+    description: category.description || `Browse our beautiful collection of handmade crochet ${category.name.toLowerCase()}.`,
+  };
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
+
+  const category = await prisma.category.findUnique({
+    where: { slug: decodedSlug },
+  });
+
+  if (!category || !category.isActive) {
+    notFound();
+  }
+
+  // Find all child categories to include their products
+  const childCategories = await prisma.category.findMany({
+    where: { parentId: category.id, isActive: true },
+    select: { id: true }
+  });
+  
+  const categoryIds = [category.id, ...childCategories.map(c => c.id)];
+
+  const products = await prisma.product.findMany({
+    where: {
+      categoryId: { in: categoryIds },
+      status: 'PUBLISHED'
+    },
+    include: {
+      category: true,
+      variants: true,
+      images: { orderBy: { order: 'asc' } },
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
@@ -68,7 +77,7 @@ export default function CategoryPage() {
         items={[
           { name: 'Home', item: '/' },
           { name: 'Categories', item: '/categories' },
-          { name: category.name as string, item: `/categories/${category.slug as string}` }
+          { name: category.name, item: `/categories/${category.slug}` }
         ]} 
       />
       
@@ -77,7 +86,6 @@ export default function CategoryPage() {
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-serif text-neutral-900 mb-6 capitalize">{category.name}</h1>
           <div className="max-w-3xl mx-auto">
-            {/* Answer Engine Optimization Block */}
             <h2 className="text-xl font-bold text-neutral-800 mb-2">What are {category.name}?</h2>
             <p className="text-neutral-600 leading-relaxed mb-6">
               {category.description || `Browse our beautiful collection of handmade crochet ${category.name.toLowerCase()}. Each piece is carefully crafted with high-quality yarn to create a lasting keepsake.`}
@@ -92,7 +100,7 @@ export default function CategoryPage() {
         {products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
             {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
         ) : (

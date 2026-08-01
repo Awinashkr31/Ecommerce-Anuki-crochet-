@@ -9,6 +9,17 @@ import { unstable_cache } from 'next/cache';
 
 export const revalidate = 60; // ISR revalidation
 
+export async function generateStaticParams() {
+  const products = await prisma.product.findMany({
+    where: { status: 'PUBLISHED' },
+    select: { slug: true },
+  });
+
+  return products.map((product) => ({
+    slug: product.slug,
+  }));
+}
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
