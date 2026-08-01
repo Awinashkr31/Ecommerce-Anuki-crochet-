@@ -10,6 +10,30 @@ import { WebVitals } from "@/components/WebVitals";
 import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from 'sonner';
 import { prisma } from '@/lib/prisma';
+import { unstable_cache } from 'next/cache';
+
+const getGlobalLayoutData = unstable_cache(
+  async () => {
+    return Promise.all([
+      prisma.category.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, slug: true, parentId: true, isActive: true },
+      }),
+      prisma.storeSettings.findMany({
+        where: {
+          key: {
+            in: [
+              'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
+              'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
+            ]
+          }
+        }
+      })
+    ]);
+  },
+  ['global-layout-data'],
+  { revalidate: 300, tags: ['settings', 'categories'] }
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,23 +72,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch global configuration that is needed on every page
-  const [categories, settingsEntries] = await Promise.all([
-    prisma.category.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, slug: true, parentId: true, isActive: true },
-    }),
-    prisma.storeSettings.findMany({
-      where: {
-        key: {
-          in: [
-            'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
-            'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
-          ]
-        }
-      }
-    })
-  ]);
+  // Fetch global configuration that is needed on every page using unstable_cache to prevent Vercel DB connection limits during build
+  const [categories, settingsEntries] = await getGlobalLayoutData();
 
   const settingsMap = settingsEntries.reduce((acc, curr) => {
     acc[curr.key] = curr.value;
