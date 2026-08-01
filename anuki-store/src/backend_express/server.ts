@@ -25,6 +25,7 @@ import addressRoutes from './routes/addresses';
 import notificationRoutes from './routes/notifications';
 import walletRoutes from './routes/wallet';
 import bannerRoutes from './routes/banners';
+import reviewRoutes from './routes/reviews';
 import os from 'os';
 
 dotenv.config();
@@ -124,6 +125,7 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/banners', bannerRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/health', (req, res) => {
   const memUsage = process.memoryUsage();

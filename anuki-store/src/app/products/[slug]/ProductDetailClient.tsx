@@ -14,6 +14,7 @@ import ProductInfo from './components/ProductInfo';
 import VariantSelector from './components/VariantSelector';
 import ProductAccordions from './components/ProductAccordions';
 import StickyBuyBar from './components/StickyBuyBar';
+import ProductReviews from './components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';
 
 function calculateDiscount(base: number, sale: number | null) {
@@ -158,6 +159,9 @@ export default function ProductDetailClient({
           </div>
         </div>
       </article>
+
+      {/* Reviews Section */}
+      <ProductReviews productId={product.id} />
 
       {/* Complete the Gift Section */}
       {completeTheGift.length > 0 && (
