@@ -13,8 +13,9 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
   const product = await prisma.product.findUnique({
-    where: { slug },
+    where: { slug: decodedSlug },
   });
 
   if (!product) {
@@ -32,28 +33,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
   
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-      variants: true,
-      images: { orderBy: { order: 'asc' } },
-    }
-  });
+  const [product, allProducts] = await Promise.all([
+    prisma.product.findUnique({
+      where: { slug: decodedSlug },
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { order: 'asc' } },
+      }
+    }),
+    prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      take: 8,
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { order: 'asc' } },
+      }
+    })
+  ]);
 
-  const allProducts = await prisma.product.findMany({
-    where: { status: 'PUBLISHED', id: { not: product?.id } },
-    take: 20,
-    include: {
-      category: true,
-      variants: true,
-      images: { orderBy: { order: 'asc' } },
-    }
-  });
+  const otherProducts = allProducts.filter(p => p.id !== product?.id);
 
   // Basic random shuffle
-  const shuffled = allProducts.sort(() => 0.5 - Math.random());
+  const shuffled = otherProducts.sort(() => 0.5 - Math.random());
   const youMayAlsoLike = shuffled.slice(0, 4);
   const completeTheGift = shuffled.slice(4, 8);
 

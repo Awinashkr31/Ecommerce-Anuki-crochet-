@@ -277,11 +277,11 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar -mx-4 px-4 md:-mx-6 md:px-6 xl:mx-0 xl:px-0">
               
               {/* Banner 2 */}
-              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[200px] md:h-[240px] rounded-3xl overflow-hidden relative flex bg-[#0d9488]">
-                <div className="w-7/12 p-6 md:p-10 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-2xl md:text-4xl font-black leading-tight mb-2">FLOWER<br/>POTS</h3>
-                  <p className="text-xs md:text-sm font-bold tracking-widest mb-6 uppercase">VIBRANT & CUTE</p>
-                  <Link href="/products?category=flower-pots" className="bg-white text-[#0d9488] font-bold px-5 md:px-6 py-2.5 md:py-3 rounded-full self-start hover:bg-neutral-100 transition-colors text-sm md:text-base shadow-sm">
+              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#0d9488]">
+                <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">FLOWER<br/>POTS</h3>
+                  <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">VIBRANT & CUTE</p>
+                  <Link href="/products?category=flower-pots" className="bg-white text-[#0d9488] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Shop Pots
                   </Link>
                 </div>
@@ -292,11 +292,11 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
               </div>
 
               {/* Banner 3 */}
-              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[200px] md:h-[240px] rounded-3xl overflow-hidden relative flex bg-[#8b5cf6]">
-                <div className="w-7/12 p-6 md:p-10 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-2xl md:text-4xl font-black leading-tight mb-2">PLUSH<br/>TOYS</h3>
-                  <p className="text-xs md:text-sm font-bold tracking-widest mb-6 uppercase">CUDDLY FRIENDS</p>
-                  <Link href="/products?category=amigurumi" className="bg-white text-[#8b5cf6] font-bold px-5 md:px-6 py-2.5 md:py-3 rounded-full self-start hover:bg-neutral-100 transition-colors text-sm md:text-base shadow-sm">
+              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#8b5cf6]">
+                <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">PLUSH<br/>TOYS</h3>
+                  <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">CUDDLY FRIENDS</p>
+                  <Link href="/products?category=amigurumi" className="bg-white text-[#8b5cf6] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Shop Toys
                   </Link>
                 </div>
@@ -307,11 +307,11 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
               </div>
 
               {/* Banner 4 */}
-              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[200px] md:h-[240px] rounded-3xl overflow-hidden relative flex bg-[#f59e0b]">
-                <div className="w-7/12 p-6 md:p-10 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-2xl md:text-4xl font-black leading-tight mb-2">CUSTOM<br/>ORDERS</h3>
-                  <p className="text-xs md:text-sm font-bold tracking-widest mb-6 uppercase">YOUR DESIGN</p>
-                  <Link href="/products?isMadeToOrder=true" className="bg-white text-[#f59e0b] font-bold px-5 md:px-6 py-2.5 md:py-3 rounded-full self-start hover:bg-neutral-100 transition-colors text-sm md:text-base shadow-sm">
+              <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#f59e0b]">
+                <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">CUSTOM<br/>ORDERS</h3>
+                  <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">YOUR DESIGN</p>
+                  <Link href="/products?isMadeToOrder=true" className="bg-white text-[#f59e0b] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Order Now
                   </Link>
                 </div>

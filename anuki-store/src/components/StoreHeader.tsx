@@ -82,7 +82,7 @@ export function StoreHeader() {
         <Sparkles size={14} className="absolute right-4 text-white/30 hidden sm:block" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
         
         {/* --- MOBILE LAYOUT --- */}
         <div className="flex md:hidden items-center justify-between w-full relative h-full">
@@ -165,7 +165,7 @@ export function StoreHeader() {
           <div className="flex items-center gap-3 relative z-10">
             <Link href="/" className="flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Anuki Logo" className="h-16 w-auto object-contain" />
+              <img src="/logo.png" alt="Anuki Logo" className="h-12 w-auto object-contain" />
             </Link>
           </div>
 

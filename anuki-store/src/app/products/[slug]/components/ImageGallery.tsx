@@ -34,7 +34,17 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full"
+            className="w-full h-full cursor-grab active:cursor-grabbing"
+            drag={images.length > 1 ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, { offset }) => {
+              if (offset.x < -50) {
+                nextImage();
+              } else if (offset.x > 50) {
+                prevImage();
+              }
+            }}
           >
               <Image
                 src={mainImage}
@@ -66,11 +76,24 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
             </button>
           </>
         )}
+
+        {/* Mobile Pagination Dots */}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 md:hidden z-10">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
+                className={`h-2 rounded-full transition-all shadow-sm ${activeIndex === idx ? 'bg-white w-5' : 'bg-white/70 w-2'}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Thumbnail Gallery */}
+      {/* Thumbnail Gallery (Desktop Only) */}
       {images.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
+        <div className="hidden md:flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
           {images.map((img, idx) => (
             <button
               key={idx}

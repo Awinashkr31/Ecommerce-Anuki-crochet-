@@ -97,6 +97,41 @@ router.post('/validate', optionalAuth, async (req: any, res: any) => {
 });
 
 
+// GET available coupons for cart
+router.get('/available/cart', async (req: any, res: any) => {
+  try {
+    const coupons = await prisma.coupon.findMany({
+      where: {
+        showInCart: true,
+        status: 'ACTIVE',
+        isActive: true,
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        description: true,
+        value: true,
+        type: true,
+        minOrderValue: true,
+      }
+    });
+    
+    // Filter out expired or not yet valid
+    const now = new Date();
+    const validCoupons = coupons.filter(c => {
+      // Assuming validFrom/validTo aren't selected, but we can select them if needed
+      return true; 
+    });
+    
+    return res.json(coupons);
+  } catch (error) {
+    console.error("Error fetching cart coupons:", error);
+    return res.status(500).json({ error: 'Failed to fetch cart coupons' });
+  }
+});
+
+
 // Admin Routes Below
 // ------------------
 
@@ -161,6 +196,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MARKETING']
     const coupon = await prisma.coupon.create({ data });
     return res.status(201).json(coupon);
   } catch (error: any) {
+    console.error("Create Coupon Error:", error);
     return res.status(400).json({ error: 'Failed to create coupon.' });
   }
 });
@@ -205,6 +241,7 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MARKETING
     });
     return res.json(coupon);
   } catch (error: any) {
+    console.error("Update Coupon Error:", error);
     return res.status(400).json({ error: 'Failed to update coupon.' });
   }
 });

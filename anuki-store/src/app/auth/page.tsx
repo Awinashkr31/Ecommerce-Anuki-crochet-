@@ -105,11 +105,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <Toaster position="top-center" richColors />
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-neutral-900 tracking-tight">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 className="mt-6 text-center text-2xl font-extrabold text-neutral-900 tracking-tight">
           Welcome back
         </h2>
-        <p className="mt-2 text-center text-sm text-neutral-600">
+        <p className="mt-1 text-center text-xs text-neutral-600">
           Don't have an account?{" "}
           <Link href="/auth/signup" className="font-bold text-rose-600 hover:text-rose-500 transition-colors">
             Create an account
@@ -117,64 +117,64 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-2xl sm:px-10 border border-neutral-100">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="bg-white/80 backdrop-blur-xl py-6 px-4 shadow-2xl sm:rounded-2xl sm:px-8 border border-neutral-100">
           
           <button
             onClick={handleGoogleLogin}
             type="button"
-            className="w-full mb-6 bg-white border border-neutral-200 text-neutral-700 p-3.5 rounded-xl font-bold hover:bg-neutral-50 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
+            className="w-full mb-5 bg-white border border-neutral-200 text-neutral-700 p-2.5 rounded-lg text-sm font-bold hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
           >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-4 h-4" />
             Continue with Google
           </button>
 
-          <div className="relative my-6 text-center">
+          <div className="relative my-5 text-center">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-200"></div></div>
-            <span className="relative bg-white/0 backdrop-blur-md px-4 text-xs font-bold text-neutral-400 uppercase tracking-wider">Or continue with email</span>
+            <span className="relative bg-white/0 backdrop-blur-md px-4 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Or continue with email</span>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             
             <div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-neutral-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 text-neutral-400" />
                 </div>
                 <input
                   {...register("email")}
                   type="email"
                   placeholder="Email address"
-                  className="block w-full pl-11 pr-4 py-3.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-neutral-50/50 transition-colors"
+                  className="block w-full text-sm pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-neutral-50/50 transition-colors"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-[10px] text-rose-500 font-medium">{errors.email.message}</p>}
             </div>
 
             <div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-neutral-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-neutral-400" />
                 </div>
                 <input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="block w-full pl-11 pr-12 py-3.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-neutral-50/50 transition-colors"
+                  className="block w-full text-sm pl-10 pr-10 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-neutral-50/50 transition-colors"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neutral-400 hover:text-neutral-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.password.message}</p>}
+              {errors.password && <p className="mt-1 text-[10px] text-rose-500 font-medium">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center justify-end">
-              <Link href="/auth/reset" className="text-sm font-bold text-rose-600 hover:text-rose-500">
+              <Link href="/auth/reset" className="text-[11px] font-bold text-rose-600 hover:text-rose-500">
                 Forgot password?
               </Link>
             </div>
@@ -182,10 +182,10 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || !isValid}
-              className="w-full flex justify-center items-center gap-2 bg-neutral-900 text-white p-4 rounded-xl font-bold hover:bg-neutral-800 transition-all disabled:opacity-50 shadow-lg shadow-neutral-900/20 active:scale-[0.98]"
+              className="w-full flex justify-center items-center gap-2 bg-neutral-900 text-white p-3 rounded-lg text-sm font-bold hover:bg-neutral-800 transition-all disabled:opacity-50 shadow-lg shadow-neutral-900/20 active:scale-[0.98]"
             >
               {isSubmitting ? "Logging in..." : (
-                <>Log in <ArrowRight size={18} /></>
+                <>Log in <ArrowRight size={16} /></>
               )}
             </button>
           </form>

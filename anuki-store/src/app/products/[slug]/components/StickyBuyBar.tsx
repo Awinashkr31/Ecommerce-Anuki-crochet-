@@ -83,8 +83,8 @@ export default function StickyBuyBar({
       </div>
 
       {/* Mobile Sticky Bottom Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-neutral-200 p-4 pb-safe shadow-[0_-8px_32px_-12px_rgba(0,0,0,0.1)] z-50">
-        <div className="max-w-md mx-auto flex gap-3 h-[56px]">
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-neutral-200 py-3 px-4 pb-safe shadow-[0_-8px_32px_-12px_rgba(0,0,0,0.1)] z-50">
+        <div className="max-w-md mx-auto flex gap-3 h-12">
           {inCart ? (
             <>
               {/* View Cart Button (State 2/3) */}
@@ -120,7 +120,7 @@ export default function StickyBuyBar({
               {/* Square Cart Button (State 1 & 3) */}
               <Link 
                 href="/cart"
-                className="relative w-[60px] h-full flex items-center justify-center bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] transition-colors shadow-sm active:scale-95 hover:bg-neutral-50"
+                className="relative w-12 h-full flex items-center justify-center bg-white border-2 border-neutral-100 text-[#111111] rounded-[16px] transition-colors shadow-sm active:scale-95 hover:bg-neutral-50"
               >
                 <ShoppingCart size={22} strokeWidth={2.5} />
                 {totalItems > 0 && (

@@ -20,6 +20,7 @@ export default function NewCouponPage() {
   const [value, setValue] = useState('');
   const [maxDiscount, setMaxDiscount] = useState('');
   const [autoApply, setAutoApply] = useState(false);
+  const [showInCart, setShowInCart] = useState(false);
   
   // BOGO Config
   const [buyQuantity, setBuyQuantity] = useState('');
@@ -63,7 +64,8 @@ export default function NewCouponPage() {
         type: discountType,
         value: (discountType === 'FREE_SHIPPING' || discountType === 'BOGO') ? 0 : Number(value),
         maxDiscount: maxDiscount ? Number(maxDiscount) : null,
-        
+        autoApply,
+        showInCart,
         minOrderValue: minOrderValue ? Number(minOrderValue) : 0,
         minQuantity: minQuantity ? Number(minQuantity) : null,
         
@@ -73,7 +75,6 @@ export default function NewCouponPage() {
         usageLimit: limitUsage && usageLimit ? Number(usageLimit) : null,
         maxUsesPerUser: maxUsesPerUser ? Number(maxUsesPerUser) : null,
         firstOrderOnly,
-        autoApply,
         
         validFrom: validFrom ? new Date(validFrom).toISOString() : new Date().toISOString(),
         validTo: validTo ? new Date(validTo).toISOString() : null,
@@ -167,6 +168,17 @@ export default function NewCouponPage() {
                 className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-blue-300"
               />
               <label htmlFor="autoApply" className="text-sm font-bold text-blue-900 cursor-pointer">Auto-apply at checkout (No code needed)</label>
+            </div>
+
+            <div className="flex items-center gap-3 bg-pink-50/50 p-4 rounded-xl border border-pink-100">
+              <input 
+                type="checkbox" 
+                id="showInCart"
+                checked={showInCart}
+                onChange={(e) => setShowInCart(e.target.checked)}
+                className="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 border-pink-300"
+              />
+              <label htmlFor="showInCart" className="text-sm font-bold text-pink-900 cursor-pointer">Show in Cart Offers Section</label>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setAuth(user, profile);
           } catch (err: any) {
             // If backend session is invalid or missing, create a new one
-            if (err.message === "Unauthorized" || err.message === "User not found") {
+            if (err.message?.toLowerCase().includes("unauthorized") || err.message?.includes("User not found") || err.message?.toLowerCase().includes("session")) {
               const idToken = await user.getIdToken();
               const { user: profile } = await apiPost("/auth/session", { idToken });
               setAuth(user, profile);

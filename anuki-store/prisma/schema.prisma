@@ -441,6 +441,7 @@ model Coupon {
   // Behaviors
   autoApply     Boolean   @default(false)
   stackable     Boolean   @default(false)
+  showInCart    Boolean   @default(false)
   priority      Int       @default(0)
   
   // Status (DRAFT, SCHEDULED, ACTIVE, PAUSED, EXPIRED, DISABLED)

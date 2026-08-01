@@ -8,8 +8,9 @@ import { useRouter } from "next/navigation";
 import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, Sparkles, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import AddressModal, { Address } from "@/components/AddressModal";
+import CartRecommendations from "./CartRecommendations";
 import { apiGet } from "@/lib/api";
-import CouponSection from "@/components/CouponSection";
+import CartOffers from "./CartOffers";
 import { MobileLoginSheet } from "@/components/MobileLoginSheet";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +31,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
         if (!selectedAddress) {
           setIsAddressModalOpen(true);
         } else {
-          router.push('/checkout');
+          router.push(`/checkout?addressId=${selectedAddress.id}`);
         }
       }, 0);
       return () => clearTimeout(timer);
@@ -64,7 +65,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
     } else if (!selectedAddress) {
       setIsAddressModalOpen(true);
     } else {
-      router.push('/checkout');
+      router.push(`/checkout?addressId=${selectedAddress.id}`);
     }
   };
 
@@ -114,24 +115,24 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
               
               {/* Address Block */}
               {!selectedAddress ? (
-                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 flex items-center justify-between gap-4">
-                  <div className="flex gap-4 items-center">
-                    <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center">
-                      <MapPin size={20} className="text-neutral-500" />
+                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 py-3 px-4 flex items-center justify-between gap-4">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
+                      <MapPin size={18} className="text-neutral-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-serif font-bold text-neutral-900 text-lg">Delivery Address</p>
+                      <p className="font-serif font-bold text-neutral-900 text-base">Delivery Address</p>
                     </div>
                   </div>
                   <button 
                     onClick={() => setIsAddressModalOpen(true)}
-                    className="px-4 py-2 border border-rose-200 text-rose-600 font-semibold text-sm rounded-xl hover:bg-rose-50 transition-colors"
+                    className="px-4 py-1.5 border border-rose-200 text-rose-600 font-semibold text-sm rounded-lg hover:bg-rose-50 transition-colors"
                   >
                     + Add Address
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-4 flex items-start justify-between gap-3 relative">
+                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 py-3 px-4 flex items-start justify-between gap-3 relative">
                   <div className="flex gap-3 pl-1">
                     <div className="mt-1 shrink-0">
                       <MapPin size={20} className="text-neutral-500" strokeWidth={1.5} />
@@ -238,52 +239,10 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                 </button>
               </div>
 
-              {/* Complete Your Gift (Cross-sells) */}
-              <div className="mt-2">
-                <h3 className="font-serif text-neutral-900 text-lg mb-4 flex items-center gap-2">
-                  Complete Your Gift 🎁
-                </h3>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {crossSellProducts.filter((p: any) => !items.some(i => i.id === p.id)).slice(0, 4).map((product: any) => (
-                    <div key={product.id} className="bg-white rounded-[20px] p-3 shadow-sm border border-neutral-100 min-w-[140px] shrink-0">
-                      <Link href={`/products/${product.slug}`} className="block w-full h-28 bg-neutral-100 rounded-xl mb-3 overflow-hidden relative">
-                        {product.images && product.images[0] ? (
-                          <Image src={product.images[0].url} alt={product.name} fill className="object-cover" unoptimized />
-                        ) : (
-                          <Image src="/logo.png" alt="Anuki" fill className="object-cover" unoptimized />
-                        )}
-                      </Link>
-                      <Link href={`/products/${product.slug}`} className="block">
-                        <p className="text-xs font-medium text-neutral-800 line-clamp-1">{product.name}</p>
-                      </Link>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="font-bold text-sm">₹{product.salePrice || product.basePrice}</span>
-                        <button 
-                          onClick={() => {
-                            addItem({
-                              id: product.id,
-                              productId: product.id,
-                              name: product.name,
-                              price: product.salePrice || product.basePrice,
-                              quantity: 1,
-                              image: product.images?.[0]?.url || "/logo.png",
-                              variantId: product.variants?.[0]?.id,
-                              variantText: product.variants?.[0]?.name
-                            });
-                          }}
-                          className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 active:scale-90 transition-transform text-neutral-700"
-                        >
-                          <Plus size={14} strokeWidth={2.5} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Apply Coupon */}
-              <CouponSection subtotal={subtotal} />
+              <CartOffers subtotal={subtotal} />
+
+              <CartRecommendations products={crossSellProducts} />
 
             </div>
 
@@ -380,7 +339,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
       {/* Mobile Sticky Checkout Bar */}
       {items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 p-4 pb-5 flex items-center justify-between z-50 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 py-3 px-4 pb-safe flex items-center justify-between z-50 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
           <div>
             <div className="flex items-center gap-1 text-xs text-neutral-400 font-medium">
               <span className="line-through">₹{Math.round(totalMRP)}</span>
@@ -393,7 +352,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
           
           <button 
             onClick={handlePlaceOrder}
-            className="bg-[#FFC107] text-black font-black text-sm px-8 py-3.5 rounded-lg active:scale-95 transition-transform shadow-sm"
+            className="bg-[#FFC107] text-black font-black text-sm px-8 py-2.5 rounded-lg active:scale-95 transition-transform shadow-sm"
           >
             PLACE ORDER
           </button>
@@ -404,11 +363,12 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
         selectedAddressId={selectedAddress?.id}
+        startInFormMode={!selectedAddress}
         hideDelete={true}
         onSelect={(addr) => {
           setSelectedAddress(addr);
           setIsAddressModalOpen(false);
-          router.push('/checkout');
+          router.push(`/checkout?addressId=${addr.id}`);
         }}
       />
       <MobileLoginSheet 

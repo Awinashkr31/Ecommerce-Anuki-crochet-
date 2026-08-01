@@ -104,12 +104,12 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300" 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-150" 
         onClick={onClose}
       />
       
       {/* Bottom Sheet */}
-      <div className={`fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-3xl p-6 pb-10 shadow-2xl transition-transform duration-300 ease-out transform ${isOpen ? 'translate-y-0' : 'translate-y-full'} max-h-[85dvh] overflow-y-auto overscroll-contain`}>
+      <div className={`fixed inset-x-0 bottom-0 z-[101] bg-white rounded-t-3xl p-6 pb-10 shadow-2xl transition-transform duration-150 ease-out transform ${isOpen ? 'translate-y-0' : 'translate-y-full'} max-h-[85dvh] overflow-y-auto overscroll-contain`}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-extrabold text-neutral-900 tracking-tight">Log In</h2>
           <button onClick={onClose} className="p-2 bg-neutral-100 rounded-full text-neutral-600 hover:bg-neutral-200 transition-colors">
@@ -118,7 +118,7 @@ export function MobileLoginSheet({ isOpen, onClose }: { isOpen: boolean, onClose
         </div>
 
         {isSuccess ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in zoom-in duration-300">
+          <div className="flex flex-col items-center justify-center py-12 px-4 animate-in fade-in zoom-in duration-150">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
               <CheckCircle2 className="text-green-500 w-12 h-12" />
             </div>

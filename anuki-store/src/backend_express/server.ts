@@ -123,7 +123,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+// When running as a Next.js API route, we do not want Express to start its own server.
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL && process.env.START_STANDALONE_EXPRESS === 'true') {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

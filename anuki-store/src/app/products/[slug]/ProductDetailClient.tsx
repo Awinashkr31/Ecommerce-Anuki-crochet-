@@ -35,9 +35,7 @@ export default function ProductDetailClient({
   const { profile } = useAuthStore();
   const isB2B = profile?.role === 'B2B_CUSTOMER';
 
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    product.variants && product.variants.length > 0 ? product.variants[0].id : null
-  );
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -82,12 +80,13 @@ export default function ProductDetailClient({
       toast.success('Added to your cart!', {
         position: 'bottom-center',
         style: {
-          borderRadius: '12px',
+          borderRadius: '10px',
           background: '#111827',
           color: '#fff',
           fontWeight: 'bold',
-          padding: '16px 24px',
-          marginBottom: '100px'
+          fontSize: '14px',
+          padding: '10px 16px',
+          marginBottom: '70px'
         }
       });
     }, 400); // Simulate micro-interaction delay

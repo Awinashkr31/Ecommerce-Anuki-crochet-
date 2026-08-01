@@ -1,7 +1,7 @@
 import CartClient from './CartClient';
 import { prisma } from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache cart cross-sells for 1 hour
 
 export default async function CartPage() {
   const allProducts = await prisma.product.findMany({

@@ -22,8 +22,10 @@ interface AddressModalProps {
   onSelect: (address: Address) => void;
   selectedAddressId?: string;
   hideDelete?: boolean;
+  startInFormMode?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FloatingInput = ({ label, type = 'text', value, onChange, className = '', maxLength }: any) => (
   <div className={`relative ${className}`}>
     <input 
@@ -34,12 +36,13 @@ const FloatingInput = ({ label, type = 'text', value, onChange, className = '', 
       className="block px-4 pb-2 pt-6 w-full text-sm text-neutral-900 bg-white rounded-xl shadow-sm border-0 appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500 peer"
       placeholder=" "
     />
-    <label className="absolute text-xs text-neutral-500 duration-200 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
+    <label className="absolute text-xs text-neutral-500 duration-150 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
       {label}
     </label>
   </div>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FloatingTextarea = ({ label, value, onChange, rows = 3, className = '' }: any) => (
   <div className={`relative ${className}`}>
     <textarea 
@@ -49,13 +52,13 @@ const FloatingTextarea = ({ label, value, onChange, rows = 3, className = '' }: 
       className="block px-4 pb-2 pt-6 w-full text-sm text-neutral-900 bg-white rounded-xl shadow-sm border-0 appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500 peer resize-none"
       placeholder=" "
     />
-    <label className="absolute text-xs text-neutral-500 duration-200 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
+    <label className="absolute text-xs text-neutral-500 duration-150 transform -translate-y-3 scale-90 top-3 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-1.5 peer-placeholder-shown:text-sm peer-focus:scale-90 peer-focus:-translate-y-3 peer-focus:text-rose-500 pointer-events-none">
       {label}
     </label>
   </div>
 );
 
-export default function AddressModal({ isOpen, onClose, onSelect, selectedAddressId, hideDelete }: AddressModalProps) {
+export default function AddressModal({ isOpen, onClose, onSelect, selectedAddressId, hideDelete, startInFormMode }: AddressModalProps) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -88,19 +91,16 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
           setShowForm(false);
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      // Suppress 401 Unauthorized or missing session errors in console overlay
+      const error = err as { message?: string };
+      if (error.message && !error.message.includes('401') && !error.message.toLowerCase().includes('session')) {
+        console.error(err);
+      }
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      resetForm();
-      fetchAddresses();
-    }
-  }, [isOpen]);
 
   const resetForm = () => {
     setFullName('');
@@ -114,6 +114,23 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
     setAddressToDelete(null);
     setError('');
   };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isOpen) {
+        resetForm();
+        if (startInFormMode) {
+          setShowForm(true);
+          setLoading(false);
+        } else {
+          setShowForm(false);
+          fetchAddresses();
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, startInFormMode]);
 
   useEffect(() => {
     const fetchPincodeDetails = async () => {
@@ -183,8 +200,9 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
       if (updatedData && updatedData.id) {
         onSelect(updatedData);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to save address');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || 'Failed to save address');
     } finally {
       setIsSaving(false);
     }
@@ -211,7 +229,7 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/40 flex items-end md:items-center justify-center md:p-4 transition-opacity">
-      <div className="bg-[#f9f9f9] w-full md:max-w-md rounded-t-3xl md:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300 md:fade-in md:zoom-in md:slide-in-from-bottom-0">
+      <div className="bg-[#f9f9f9] w-full md:max-w-md rounded-t-3xl md:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-150 md:fade-in md:zoom-in md:slide-in-from-bottom-0">
         
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
@@ -326,7 +344,7 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
                 <FloatingInput 
                   label="Full Name *" 
                   value={fullName}
-                  onChange={(e: any) => setFullName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -335,19 +353,19 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
                     label="Mobile Number *" 
                     value={phone}
                     maxLength={10}
-                    onChange={(e: any) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value.replace(/\D/g, ''))}
                   />
                   <FloatingInput 
                     label="Pincode *" 
                     value={pincode}
-                    onChange={(e: any) => setPincode(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPincode(e.target.value)}
                   />
                 </div>
 
                 <FloatingTextarea 
                   label="Address (House / Flat / Block, Area, Colony) *" 
                   value={street}
-                  onChange={(e: any) => setStreet(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStreet(e.target.value)}
                   rows={3}
                 />
 
@@ -355,19 +373,19 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
                   <FloatingInput 
                     label="City *" 
                     value={city}
-                    onChange={(e: any) => setCity(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
                   />
                   <FloatingInput 
                     label="State *" 
                     value={state}
-                    onChange={(e: any) => setState(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setState(e.target.value)}
                   />
                 </div>
 
                 <FloatingInput 
                   label="Landmark (Optional)" 
                   value={landmark}
-                  onChange={(e: any) => setLandmark(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLandmark(e.target.value)}
                 />
               </div>
 
@@ -386,8 +404,8 @@ export default function AddressModal({ isOpen, onClose, onSelect, selectedAddres
 
       {/* Custom Delete Confirmation Modal */}
       {addressToDelete && (
-        <div className="fixed inset-0 z-[110] bg-black/40 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in zoom-in duration-200">
+        <div className="fixed inset-0 z-[110] bg-black/40 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in zoom-in duration-150">
             <h3 className="text-lg font-bold text-neutral-900 mb-2">Delete Address</h3>
             <p className="text-neutral-500 text-sm mb-6">Are you sure you want to delete this address? This action cannot be undone.</p>
             <div className="flex gap-3 justify-end">
