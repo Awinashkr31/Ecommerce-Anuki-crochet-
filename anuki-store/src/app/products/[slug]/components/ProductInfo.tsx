@@ -1,6 +1,8 @@
 "use client";
 import { Star, ShieldCheck, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import useSWR from "swr";
+import { apiGet } from "@/lib/api";
 
 export default function ProductInfo({ 
   product, 
@@ -15,6 +17,12 @@ export default function ProductInfo({
   discount: number | null, 
   inStock: boolean 
 }) {
+  const { data: reviews = [] } = useSWR(`/api/reviews/product/${product.id}`, apiGet);
+  
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / reviews.length).toFixed(1)
+    : 0;
+
   return (
     <div className="space-y-6">
       {/* Badges & Breadcrumb (Mobile only, hidden on desktop if moved to top) */}
@@ -42,9 +50,17 @@ export default function ProductInfo({
         </h1>
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1 text-amber-400">
-            {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill="currentColor" />)}
-            <span className="text-sm font-bold text-neutral-900 ml-1">4.9</span>
-            <span className="text-sm text-neutral-500 font-medium ml-1">(128 Reviews)</span>
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star key={i} size={16} className={i <= Math.round(Number(averageRating)) ? "fill-amber-400" : "text-neutral-200 fill-neutral-100"} />
+            ))}
+            {reviews.length > 0 ? (
+              <>
+                <span className="text-sm font-bold text-neutral-900 ml-1">{averageRating}</span>
+                <span className="text-sm text-neutral-500 font-medium ml-1">({reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'})</span>
+              </>
+            ) : (
+              <span className="text-sm text-neutral-500 font-medium ml-1">No reviews</span>
+            )}
           </div>
           <div className="w-1 h-1 bg-neutral-300 rounded-full"></div>
           <span className="text-sm font-medium text-emerald-600">300+ Sold</span>
