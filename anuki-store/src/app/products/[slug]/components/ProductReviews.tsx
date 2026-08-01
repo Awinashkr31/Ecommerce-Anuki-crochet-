@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import useSWR from 'swr';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, Camera, X } from 'lucide-react';
 import { apiGet, apiPost } from '@/lib/api';
+import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
@@ -11,8 +12,24 @@ export default function ProductReviews({ productId }: { productId: string }) {
   
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [photos, setPhotos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      if (photos.length + newFiles.length > 2) {
+        toast.error('You can only upload up to 2 photos per review.');
+        return;
+      }
+      setPhotos([...photos, ...newFiles].slice(0, 2));
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +40,24 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
     setIsSubmitting(true);
     try {
-      await apiPost('/api/reviews', { productId, rating, comment });
+      let imageUrls: string[] = [];
+      
+      if (photos.length > 0) {
+        const formData = new FormData();
+        photos.forEach(photo => formData.append('images', photo));
+        
+        const uploadRes = await axios.post('/api/upload/customer', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true // to send session cookie
+        });
+        imageUrls = uploadRes.data.urls;
+      }
+
+      await apiPost('/api/reviews', { productId, rating, comment, imageUrls });
       toast.success('Review submitted! It will appear after approval.');
       setRating(5);
       setComment('');
+      setPhotos([]);
       setShowForm(false);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to submit review');
@@ -89,9 +120,42 @@ export default function ProductReviews({ productId }: { productId: string }) {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-rose-500 outline-none text-sm"
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-rose-500 outline-none text-sm mb-4"
                 placeholder="What did you love about this product?"
               />
+              
+              <div className="flex items-center gap-4">
+                <label className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral-200 text-sm font-bold cursor-pointer hover:bg-white transition-colors ${photos.length >= 2 ? 'opacity-50 cursor-not-allowed' : 'text-neutral-700'}`}>
+                  <Camera size={18} />
+                  Add Photos (Max 2)
+                  <input 
+                    type="file" 
+                    accept="image/jpeg, image/png, image/webp" 
+                    multiple 
+                    className="hidden" 
+                    onChange={handlePhotoChange}
+                    disabled={photos.length >= 2}
+                  />
+                </label>
+                <span className="text-xs text-neutral-500">{photos.length}/2 uploaded</span>
+              </div>
+              
+              {photos.length > 0 && (
+                <div className="flex gap-4 mt-4">
+                  {photos.map((photo, index) => (
+                    <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-neutral-200">
+                      <img src={URL.createObjectURL(photo)} alt="upload preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={() => removePhoto(index)}
+                        className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
@@ -139,7 +203,16 @@ export default function ProductReviews({ productId }: { productId: string }) {
                     ))}
                   </div>
                   {review.comment && (
-                    <p className="text-neutral-600 leading-relaxed text-sm">{review.comment}</p>
+                    <p className="text-neutral-600 leading-relaxed text-sm mb-3">{review.comment}</p>
+                  )}
+                  {review.imageUrls && review.imageUrls.length > 0 && (
+                    <div className="flex gap-3 mt-3">
+                      {review.imageUrls.map((url: string, idx: number) => (
+                        <div key={idx} className="w-20 h-20 rounded-xl overflow-hidden border border-neutral-200">
+                          <img src={url} alt="Review photo" className="w-full h-full object-cover hover:scale-110 transition-transform cursor-pointer" />
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

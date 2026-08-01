@@ -41,7 +41,7 @@ router.get('/product/:productId', async (req, res) => {
 
 // POST submit a review
 router.post('/', verifyToken, async (req: AuthRequest, res) => {
-  const { productId, rating, comment } = req.body;
+  const { productId, rating, comment, imageUrls } = req.body;
   const userId = req.user?.userId;
 
   if (!userId) {
@@ -51,6 +51,9 @@ router.post('/', verifyToken, async (req: AuthRequest, res) => {
   if (!productId || typeof rating !== 'number' || rating < 1 || rating > 5) {
     return res.status(400).json({ error: 'Invalid rating or product ID' });
   }
+
+  // Ensure imageUrls is an array and max 2 elements
+  const finalImageUrls = Array.isArray(imageUrls) ? imageUrls.slice(0, 2) : [];
 
   try {
     // Check if user has already reviewed this product
@@ -68,6 +71,7 @@ router.post('/', verifyToken, async (req: AuthRequest, res) => {
         productId,
         rating,
         comment,
+        imageUrls: finalImageUrls,
         approved: false // Requires admin approval
       },
       include: {

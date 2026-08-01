@@ -20,9 +20,9 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'
 const ALLOWED_FOLDERS = ['products', 'categories', 'banners', 'misc', 'avatars'];
 
 // Configure Multer (store in memory for processing)
-// Limit file size to 5MB for faster uploads
+// Limit file size to 2MB for customer uploads, 5MB for admin uploads
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const uploadAdmin = multer({ 
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
@@ -34,9 +34,19 @@ const upload = multer({
   }
 });
 
+const uploadCustomer = multer({ 
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024, files: 2 }, // 2MB max, max 2 files
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, PNG, WebP, and GIF image files are allowed.'));
+    }
+  }
+});
 
-
-router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), upload.single('image'), async (req: any, res: any) => {
+router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), uploadAdmin.single('image'), async (req: any, res: any) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
@@ -100,6 +110,55 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
   } catch (error: any) {
     console.error('Upload Error:', error);
     return res.status(500).json({ error: 'Failed to upload and process image. Please try again.' });
+  }
+});
+
+// Customer upload route (for reviews)
+router.post('/customer', verifyToken, uploadCustomer.array('images', 2), async (req: any, res: any) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No image files provided' });
+    }
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of req.files) {
+      // Magic-byte validation
+      const metadata = await sharp(file.buffer).metadata();
+      if (!metadata.format || !['jpeg', 'png', 'webp', 'gif', 'tiff'].includes(metadata.format)) {
+        return res.status(400).json({ error: 'Invalid image file.' });
+      }
+
+      // Convert to webp
+      const optimizedBuffer = await sharp(file.buffer)
+        .webp({ quality: 80, effort: 4 })
+        .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+        .toBuffer();
+
+      const fileName = `${uuidv4()}.webp`;
+      const filePath = `reviews/${fileName}`;
+
+      const { data, error } = await supabase
+        .storage
+        .from(BUCKET_NAME)
+        .upload(filePath, optimizedBuffer, {
+          contentType: 'image/webp',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        return res.status(500).json({ error: 'Failed to upload image to storage provider.' });
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+      uploadedUrls.push(publicUrl);
+    }
+
+    res.status(200).json({ urls: uploadedUrls });
+  } catch (error: any) {
+    console.error('Customer image upload error:', error);
+    res.status(500).json({ error: 'Internal server error during upload.' });
   }
 });
 

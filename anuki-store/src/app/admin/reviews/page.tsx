@@ -110,6 +110,16 @@ export default function AdminReviewsPage() {
                   <p className="text-sm font-medium text-neutral-700 leading-relaxed italic">
                     "{review.comment}"
                   </p>
+                  
+                  {review.imageUrls && review.imageUrls.length > 0 && (
+                    <div className="flex gap-3 mt-3">
+                      {review.imageUrls.map((url: string, idx: number) => (
+                        <div key={idx} className="w-20 h-20 rounded-xl overflow-hidden border border-neutral-200">
+                          <img src={url} alt="Review photo" className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
