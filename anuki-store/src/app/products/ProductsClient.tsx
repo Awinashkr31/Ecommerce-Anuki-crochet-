@@ -1,15 +1,12 @@
 "use client";
-import useSWR from 'swr';
-import { Suspense, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { SlidersHorizontal, Search, Loader2, ChevronRight } from "lucide-react";
-import Link from 'next/link';
+import { SlidersHorizontal, Search } from "lucide-react";
+import { expandProductsByColor } from '../../utils/productUtils';
 
-import { apiGet } from "../../lib/api";
 import { ProductCard, Product } from "../../components/ProductCard";
 import FilterSidebar from "./components/FilterSidebar";
 import MobileFilterDrawer from "./components/MobileFilterDrawer";
-import EmptyState from "./components/EmptyState";
 import SortDropdown from "./components/SortDropdown";
 
 export default function ProductsClient({ initialProducts }: { initialProducts: Product[] }) {
@@ -17,7 +14,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
   const initialCategory = searchParams?.get("category");
   const initialIsMadeToOrder = searchParams?.get("isMadeToOrder") === "true";
 
-  const products = initialProducts;
+  const products = useMemo(() => expandProductsByColor(initialProducts), [initialProducts]);
 
   // Filters State
   const initialSearch = searchParams?.get("search") || searchParams?.get("query") || "";
@@ -83,7 +80,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
   return (
     <div className="min-h-screen bg-white">
       {/* Header Banner */}
-      <div className="bg-neutral-50 border-b border-neutral-100 py-12 px-4">
+      <div className="hidden md:block bg-neutral-50 border-b border-neutral-100 py-12 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-black text-neutral-900 mb-4 tracking-tight">Shop Collection</h1>
           <p className="text-neutral-500 text-lg max-w-2xl mx-auto">
@@ -143,13 +140,49 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
           {/* Right Product Grid */}
           <div className="lg:col-span-9">
             {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
-                {filteredProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+              <div className="w-full">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                  {filteredProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                
+                {filteredProducts.length < 8 && (
+                  <div className="mt-16 pt-10 border-t border-neutral-100">
+                    <h3 className="text-xl font-serif font-medium text-neutral-900 mb-6">More to Love</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                      {initialProducts
+                        .filter(p => !filteredProducts.some(fp => fp.id === p.id))
+                        .slice(0, 12 - filteredProducts.length)
+                        .map(product => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <EmptyState onReset={handleResetFilters} />
+              <div className="w-full">
+                <div className="bg-orange-50 border border-orange-100 p-5 rounded-2xl mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                  <div>
+                    <h3 className="font-bold text-orange-800 text-lg mb-1">No Exact Matches</h3>
+                    <p className="text-orange-700 text-sm">We couldn&apos;t find exactly what you&apos;re looking for, but you might love these!</p>
+                  </div>
+                  <button 
+                    onClick={handleResetFilters}
+                    className="bg-white text-orange-800 font-bold px-5 py-2.5 rounded-xl text-sm border border-orange-200 hover:bg-orange-100 transition-colors whitespace-nowrap shadow-sm"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+                
+                <h3 className="text-xl font-serif font-medium text-neutral-900 mb-6">Recommended For You</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                  {initialProducts.slice(0, 12).map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

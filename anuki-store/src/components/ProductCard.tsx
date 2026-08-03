@@ -6,6 +6,8 @@ import Image from "next/image";
 import { ShoppingBag, Star } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import React from "react";
+import useSWR from 'swr';
+import { apiGet } from '@/lib/api';
 
 export interface Product {
   id: string;
@@ -22,6 +24,7 @@ export interface Product {
   isNew?: boolean;
   status?: string;
   stockStatus?: string;
+  originalId?: string;
 }
 
 const ProductCardComponent = ({ product }: { product: Product }) => {
@@ -51,6 +54,12 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
     'Yellow': '#FDE047', 'Pink': '#F9A8D4', 'Blue': '#93C5FD', 'Green': '#86EFAC',
     'Red': '#FCA5A5', 'Black': '#1F2937', 'White': '#F9FAFB'
   };
+
+  const actualProductId = product.originalId || product.id;
+  const { data: reviews = [] } = useSWR(`/reviews/product/${actualProductId}`, apiGet);
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / reviews.length).toFixed(1)
+    : 0;
 
   return (
     <motion.div 
@@ -126,10 +135,12 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
           <div className="text-xs text-neutral-500 font-medium">
             {product.category?.name || "Premium Craft"}
           </div>
-          <div className="flex items-center gap-1 text-amber-400">
-            <Star size={12} fill="currentColor" />
-            <span className="text-xs font-bold text-neutral-900">4.9</span>
-          </div>
+          {reviews.length > 0 && (
+            <div className="flex items-center gap-1 text-amber-400">
+              <Star size={12} fill="currentColor" />
+              <span className="text-xs font-bold text-neutral-900">{averageRating}</span>
+            </div>
+          )}
         </div>
         
         <Link href={`/products/${product.slug}`} prefetch={false} className="text-neutral-900 font-bold hover:text-rose-600 transition-colors line-clamp-1 text-base">
@@ -150,17 +161,15 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
 
           {/* Color Swatches */}
           {colors.length > 0 && (
-            <div className="flex items-center gap-1">
-              {colors.slice(0, 3).map((c, i) => (
+            <div className="flex items-center gap-1 flex-wrap">
+              {colors.map((c, i) => (
                 <div 
                   key={i} 
-                  className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm"
-                  style={{ backgroundColor: colorMap[c] || '#e5e7eb' }}
+                  className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm shrink-0"
+                  style={{ backgroundColor: colorMap[c as string] || '#e5e7eb' }}
+                  title={c as string}
                 />
               ))}
-              {colors.length > 3 && (
-                <span className="text-[10px] font-bold text-neutral-400 ml-0.5">+{colors.length - 3}</span>
-              )}
             </div>
           )}
         </div>

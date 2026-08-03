@@ -18,7 +18,20 @@ router.get('/', async (req: any, res: any) => {
     }
 
     const categories = await prisma.category.findMany({
-      include: { children: true },
+      include: { 
+        children: true,
+        products: {
+          take: 1,
+          where: { status: 'PUBLISHED' },
+          select: {
+            images: {
+              take: 1,
+              orderBy: { order: 'asc' },
+              select: { url: true }
+            }
+          }
+        }
+      },
     });
 
     if (redisClient.isReady) {

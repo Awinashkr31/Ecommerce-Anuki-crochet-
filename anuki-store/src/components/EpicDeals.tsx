@@ -9,6 +9,7 @@ const epicDeals = [
   {
     id: 1,
     category: "Hair Accessories",
+    slug: "hair-accessories",
     discount: "UP TO 50% OFF",
     href: "/products?category=hair-accessories",
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop",
@@ -17,6 +18,7 @@ const epicDeals = [
   {
     id: 2,
     category: "Flower Pots",
+    slug: "flower-pots",
     discount: "BESTSELLERS",
     href: "/products?category=flower-pots",
     image: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=400&h=400&fit=crop",
@@ -25,6 +27,7 @@ const epicDeals = [
   {
     id: 3,
     category: "Amigurumi Toys",
+    slug: "amigurumi",
     discount: "NEW ARRIVALS",
     href: "/products?category=amigurumi",
     image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=400&fit=crop",
@@ -33,6 +36,7 @@ const epicDeals = [
   {
     id: 4,
     category: "Cozy Blankets",
+    slug: "blankets",
     discount: "PREMIUM YARN",
     href: "/products",
     image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&h=400&fit=crop",
@@ -41,22 +45,24 @@ const epicDeals = [
   {
     id: 5,
     category: "Keychains",
+    slug: "keychains",
     discount: "PERFECT GIFTS",
-    href: "/products",
+    href: "/products?category=keychains",
     image: "https://images.unsplash.com/photo-1591561954557-26941169b49e?w=400&h=400&fit=crop",
     brands: ["CHARMS", "MINI"]
   },
   {
     id: 6,
     category: "Custom Orders",
+    slug: "custom",
     discount: "MADE TO ORDER",
-    href: "/products?isMadeToOrder=true",
+    href: "/custom",
     image: "https://images.unsplash.com/photo-1622434641406-a158123450f9?w=400&h=400&fit=crop",
     brands: ["BESPOKE", "UNIQUE"]
   }
 ];
 
-export function EpicDeals({ products = [] }: { products?: any[] }) {
+export function EpicDeals({ products = [], categories = [] }: { products?: any[], categories?: any[] }) {
   const fallbackImage = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -139,8 +145,9 @@ export function EpicDeals({ products = [] }: { products?: any[] }) {
           className="flex overflow-x-auto snap-x snap-mandatory gap-0 md:gap-2 pb-6 hide-scrollbar px-2 md:px-4"
         >
           {epicDeals.map((deal, index) => {
-            const productImg = products[index % products.length]?.images?.[0]?.url;
-            const finalImage = productImg || fallbackImage;
+            const cat = categories.find((c: any) => c.slug === deal.slug);
+            const productImg = cat?.bannerUrl || cat?.products?.[0]?.images?.[0]?.url || products[index % products.length]?.images?.[0]?.url;
+            const finalImage = productImg || deal.image;
             
             return (
             <div key={deal.id} className="snap-start shrink-0 w-[220px] md:w-[260px] relative group px-2 py-2"> 

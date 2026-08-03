@@ -13,6 +13,7 @@ const EpicDeals = dynamic(() => import("@/components/EpicDeals").then(mod => mod
 const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Footer), { ssr: false });
 import useSWR from 'swr';
 import { apiGet } from '@/lib/api';
+import { expandProductsByColor } from '@/utils/productUtils';
 
 const InstagramEmbed = ({ url }: { url: string }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -77,31 +78,65 @@ interface HomeClientProps {
 
 export default function HomeClient({ featuredProducts, latestProducts, categories }: HomeClientProps) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (Math.abs(diff) > 50) { // Swipe threshold
+      if (diff > 0) {
+        // Swiped left -> next
+        setActiveSlide((prev) => (prev + 1) % heroBanners.length);
+      } else {
+        // Swiped right -> previous
+        setActiveSlide((prev) => (prev - 1 + heroBanners.length) % heroBanners.length);
+      }
+    }
+    touchStartX.current = null;
+  };
 
   const fallbackImage1 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
   const fallbackImage2 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/bf4cf952-311e-4294-b79f-129258fe612e.webp";
 
+  const getCategoryImage = (slugs: string[], fallbackProdIndex: number) => {
+    for (const slug of slugs) {
+      const cat = categories.find(c => c.slug === slug);
+      if (cat?.bannerUrl) return cat.bannerUrl;
+      if (cat?.products?.[0]?.images?.[0]?.url) return cat.products[0].images[0].url;
+    }
+    return featuredProducts[fallbackProdIndex]?.images?.[0]?.url;
+  };
+
+  const flowerPotsImg = getCategoryImage(['flower-pots'], 1) || fallbackImage2;
+  const plushToysImg = getCategoryImage(['amigurumi', 'plush-toys'], 2) || fallbackImage1;
+
   const heroBanners = [
     {
       id: 1,
-      title: "Handmade with Love.",
-      subtitle: "Premium crochet bouquets, amigurumi plushies, and bespoke gifts crafted to order.",
-      image: featuredProducts[0]?.images?.[0]?.url || fallbackImage1,
-      cta1: { text: "Shop the Collection", link: "/products" },
-      cta2: { text: "Custom Orders", link: "/products?isMadeToOrder=true" },
+      title: "Mega Sale! Up to 50% Off",
+      subtitle: "Grab the best deals on our premium crochet bouquets and cuddly amigurumi plushies.",
+      image: "/promo-banner.png",
+      cta1: { text: "Shop the Sale", link: "/products" },
+      cta2: { text: "Custom Orders", link: "/custom" },
     },
     {
       id: 2,
       title: "Vibrant Flower Pots",
       subtitle: "Add a splash of color to your desk with our never-fading cute potted plants.",
-      image: featuredProducts[1]?.images?.[0]?.url || fallbackImage2,
+      image: flowerPotsImg,
       cta1: { text: "Shop Pots", link: "/products?category=flower-pots" },
     },
     {
       id: 3,
       title: "New Arrivals: Plushies",
       subtitle: "Cuddly companions designed to bring a smile to your face.",
-      image: featuredProducts[2]?.images?.[0]?.url || fallbackImage1,
+      image: plushToysImg,
       cta1: { text: "View Toys", link: "/products?category=amigurumi" },
     }
   ];
@@ -133,72 +168,109 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
         {/* Hero Section Carousel */}
-        <section className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex flex-col md:flex-row items-center justify-center overflow-hidden bg-neutral-900">
+        <section 
+          className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex flex-col md:flex-row items-center justify-center overflow-hidden bg-neutral-900"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           
-          {/* Unified Background Images */}
-          {/* Static First Image for LCP */}
-          <div className={`absolute inset-0 z-0 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
-            <Image 
-              src={heroBanners[0].image} 
-              alt="Banner"
-              fill
-              priority
-              fetchPriority="high"
-              className="object-cover md:opacity-80"
-              sizes="100vw"
-            />
-            {/* Desktop Gradient */}
-            <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
-            {/* Mobile Gradient */}
-            <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-          </div>
-
-          {activeSlide !== 0 && (
-            <div
-              key={activeSlide}
-              className="absolute inset-0 z-0 animate-fade-in"
-            >
+          {/* Mobile Background Images (Hidden on md+) */}
+          <div className="md:hidden">
+            <div className={`absolute inset-0 z-0 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
               <Image 
-                src={heroBanners[activeSlide].image} 
+                src={heroBanners[0].image} 
                 alt="Banner"
                 fill
-                priority={false}
-                className="object-cover md:opacity-80"
+                priority
+                fetchPriority="high"
+                className="object-cover"
                 sizes="100vw"
               />
-              {/* Desktop Gradient */}
-              <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
-              {/* Mobile Gradient */}
-              <div className="absolute inset-x-0 bottom-0 h-[60%] md:hidden bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+              <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
             </div>
-          )}
 
-          {/* Desktop layout container (hidden on mobile) */}
-          <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 w-full hidden md:block">
-            <div
-              key={activeSlide}
-              className="animate-fade-in-up"
-            >
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-black tracking-tight mb-4 md:mb-6 text-white leading-tight drop-shadow-lg">
-                {heroBanners[activeSlide].title}
-              </h1>
-              <p className="text-base md:text-xl text-neutral-200 mb-8 md:mb-10 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
-                {heroBanners[activeSlide].subtitle}
-              </p>
+            {activeSlide !== 0 && (
+              <div
+                key={activeSlide}
+                className="absolute inset-0 z-0 animate-fade-in"
+              >
+                <Image 
+                  src={heroBanners[activeSlide].image} 
+                  alt="Banner"
+                  fill
+                  priority={false}
+                  className="object-cover"
+                  sizes="100vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Split Layout (Hidden on Mobile) */}
+          <div className="hidden md:flex relative z-10 max-w-7xl mx-auto w-full h-full items-center justify-between px-8 lg:px-12 py-12">
+            
+            {/* Left side text */}
+            <div className="w-1/2 pr-12 flex flex-col justify-center h-full relative">
+              {heroBanners.map((banner, index) => (
+                <div 
+                  key={index}
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ${activeSlide === index ? 'opacity-100 translate-y-0 z-10' : 'opacity-0 translate-y-8 z-0 pointer-events-none'}`}
+                >
+                  <h1 className="text-4xl lg:text-6xl xl:text-7xl font-black tracking-tight mb-6 text-white leading-tight drop-shadow-md">
+                    {banner.title}
+                  </h1>
+                  <p className="text-lg lg:text-xl text-neutral-300 mb-10 max-w-xl font-medium leading-relaxed drop-shadow">
+                    {banner.subtitle}
+                  </p>
+                  
+                  <div className="flex flex-row items-center justify-start gap-4">
+                    {banner.cta1 && (
+                      <Link href={banner.cta1.link} className="bg-rose-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap">
+                        {banner.cta1.text} <ArrowRight size={20} />
+                      </Link>
+                    )}
+                    {banner.cta2 && (
+                      <Link href={banner.cta2.link} className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">
+                        {banner.cta2.text}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right side image */}
+            <div className="w-1/2 h-[90%] relative rounded-[2rem] overflow-hidden shadow-2xl bg-neutral-800 border border-white/10">
+               {heroBanners.map((banner, index) => (
+                <div 
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-1000 ${activeSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                >
+                  <Image 
+                    src={banner.image} 
+                    alt={banner.title}
+                    fill
+                    priority={index === 0}
+                    className="object-cover hover:scale-105 transition-transform duration-[10s]"
+                    sizes="50vw"
+                  />
+                </div>
+              ))}
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
-                {heroBanners[activeSlide].cta1 && (
-                  <Link href={heroBanners[activeSlide].cta1.link} className="w-full sm:w-auto bg-rose-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2">
-                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={20} />
-                  </Link>
-                )}
-                {heroBanners[activeSlide].cta2 && (
-                  <Link href={heroBanners[activeSlide].cta2.link} className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border border-white/30 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-white/20 transition-all flex items-center justify-center">
-                    {heroBanners[activeSlide].cta2.text}
-                  </Link>
-                )}
+              {/* Slider Indicators for Desktop */}
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2.5 z-20">
+                {heroBanners.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveSlide(index)}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "bg-white/40 w-2.5 hover:bg-white/60"}`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
+            
           </div>
 
           {/* Mobile layout container */}
@@ -256,21 +328,24 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
               <h2 className="text-3xl md:text-4xl font-bold">Shop by Category</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {categories.slice(0, 4).map((cat) => (
-                <Link href={`/products?category=${cat.slug}`} key={cat.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-200">
-                  <Image src={cat.bannerUrl || fallbackImage1} alt={cat.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <h3 className="text-white font-bold text-xl">{cat.name}</h3>
-                  </div>
-                </Link>
-              ))}
+              {categories.slice(0, 4).map((cat) => {
+                const catImage = cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1;
+                return (
+                  <Link href={`/products?category=${cat.slug}`} key={cat.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-200">
+                    <Image src={catImage} alt={cat.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <h3 className="text-white font-bold text-xl">{cat.name}</h3>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* Epic Deals Section (SWAG SAVINGS) */}
-        <EpicDeals products={featuredProducts} />
+        <EpicDeals products={featuredProducts} categories={categories} />
 
         {/* Promotional Banners */}
         <section className="pt-2 pb-0 md:pt-12 md:pb-4 bg-white overflow-hidden">
@@ -288,7 +363,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                 </div>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0d9488] via-[#0d9488]/50 to-transparent z-10"></div>
-                  <Image src={featuredProducts[1]?.images?.[0]?.url || fallbackImage1} alt="Flower Pots" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
+                  <Image src={flowerPotsImg} alt="Flower Pots" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
                 </div>
               </div>
 
@@ -303,7 +378,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                 </div>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#8b5cf6] via-[#8b5cf6]/50 to-transparent z-10"></div>
-                  <Image src={featuredProducts[2]?.images?.[0]?.url || fallbackImage2} alt="Plush Toys" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
+                  <Image src={plushToysImg} alt="Plush Toys" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
                 </div>
               </div>
 
@@ -312,7 +387,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                 <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
                   <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">CUSTOM<br/>ORDERS</h3>
                   <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">YOUR DESIGN</p>
-                  <Link href="/products?isMadeToOrder=true" className="bg-white text-[#f59e0b] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
+                  <Link href="/custom" className="bg-white text-[#f59e0b] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Order Now
                   </Link>
                 </div>
@@ -351,7 +426,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-              {latestProducts.map((product) => (
+              {expandProductsByColor(latestProducts).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -371,7 +446,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-              {featuredProducts.slice().reverse().map((product) => (
+              {expandProductsByColor(featuredProducts.slice().reverse()).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -422,7 +497,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                     <li className="flex items-center gap-3 font-medium"><span className="text-rose-600">✓</span> Add embroidered names or initials</li>
                     <li className="flex items-center gap-3 font-medium"><span className="text-rose-600">✓</span> Build-your-own bouquet combinations</li>
                   </ul>
-                  <Link href="/products?isMadeToOrder=true" className="inline-flex items-center gap-2 bg-neutral-900 text-white px-8 py-4 rounded-full font-bold hover:bg-neutral-800 transition-colors shadow-lg">
+                  <Link href="/custom" className="inline-flex items-center gap-2 bg-neutral-900 text-white px-8 py-4 rounded-full font-bold hover:bg-neutral-800 transition-colors shadow-lg">
                     Start a Custom Order <ArrowRight size={18} />
                   </Link>
                 </div>
@@ -440,37 +515,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
           </div>
         </section>
 
-        {/* Limited Edition */}
-        <section className="py-12 md:py-24 bg-white border-b border-neutral-100">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold mb-4">Limited Edition Drop</h2>
-            <p className="text-neutral-500 mb-10 max-w-xl mx-auto">Exclusive seasonal designs available only while supplies last.</p>
-            <div className="bg-neutral-900 text-white rounded-3xl p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between text-left gap-8 shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-rose-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <div className="z-10">
-                <span className="bg-rose-600 text-white px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 inline-block">Dropping Now</span>
-                <h3 className="text-3xl font-bold mb-4">The Autumn Harvest Collection</h3>
-                <p className="text-neutral-400 mb-6 max-w-md">Cozy pumpkins, maple leaf coasters, and warm-toned amigurumi perfect for the season.</p>
-                <div className="flex gap-4 items-center">
-                  <div className="text-center bg-white/10 rounded-lg p-3 min-w-[70px]">
-                    <div className="text-2xl font-bold">12</div>
-                    <div className="text-xs text-neutral-400">Hours</div>
-                  </div>
-                  <div className="text-xl font-bold">:</div>
-                  <div className="text-center bg-white/10 rounded-lg p-3 min-w-[70px]">
-                    <div className="text-2xl font-bold">45</div>
-                    <div className="text-xs text-neutral-400">Mins</div>
-                  </div>
-                </div>
-              </div>
-              <div className="z-10 w-full md:w-auto">
-                <Link href="/products?collection=autumn" className="block w-full text-center bg-white text-neutral-900 px-8 py-4 rounded-full font-bold hover:bg-neutral-100 transition-colors">
-                  Shop the Drop
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+
 
         {/* Testimonials */}
         <section className="py-12 md:py-24 bg-white">

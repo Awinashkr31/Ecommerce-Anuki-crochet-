@@ -171,6 +171,8 @@ export default function AdminCategoriesPage() {
         setSuccess('Category created!');
       }
 
+      mutate(); // Revalidate SWR cache
+
       setFormName('');
       setFormSlug('');
       setFormParent('');

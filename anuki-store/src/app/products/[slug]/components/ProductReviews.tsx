@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export default function ProductReviews({ productId }: { productId: string }) {
   const { profile } = useAuthStore();
-  const { data: reviews = [], mutate, isLoading } = useSWR(`/api/reviews/product/${productId}`, apiGet);
+  const { data: reviews = [], mutate, isLoading } = useSWR(`/reviews/product/${productId}`, apiGet);
   
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -53,7 +53,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
         imageUrls = uploadRes.data.urls;
       }
 
-      await apiPost('/api/reviews', { productId, rating, comment, imageUrls });
+      await apiPost('/reviews', { productId, rating, comment, imageUrls });
       toast.success('Review submitted! It will appear after approval.');
       setRating(5);
       setComment('');

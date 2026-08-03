@@ -37,31 +37,36 @@ export default function CategoriesClient() {
         </Link>
         
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        {activeCategories.map((category: any) => (
-          <Link 
-            key={category.id}
-            href={`/products?category=${category.slug}`} 
-            className="group relative rounded-2xl overflow-hidden aspect-square bg-neutral-100 shadow-sm hover:shadow-lg transition-all border border-neutral-200 block"
-          >
-            {category.bannerUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img 
-                src={category.bannerUrl} 
-                alt={category.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <div className="absolute inset-0 w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400 font-medium">
-                No Image
+        {activeCategories.map((category: any) => {
+          const fallbackImage = category.products?.[0]?.images?.[0]?.url;
+          const displayImage = category.bannerUrl || fallbackImage;
+          
+          return (
+            <Link 
+              key={category.id}
+              href={`/products?category=${category.slug}`} 
+              className="group relative rounded-2xl overflow-hidden aspect-square bg-neutral-100 shadow-sm hover:shadow-lg transition-all border border-neutral-200 block"
+            >
+              {displayImage ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img 
+                  src={displayImage} 
+                  alt={category.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400 font-medium">
+                  No Image
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 md:p-6">
+                <h3 className="text-white font-bold text-lg md:text-xl drop-shadow-md group-hover:-translate-y-1 transition-transform">
+                  {category.name}
+                </h3>
               </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 md:p-6">
-              <h3 className="text-white font-bold text-lg md:text-xl drop-shadow-md group-hover:-translate-y-1 transition-transform">
-                {category.name}
-              </h3>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

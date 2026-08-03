@@ -10,7 +10,7 @@ export function SWRProvider({ children, fallback = {} }: { children: React.React
       value={{ 
         fallback,
         revalidateOnFocus: false,
-        revalidateIfStale: false, // Prevents automatic revalidation just because a component remounts
+        revalidateIfStale: true, // Allow automatic revalidation in background so stale server-side caches are updated
         revalidateOnReconnect: true, // It's still good to reconnect
         dedupingInterval: 120000, // 2 minutes - heavily reduces duplicate requests
         errorRetryCount: 2 // Reduce aggressive retrying

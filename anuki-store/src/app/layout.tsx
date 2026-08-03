@@ -17,7 +17,25 @@ const getGlobalLayoutData = unstable_cache(
     return Promise.all([
       prisma.category.findMany({
         where: { isActive: true },
-        select: { id: true, name: true, slug: true, parentId: true, isActive: true },
+        select: { 
+          id: true, 
+          name: true, 
+          slug: true, 
+          parentId: true, 
+          isActive: true,
+          bannerUrl: true,
+          products: {
+            take: 1,
+            where: { status: 'PUBLISHED' },
+            select: {
+              images: {
+                take: 1,
+                orderBy: { order: 'asc' },
+                select: { url: true }
+              }
+            }
+          }
+        },
       }),
       prisma.storeSettings.findMany({
         where: {

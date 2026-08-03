@@ -7,14 +7,14 @@ import { apiGet, apiPut, apiDelete } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function AdminReviewsPage() {
-  const { data: reviews = [], mutate, isLoading } = useSWR('/api/reviews/admin', apiGet);
+  const { data: reviews = [], mutate, isLoading } = useSWR('/reviews/admin', apiGet);
   const [replyModal, setReplyModal] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [filter, setFilter] = useState("PENDING");
 
   const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
     try {
-      await apiPut(`/api/reviews/${id}/status`, { action });
+      await apiPut(`/reviews/${id}/status`, { action });
       toast.success(`Review ${action.toLowerCase()}d successfully`);
       mutate();
     } catch (error) {
@@ -25,7 +25,7 @@ export default function AdminReviewsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this review?')) return;
     try {
-      await apiDelete(`/api/reviews/${id}`);
+      await apiDelete(`/reviews/${id}`);
       toast.success('Review deleted');
       mutate();
     } catch (error) {

@@ -192,6 +192,11 @@ export function StoreHeader() {
                 </Link>
               </div>
             ))}
+            <div className="group relative py-8">
+              <Link href="/custom" className="hover:text-rose-600 transition-colors whitespace-nowrap text-[#991b1b]">
+                Custom Design
+              </Link>
+            </div>
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">

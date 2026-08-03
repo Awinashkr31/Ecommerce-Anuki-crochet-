@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MobileLoginSheet } from "./MobileLoginSheet";
-import { Home, Search, LayoutGrid, User, Shield } from "lucide-react";
+import { Home, Search, LayoutGrid, User, Shield, Wand2 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -50,6 +50,13 @@ export function BottomNav() {
           <LayoutGrid size={24} className="mb-1" />
           <span className="text-[10px] font-bold">Category</span>
         </Link>
+        <Link 
+          href="/custom"
+          className={`flex flex-col items-center justify-center w-16 h-full transition-colors ${pathname === "/custom" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+        >
+          <Wand2 size={24} className="mb-1" />
+          <span className="text-[10px] font-bold">Custom</span>
+        </Link>
 
         {/* Show Admin link for staff, Account link for others */}
         {isAdmin ? (
@@ -66,12 +73,19 @@ export function BottomNav() {
             className={`flex flex-col items-center justify-center w-16 h-full transition-colors ${pathname?.startsWith("/account") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             {profile?.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="Avatar" className={`w-6 h-6 rounded-full object-cover mb-1 border ${pathname?.startsWith("/account") ? "border-rose-600" : "border-neutral-200"}`} />
-            ) : (
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mb-1 border ${pathname?.startsWith("/account") ? "border-rose-600 bg-rose-100 text-rose-700" : "border-neutral-200 bg-neutral-100 text-neutral-700"}`}>
-                {profile?.fullName?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
+              <img 
+                src={profile.avatarUrl} 
+                alt="Avatar" 
+                className={`w-6 h-6 rounded-full object-cover mb-1 border ${pathname?.startsWith("/account") ? "border-rose-600" : "border-neutral-200"}`} 
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mb-1 border ${pathname?.startsWith("/account") ? "border-rose-600 bg-rose-100 text-rose-700" : "border-neutral-200 bg-neutral-100 text-neutral-700"} ${profile?.avatarUrl ? 'hidden' : ''}`}>
+              {profile?.fullName?.charAt(0).toUpperCase() || 'U'}
+            </div>
             <span className="text-[10px] font-bold">Account</span>
           </Link>
         ) : (

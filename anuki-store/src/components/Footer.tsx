@@ -104,6 +104,7 @@ export function Footer() {
               ))}
               <li><Link href="/blog" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Journal</Link></li>
               <li><Link href="/about" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">About Us</Link></li>
+              <li><Link href="/custom" className="text-neutral-600 hover:text-rose-600 font-medium transition-colors">Custom Design</Link></li>
             </ul>
           </div>
 
