@@ -19,7 +19,7 @@ export interface Product {
   isMadeToOrder: boolean;
   images: { url: string; altText: string }[];
   category?: { name: string; slug?: string };
-  variants?: any[];
+  variants?: { id?: string; name?: string; color?: string; stock: number; [key: string]: unknown }[];
   bestseller?: boolean;
   isNew?: boolean;
   status?: string;
@@ -56,9 +56,9 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
   };
 
   const actualProductId = product.originalId || product.id;
-  const { data: reviews = [] } = useSWR<any[]>(`/reviews/product/${actualProductId}`, apiGet);
+  const { data: reviews = [] } = useSWR<{ rating: number; [key: string]: unknown }[]>(`/reviews/product/${actualProductId}`, apiGet);
   const averageRating = reviews.length > 0 
-    ? (reviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / reviews.length).toFixed(1)
+    ? (reviews.reduce((acc: number, curr: { rating: number; [key: string]: unknown }) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : 0;
 
   return (

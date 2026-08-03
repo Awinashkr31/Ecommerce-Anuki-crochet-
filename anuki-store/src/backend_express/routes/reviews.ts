@@ -88,7 +88,7 @@ router.post('/', verifyToken, async (req: AuthRequest, res) => {
 
 // PUT approve/reject a review
 router.put('/:id/status', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), async (req: AuthRequest, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { action } = req.body; // 'APPROVE' or 'REJECT'
 
   if (!['APPROVE', 'REJECT'].includes(action)) {
@@ -109,7 +109,7 @@ router.put('/:id/status', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), a
 
 // DELETE a review
 router.delete('/:id', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), async (req: AuthRequest, res) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   try {
     await prisma.review.delete({ where: { id } });
     res.json({ message: 'Review deleted successfully' });
