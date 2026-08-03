@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { SlidersHorizontal, Search } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { expandProductsByColor } from '../../utils/productUtils';
 
 import { ProductCard, Product } from "../../components/ProductCard";
@@ -89,34 +89,22 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-4 md:py-8">
         
-        {/* Sticky Utility Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 sticky top-[72px] bg-white/90 backdrop-blur-md z-40 py-4 border-b border-neutral-100">
-          
-          <div className="flex items-center gap-4 flex-1">
-            <button 
-              onClick={() => setIsMobileDrawerOpen(true)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-sm font-bold shadow-sm"
-            >
-              <SlidersHorizontal size={14} /> Filters
-            </button>
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-neutral-50 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-rose-500 outline-none"
-              />
+        {/* Utility Bar - always visible */}
+        <div className="sticky top-0 z-[35] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-neutral-100">
+          <div className="flex items-center justify-between py-2.5">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsMobileDrawerOpen(true)}
+                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-sm font-bold"
+              >
+                <SlidersHorizontal size={14} /> Filters
+              </button>
+              <span className="text-sm text-neutral-500 font-medium">
+                {filteredProducts.length} Product{filteredProducts.length !== 1 && 's'}
+              </span>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-            <span className="text-sm font-semibold text-neutral-500 whitespace-nowrap">
-              {filteredProducts.length} Product{filteredProducts.length !== 1 && 's'}
-            </span>
             <SortDropdown sort={sort} setSort={setSort} />
           </div>
         </div>
@@ -148,7 +136,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                 </div>
                 
                 {filteredProducts.length < 8 && (
-                  <div className="mt-16 pt-10 border-t border-neutral-100">
+                  <div className="mt-8 pt-6 md:mt-16 md:pt-10 border-t border-neutral-100">
                     <h3 className="text-xl font-serif font-medium text-neutral-900 mb-6">More to Love</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
                       {initialProducts

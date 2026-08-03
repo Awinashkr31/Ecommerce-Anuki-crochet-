@@ -82,7 +82,18 @@ export default function HomeClient({
   randomProducts?: any[];
 }) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [activeReviewSlide, setActiveReviewSlide] = useState(0);
   const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Only auto-slide on mobile where the carousel applies
+      if (window.innerWidth < 768) {
+        setActiveReviewSlide((prev) => (prev + 1) % 3); // 3 reviews
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -141,7 +152,7 @@ export default function HomeClient({
       title: "New Arrivals: Plushies",
       subtitle: "Cuddly companions designed to bring a smile to your face.",
       image: plushToysImg,
-      cta1: { text: "View Toys", link: "/products?category=amigurumi" },
+      cta1: { text: "View Toys", link: "/products?category=toys" },
     }
   ];
 
@@ -376,7 +387,7 @@ export default function HomeClient({
                 <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
                   <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">PLUSH<br/>TOYS</h3>
                   <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">CUDDLY FRIENDS</p>
-                  <Link href="/products?category=amigurumi" className="bg-white text-[#8b5cf6] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
+                  <Link href="/products?category=toys" className="bg-white text-[#8b5cf6] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Shop Toys
                   </Link>
                 </div>
@@ -598,23 +609,44 @@ export default function HomeClient({
               <h2 className="text-3xl font-bold mb-4">Loved by Crafters &amp; Gifters</h2>
               <p className="text-neutral-500">Don&apos;t just take our word for it.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-neutral-50 p-8 rounded-2xl border border-neutral-100">
-                  <div className="flex text-amber-400 mb-4">
-                    {"★★★★★"}
-                  </div>
-                  <p className="text-neutral-700 italic mb-6">&quot;Absolutely stunning work! The custom bouquet I ordered for my mom&apos;s birthday arrived in perfect condition and she cried when she saw it.&quot;</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold">
-                      S
+            <div className="overflow-hidden md:overflow-visible">
+              <div 
+                className="flex md:grid md:grid-cols-3 md:gap-8 transition-transform duration-500 ease-in-out md:transform-none"
+                style={{ transform: `translateX(-${activeReviewSlide * 100}%)` }}
+              >
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-full shrink-0 md:w-auto md:shrink">
+                    <div className="bg-neutral-50 p-8 rounded-2xl border border-neutral-100 mx-2 md:mx-0 h-full">
+                      <div className="flex text-amber-400 mb-4">
+                        {"★★★★★"}
+                      </div>
+                      <p className="text-neutral-700 italic mb-6">&quot;Absolutely stunning work! The custom bouquet I ordered for my mom&apos;s birthday arrived in perfect condition and she cried when she saw it.&quot;</p>
+                      <div className="flex items-center gap-3 mt-auto">
+                        <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold shrink-0">
+                          S
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm">Sarah M.</div>
+                          <div className="text-xs text-neutral-500">Verified Buyer</div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-bold text-sm">Sarah M.</div>
-                      <div className="text-xs text-neutral-500">Verified Buyer</div>
-                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mobile Carousel Indicators */}
+            <div className="flex justify-center gap-2 mt-6 md:hidden">
+              {[1, 2, 3].map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveReviewSlide(idx)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    activeReviewSlide === idx ? 'bg-rose-500' : 'bg-neutral-200'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
               ))}
             </div>
           </div>
