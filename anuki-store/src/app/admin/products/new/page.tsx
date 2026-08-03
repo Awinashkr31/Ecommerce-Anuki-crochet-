@@ -3,7 +3,8 @@ import useSWR from 'swr';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, UploadCloud, Plus, X, Loader2, Save, CheckCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, UploadCloud, Plus, X, Save, CheckCircle, Trash2 } from 'lucide-react';
+import { compressImageToWebP } from '@/lib/imageCompression';
 import { apiGet, apiPost, apiUpload } from '../../../../lib/api';
 
 interface Category { id: string; name: string; slug: string; }
@@ -77,16 +78,18 @@ export default function NewProductPage() {
     setUploadingImage(true);
     try {
       const file = e.target.files[0];
+      const compressedFile = await compressImageToWebP(file, 200, 1000); // 200KB max, 1000px max width
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', compressedFile);
       formData.append('folder', 'products');
       const data = await apiUpload('/upload', formData);
       setImages([...images, { url: data.url, altText: name || 'Product image' }]);
     } catch (err) {
       console.error(err);
-      alert('Failed to upload image');
+      alert(err instanceof Error ? err.message : 'Failed to upload image. Please try again or check the file format.');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
   };
 

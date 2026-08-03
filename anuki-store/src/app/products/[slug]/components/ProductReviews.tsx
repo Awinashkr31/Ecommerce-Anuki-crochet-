@@ -5,6 +5,7 @@ import { apiGet, apiPost } from '@/lib/api';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import { compressImageToWebP } from '@/lib/imageCompression';
 
 export default function ProductReviews({ productId }: { productId: string }) {
   const { profile } = useAuthStore();
@@ -44,7 +45,10 @@ export default function ProductReviews({ productId }: { productId: string }) {
       
       if (photos.length > 0) {
         const formData = new FormData();
-        photos.forEach(photo => formData.append('images', photo));
+        for (const img of photos) {
+          const compressed = await compressImageToWebP(img, 200, 1000);
+          formData.append('images', compressed);
+        }
         
         const uploadRes = await axios.post('/api/upload/customer', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },

@@ -120,9 +120,10 @@ export default function AdminCategoriesPage() {
       setImagePreview(URL.createObjectURL(compressedFile));
     } catch (err) {
       console.error(err);
-      setError('Failed to compress image');
+      alert(err instanceof Error ? err.message : 'Failed to upload image. Please try again or check the file format.');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
   };
 

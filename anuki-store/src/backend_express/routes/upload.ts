@@ -24,24 +24,24 @@ const ALLOWED_FOLDERS = ['products', 'categories', 'banners', 'misc', 'avatars']
 const storage = multer.memoryStorage();
 const uploadAdmin = multer({ 
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 15 * 1024 * 1024 }, // Increased to 15MB for admin
   fileFilter: (req, file, cb) => {
     if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, WebP, and GIF image files are allowed.'));
+      cb(new Error('Only JPEG, PNG, WebP, and GIF image files are allowed. iPhone HEIC/HEIF photos are not supported directly, please convert them first.'));
     }
   }
 });
 
 const uploadCustomer = multer({ 
   storage,
-  limits: { fileSize: 2 * 1024 * 1024, files: 2 }, // 2MB max, max 2 files
+  limits: { fileSize: 5 * 1024 * 1024, files: 2 }, // 5MB max, max 2 files
   fileFilter: (req, file, cb) => {
     if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, WebP, and GIF image files are allowed.'));
+      cb(new Error('Only JPEG, PNG, WebP, and GIF image files are allowed. iPhone HEIC/HEIF photos are not supported directly, please convert them first.'));
     }
   }
 });

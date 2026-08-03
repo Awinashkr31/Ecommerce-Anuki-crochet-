@@ -4,6 +4,7 @@ import { useState, use } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Edit2, Trash2, Copy, Loader2, Image as ImageIcon, Check, ListTree } from 'lucide-react';
+import { compressImageToWebP } from '@/lib/imageCompression';
 import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from '../../../../../lib/api';
 import { toast } from "sonner";
 
@@ -117,8 +118,9 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
     setUploadingImage(true);
     try {
       const file = e.target.files[0];
+      const compressedFile = await compressImageToWebP(file, 200, 1000);
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', compressedFile);
       formData.append('folder', 'products');
       const data = await apiUpload('/upload', formData);
       setEditingVariant((prev: any) => ({ 
@@ -126,9 +128,11 @@ export default function VariantManagementPage(props: { params: Promise<{ id: str
         imageUrls: [...(prev.imageUrls || []), data.url] 
       }));
     } catch (err) {
-      toast.error('Failed to upload image');
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : 'Failed to upload image. Please try again or check the file format.');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
   };
 
