@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export default function ProductReviews({ productId }: { productId: string }) {
   const { profile } = useAuthStore();
-  const { data: reviews = [], mutate, isLoading } = useSWR(`/reviews/product/${productId}`, apiGet);
+  const { data: reviews = [], mutate, isLoading } = useSWR<any[]>(`/reviews/product/${productId}`, apiGet);
   
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');

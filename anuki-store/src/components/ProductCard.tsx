@@ -56,7 +56,7 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
   };
 
   const actualProductId = product.originalId || product.id;
-  const { data: reviews = [] } = useSWR(`/reviews/product/${actualProductId}`, apiGet);
+  const { data: reviews = [] } = useSWR<any[]>(`/reviews/product/${actualProductId}`, apiGet);
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : 0;

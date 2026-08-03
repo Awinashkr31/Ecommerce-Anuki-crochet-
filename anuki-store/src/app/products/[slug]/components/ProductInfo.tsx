@@ -17,7 +17,7 @@ export default function ProductInfo({
   discount: number | null, 
   inStock: boolean 
 }) {
-  const { data: reviews = [] } = useSWR(`/reviews/product/${product.id}`, apiGet);
+  const { data: reviews = [] } = useSWR<any[]>(`/reviews/product/${product.id}`, apiGet);
   
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / reviews.length).toFixed(1)
