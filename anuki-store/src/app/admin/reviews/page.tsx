@@ -7,7 +7,7 @@ import { apiGet, apiPut, apiDelete } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function AdminReviewsPage() {
-  const { data: reviews = [], mutate, isLoading } = useSWR('/reviews/admin', apiGet);
+  const { data: reviews = [], mutate, isLoading } = useSWR<any[]>('/reviews/admin', apiGet);
   const [replyModal, setReplyModal] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [filter, setFilter] = useState("PENDING");
