@@ -19,7 +19,7 @@ export interface Product {
   isMadeToOrder: boolean;
   images: { url: string; altText: string }[];
   category?: { name: string; slug?: string };
-  variants?: { id?: string; name?: string; color?: string; stock: number; [key: string]: unknown }[];
+  variants?: { id?: string; name?: string; color?: string; size?: string; stock: number; [key: string]: unknown }[];
   bestseller?: boolean;
   isNew?: boolean;
   status?: string;

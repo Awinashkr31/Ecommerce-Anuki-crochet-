@@ -27,9 +27,9 @@ export default function ProductDetailClient({
   youMayAlsoLike = [],
   completeTheGift = []
 }: { 
-  product: any;
-  youMayAlsoLike?: any[];
-  completeTheGift?: any[];
+  product: { id?: string; name?: string; images?: { url: string; altText?: string }[]; variants?: { id: string; name?: string; imageUrls?: string[]; [key: string]: unknown }[]; [key: string]: unknown };
+  youMayAlsoLike?: { [key: string]: unknown }[];
+  completeTheGift?: { [key: string]: unknown }[];
 }) {
   const router = useRouter();
   const { addItem } = useCartStore();
@@ -41,7 +41,7 @@ export default function ProductDetailClient({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const baseImages = product.images?.length > 0 ? product.images : [{ url: "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=800", altText: "Placeholder" }];
-  const currentVariant = product.variants?.find((v: any) => v.id === selectedVariantId);
+  const currentVariant = product.variants?.find((v: { id: string; [key: string]: unknown }) => v.id === selectedVariantId);
   
   let displayImages = [...baseImages];
   if (currentVariant && currentVariant.imageUrls && currentVariant.imageUrls.length > 0) {
