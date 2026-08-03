@@ -109,7 +109,7 @@ export default function ProductDetailClient({
       
       
       {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-2 md:py-8">
         <nav className="text-sm font-medium text-neutral-500 flex items-center gap-2">
           <Link href="/" className="hover:text-rose-600 transition-colors">Home</Link>
           <ChevronRight size={14} />
@@ -119,7 +119,7 @@ export default function ProductDetailClient({
         </nav>
       </div>
 
-      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16">
+      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 lg:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
           
           {/* Left Column: Image Gallery */}
@@ -169,7 +169,7 @@ export default function ProductDetailClient({
 
       {/* Complete the Gift Section */}
       {completeTheGift.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-16">
+        <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">Complete the Gift</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
@@ -183,7 +183,7 @@ export default function ProductDetailClient({
 
       {/* You May Also Like Section */}
       {youMayAlsoLike.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-16">
+        <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">You May Also Like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
@@ -196,7 +196,7 @@ export default function ProductDetailClient({
       )}
 
       {/* EEAT & Trust Signals Section */}
-      <section className="bg-white border-y border-neutral-100 py-16">
+      <section className="bg-white border-y border-neutral-100 py-2 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-4">Why Choose Anuki Crochet?</h2>

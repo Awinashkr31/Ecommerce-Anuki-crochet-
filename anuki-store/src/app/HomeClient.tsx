@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import type { Product } from "@/components/ProductCard";
+
 
 const ProductCard = dynamic(() => import("@/components/ProductCard").then(mod => mod.ProductCard), { ssr: true });
 const EpicDeals = dynamic(() => import("@/components/EpicDeals").then(mod => mod.EpicDeals), { ssr: false });
@@ -70,13 +70,17 @@ const InstagramEmbed = ({ url }: { url: string }) => {
   );
 };
 
-interface HomeClientProps {
-  featuredProducts: Product[];
-  latestProducts: Product[];
+export default function HomeClient({ 
+  featuredProducts, 
+  latestProducts, 
+  categories,
+  randomProducts = []
+}: { 
+  featuredProducts: any[];
+  latestProducts: any[];
   categories: any[];
-}
-
-export default function HomeClient({ featuredProducts, latestProducts, categories }: HomeClientProps) {
+  randomProducts?: any[];
+}) {
   const [activeSlide, setActiveSlide] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
@@ -114,7 +118,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
   };
 
   const flowerPotsImg = getCategoryImage(['flower-pots'], 1) || fallbackImage2;
-  const plushToysImg = getCategoryImage(['amigurumi', 'plush-toys'], 2) || fallbackImage1;
+  const plushToysImg = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/3ca3fbfe-08b0-485e-b7cb-4ce51c55d4b2.webp";
 
   const heroBanners = [
     {
@@ -414,7 +418,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
 
 
         {/* Latest Additions */}
-        <section className="pt-4 pb-12 md:pt-10 md:pb-24 bg-white">
+        <section className="pt-4 pb-4 md:pt-10 md:pb-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
               <div className="mb-4">
@@ -434,7 +438,7 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
         </section>
 
         {/* Bestsellers */}
-        <section className="py-12 md:py-24 bg-rose-50/50 border-t border-neutral-100">
+        <section className="py-6 md:py-24 bg-rose-50/50 border-t border-neutral-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
               <div className="mb-4">
@@ -452,6 +456,28 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
             </div>
           </div>
         </section>
+
+        {/* Explore More (Random Products) */}
+        {randomProducts && randomProducts.length > 0 && (
+          <section className="py-6 md:py-24 bg-white border-t border-neutral-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="flex items-center justify-between mb-8 md:mb-12">
+                <div className="mb-4">
+                  <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Explore More</h2>
+                </div>
+                <Link href="/products" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
+                  Shop All <ChevronRight size={18} />
+                </Link>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
+                {expandProductsByColor(randomProducts).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Trust Indicators / Value Props */}
         <section className="py-12 md:py-24 bg-neutral-900 text-white">
@@ -502,14 +528,62 @@ export default function HomeClient({ featuredProducts, latestProducts, categorie
                   </Link>
                 </div>
               </div>
-              <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl">
-                <Image 
-                  src="https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800" 
-                  alt="Custom crochet process"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
+              <div className="grid grid-cols-4 grid-rows-4 gap-3 h-[500px]">
+                {/* Large featured image - top left */}
+                <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden shadow-lg group">
+                  <Image 
+                    src="/crochet-teddy-bear.png" 
+                    alt="Handmade crochet teddy bear"
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                {/* Top right */}
+                <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
+                  <Image 
+                    src="/crochet-flower-bouquet.png" 
+                    alt="Crochet flower bouquet"
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                {/* Middle right */}
+                <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
+                  <Image 
+                    src="/crochet-baby-blanket.png" 
+                    alt="Crochet baby blanket"
+                    fill
+                    sizes="(max-width: 1024px) 25vw, 12vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                {/* Middle right small */}
+                <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
+                  <Image 
+                    src="/crochet-keychains.png" 
+                    alt="Crochet keychains"
+                    fill
+                    sizes="(max-width: 1024px) 25vw, 12vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                {/* Bottom full width */}
+                <div className="col-span-4 row-span-2 relative rounded-2xl overflow-hidden shadow-lg group">
+                  <Image 
+                    src="/crochet-tote-bag.png" 
+                    alt="Crochet tote bag"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
               </div>
             </div>
           </div>

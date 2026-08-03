@@ -71,7 +71,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
   };
 
   return (
-    <section className="bg-white border-t border-neutral-100 py-16">
+    <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-end mb-8 border-b border-neutral-100 pb-4">
           <div>

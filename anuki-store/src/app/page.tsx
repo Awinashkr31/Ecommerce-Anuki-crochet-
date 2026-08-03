@@ -6,7 +6,7 @@ export const revalidate = 60; // Revalidate every 60 seconds to keep it fast but
 
 export default async function Page() {
   // Fetch data on the server in parallel for maximum speed
-  const [bestsellerProducts, latestProducts, categories] = await Promise.all([
+  const [bestsellerProducts, latestProducts, categories, allProductsPool] = await Promise.all([
     prisma.product.findMany({
       where: { status: 'PUBLISHED', bestseller: true },
       take: 4,
@@ -66,8 +66,43 @@ export default async function Page() {
     prisma.category.findMany({
       where: { isActive: true },
       select: { id: true, name: true, slug: true, bannerUrl: true },
+    }),
+    prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        basePrice: true,
+        salePrice: true,
+        wholesalePrice: true,
+        isMadeToOrder: true,
+        bestseller: true,
+        stockStatus: true,
+        stock: true,
+        status: true,
+        images: {
+          select: { url: true, altText: true, order: true },
+          orderBy: { order: 'asc' }
+        },
+        category: {
+          select: { name: true, slug: true }
+        },
+        variants: {
+          select: { id: true, stock: true, color: true }
+        }
+      }
     })
   ]);
+
+  const existingProductIds = new Set([
+    ...bestsellerProducts.map(p => p.id),
+    ...latestProducts.map(p => p.id)
+  ]);
+
+  const filteredPool = allProductsPool.filter(p => !existingProductIds.has(p.id));
+  const randomProducts = filteredPool.sort(() => 0.5 - Math.random()).slice(0, 4);
 
   // Preload the LCP hero image so the browser starts downloading it immediately
   const heroImageUrl = bestsellerProducts[0]?.images?.[0]?.url
@@ -121,6 +156,7 @@ export default async function Page() {
         featuredProducts={bestsellerProducts as any} 
         latestProducts={latestProducts.map(p => ({ ...p, isNew: true })) as any} 
         categories={categories as any} 
+        randomProducts={randomProducts as any}
       />
     </>
   );

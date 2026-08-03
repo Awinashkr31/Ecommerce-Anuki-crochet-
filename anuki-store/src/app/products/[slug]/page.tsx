@@ -39,7 +39,7 @@ const getRelatedProducts = unstable_cache(
   async () => {
     return prisma.product.findMany({
       where: { status: 'PUBLISHED' },
-      take: 8,
+      take: 16,
       include: {
         category: true,
         variants: true,
@@ -82,8 +82,8 @@ export default async function ProductDetailPage({ params }: Props) {
 
   // Basic random shuffle
   const shuffled = otherProducts.sort(() => 0.5 - Math.random());
-  const youMayAlsoLike = shuffled.slice(0, 4);
-  const completeTheGift = shuffled.slice(4, 8);
+  const youMayAlsoLike = shuffled.slice(0, 8);
+  const completeTheGift = shuffled.slice(8, 12);
 
   if (!product || product.status !== 'PUBLISHED') {
     return (

@@ -210,7 +210,9 @@ export function StoreHeader() {
               }}
               className="flex items-center bg-neutral-100 hover:bg-neutral-200 transition-colors rounded-full px-3 py-1.5 mr-2"
             >
-              <Search size={18} className="text-neutral-500 mr-2" />
+              <button type="submit" className="text-neutral-500 mr-2 hover:text-neutral-800 transition-colors flex items-center justify-center p-0.5" aria-label="Search">
+                <Search size={18} />
+              </button>
               <input
                 type="text"
                 name="q"
@@ -250,7 +252,7 @@ export function StoreHeader() {
             >
               <ShoppingBag size={24} />
               {totalCartItems > 0 && (
-                <span className="absolute top-0 right-0 bg-[#781f33] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                <span className="absolute -top-1 -right-1 bg-[#e11d48] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white">
                   {totalCartItems}
                 </span>
               )}
