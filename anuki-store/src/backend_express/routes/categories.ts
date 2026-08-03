@@ -35,7 +35,7 @@ router.get('/', async (req: any, res: any) => {
     });
 
     if (redisClient.isReady) {
-      await redisClient.setEx(CACHE_KEY, 3600, JSON.stringify(categories)); // 1 hour cache
+      await redisClient.setEx(CACHE_KEY, 300, JSON.stringify(categories)); // 5 min cache
     }
 
     return res.json(categories);
@@ -80,13 +80,27 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
 router.delete('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const { id } = req.params;
+
+    // Check for child categories
+    const childCount = await prisma.category.count({ where: { parentId: id } });
+    if (childCount > 0) {
+      return res.status(400).json({ error: `Cannot delete category: it has ${childCount} subcategories. Remove or reassign them first.` });
+    }
+
+    // Check for products in this category
+    const productCount = await prisma.product.count({ where: { categoryId: id } });
+    if (productCount > 0) {
+      return res.status(400).json({ error: `Cannot delete category: it has ${productCount} products. Move or delete them first.` });
+    }
+
     await prisma.category.delete({
       where: { id },
     });
     if (redisClient.isReady) await redisClient.del(CACHE_KEY);
     return res.json({ message: 'Category deleted' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to delete category' });
+  } catch (error: any) {
+    console.error('Delete Category Error:', error);
+    return res.status(500).json({ error: error.message || 'Failed to delete category' });
   }
 });
 

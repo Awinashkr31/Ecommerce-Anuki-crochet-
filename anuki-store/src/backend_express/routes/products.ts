@@ -73,7 +73,7 @@ router.get('/', async (req: any, res: any) => {
 
     // 3. Set Cache (expire in 15 mins)
     if (redisClient.isReady) {
-      await redisClient.setEx(cacheKey, 900, JSON.stringify(products));
+      await redisClient.setEx(cacheKey, 120, JSON.stringify(products)); // 2 min cache
     }
 
     return res.json(products);

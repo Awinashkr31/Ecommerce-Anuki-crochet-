@@ -101,8 +101,14 @@ app.use('/api', globalLimiter);
 
 // ── Caching Middleware ─────────────────────────────
 const apiCache = (req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => {
-  // 5 minutes edge cache, 10 minutes stale-while-revalidate
-  res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+  if (req.method === 'GET') {
+    // 30 seconds edge cache, 60 seconds stale-while-revalidate (short TTL so admin changes appear fast)
+    res.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+  } else {
+    // Never cache mutations (POST, PUT, DELETE)
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+  }
   next();
 };
 
