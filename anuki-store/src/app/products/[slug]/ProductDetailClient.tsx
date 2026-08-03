@@ -40,7 +40,7 @@ export default function ProductDetailClient({
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const baseImages = product.images?.length > 0 ? product.images : [{ url: "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=800", altText: "Placeholder" }];
+  const baseImages = (product.images?.length ?? 0) > 0 ? product.images! : [{ url: "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=800", altText: "Placeholder" }];
   const currentVariant = product.variants?.find((v: { id: string; [key: string]: unknown }) => v.id === selectedVariantId);
   
   let displayImages = [...baseImages];
