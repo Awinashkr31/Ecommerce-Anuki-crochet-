@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
@@ -26,7 +26,7 @@ const InstagramEmbed = ({ url }: { url: string }) => {
         observer.disconnect();
       }
     }, { rootMargin: '200px' });
-    
+
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
@@ -70,28 +70,59 @@ const InstagramEmbed = ({ url }: { url: string }) => {
   );
 };
 
-export default function HomeClient({ 
-  featuredProducts, 
-  latestProducts, 
+export default function HomeClient({
+  featuredProducts,
+  latestProducts,
   categories,
-  randomProducts = []
-}: { 
+  randomProducts = [],
+  randomProducts2 = []
+}: {
   featuredProducts: any[];
   latestProducts: any[];
   categories: any[];
   randomProducts?: any[];
+  randomProducts2?: any[];
 }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [activeReviewSlide, setActiveReviewSlide] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
+  const reviewsScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      // Only auto-slide on mobile where the carousel applies
-      if (window.innerWidth < 768) {
-        setActiveReviewSlide((prev) => (prev + 1) % 3); // 3 reviews
+      const container = categoriesScrollRef.current;
+      if (!container) return;
+      
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const itemWidth = container.firstElementChild?.clientWidth || 300;
+      
+      // Check if we are at the end (allowing 20px tolerance)
+      if (scrollLeft + clientWidth >= scrollWidth - 20) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: itemWidth, behavior: 'smooth' });
       }
-    }, 3000);
+    }, 4500); // cycle every 4.5 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const container = reviewsScrollRef.current;
+      if (!container) return;
+      
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const itemWidth = container.firstElementChild?.clientWidth || 280;
+      
+      if (scrollLeft + clientWidth >= scrollWidth - 20) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: itemWidth, behavior: 'smooth' });
+      }
+    }, 4000); // cycle every 4 seconds
     return () => clearInterval(timer);
   }, []);
 
@@ -129,29 +160,29 @@ export default function HomeClient({
   };
 
   const flowerPotsImg = getCategoryImage(['flower-pots'], 1) || fallbackImage2;
-  const plushToysImg = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/3ca3fbfe-08b0-485e-b7cb-4ce51c55d4b2.webp";
+  const plushToysImg = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/811a8439-4e35-4013-a535-250ac8c8cda2.webp";
 
   const heroBanners = [
     {
       id: 1,
-      title: "Mega Sale! Up to 50% Off",
-      subtitle: "Grab the best deals on our premium crochet bouquets and cuddly amigurumi plushies.",
-      image: "/promo-banner.png",
+      title: "Handmade Crochet Gifts Sale!",
+      subtitle: "Up to 50% off on premium crochet bouquets & amigurumi plushies.",
+      image: "/hero-banner-1.webp",
       cta1: { text: "Shop the Sale", link: "/products" },
       cta2: { text: "Custom Orders", link: "/custom" },
     },
     {
       id: 2,
-      title: "Vibrant Flower Pots",
-      subtitle: "Add a splash of color to your desk with our never-fading cute potted plants.",
-      image: flowerPotsImg,
+      title: "Crochet Flower Pots",
+      subtitle: "Vibrant handmade pots that never fade.",
+      image: "/hero-banner-2.webp",
       cta1: { text: "Shop Pots", link: "/products?category=flower-pots" },
     },
     {
       id: 3,
-      title: "New Arrivals: Plushies",
-      subtitle: "Cuddly companions designed to bring a smile to your face.",
-      image: plushToysImg,
+      title: "Cute Crochet Plushies",
+      subtitle: "Handcrafted cuddly companions for loved ones.",
+      image: "/hero-banner-3.webp",
       cta1: { text: "View Toys", link: "/products?category=toys" },
     }
   ];
@@ -183,18 +214,18 @@ export default function HomeClient({
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-rose-200">
       <main>
         {/* Hero Section Carousel */}
-        <section 
-          className="relative h-[55vh] min-h-[400px] md:min-h-[600px] md:h-[600px] w-full flex flex-col md:flex-row items-center justify-center overflow-hidden bg-neutral-900"
+        <section
+          className="relative h-[45vh] min-h-[320px] md:min-h-[400px] md:h-[400px] w-full flex flex-col md:flex-row items-center justify-center overflow-hidden bg-neutral-900"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          
+
           {/* Mobile Background Images (Hidden on md+) */}
           <div className="md:hidden">
             <div className={`absolute inset-0 z-0 ${activeSlide === 0 ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
-              <Image 
-                src={heroBanners[0].image} 
-                alt="Banner"
+              <Image
+                src={heroBanners[0].image}
+                alt="Handmade crochet gifts India - promotional banner"
                 fill
                 priority
                 fetchPriority="high"
@@ -209,9 +240,9 @@ export default function HomeClient({
                 key={activeSlide}
                 className="absolute inset-0 z-0 animate-fade-in"
               >
-                <Image 
-                  src={heroBanners[activeSlide].image} 
-                  alt="Banner"
+                <Image
+                  src={heroBanners[activeSlide].image}
+                  alt="Handmade crochet gifts India - promotional banner"
                   fill
                   priority={false}
                   className="object-cover"
@@ -222,31 +253,50 @@ export default function HomeClient({
             )}
           </div>
 
-          {/* Desktop Split Layout (Hidden on Mobile) */}
-          <div className="hidden md:flex relative z-10 max-w-7xl mx-auto w-full h-full items-center justify-between px-8 lg:px-12 py-12">
-            
-            {/* Left side text */}
-            <div className="w-1/2 pr-12 flex flex-col justify-center h-full relative">
+          {/* Desktop Full-Bleed Layout (Hidden on Mobile) */}
+          <div className="hidden md:block absolute inset-0 z-0">
+            {heroBanners.map((banner, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1000 ${activeSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+              >
+                <Image
+                  src={banner.image}
+                  alt="Handmade crochet gifts India"
+                  fill
+                  priority={index === 0}
+                  className="object-cover"
+                  sizes="100vw"
+                />
+              </div>
+            ))}
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-20"></div>
+          </div>
+
+          {/* Desktop Text Content */}
+          <div className="hidden md:flex relative z-30 max-w-7xl mx-auto w-full h-full items-center px-8 lg:px-16">
+            <div className="w-1/2 flex flex-col justify-center h-full relative">
               {heroBanners.map((banner, index) => (
-                <div 
+                <div
                   key={index}
                   className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ${activeSlide === index ? 'opacity-100 translate-y-0 z-10' : 'opacity-0 translate-y-8 z-0 pointer-events-none'}`}
                 >
-                  <h1 className="text-4xl lg:text-6xl xl:text-7xl font-black tracking-tight mb-6 text-white leading-tight drop-shadow-md">
+                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-4 text-white leading-[1.1]">
                     {banner.title}
                   </h1>
-                  <p className="text-lg lg:text-xl text-neutral-300 mb-10 max-w-xl font-medium leading-relaxed drop-shadow">
+                  <p className="text-base lg:text-lg text-white/80 mb-8 max-w-md font-medium leading-relaxed">
                     {banner.subtitle}
                   </p>
-                  
-                  <div className="flex flex-row items-center justify-start gap-4">
+
+                  <div className="flex flex-row items-center gap-3">
                     {banner.cta1 && (
-                      <Link href={banner.cta1.link} className="bg-rose-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-rose-700 transition-all shadow-lg flex items-center justify-center gap-2 whitespace-nowrap">
-                        {banner.cta1.text} <ArrowRight size={20} />
+                      <Link href={banner.cta1.link} className="bg-rose-600 text-white px-6 py-3 rounded-full font-bold text-sm lg:text-base hover:bg-rose-700 transition-all shadow-lg flex items-center gap-2 whitespace-nowrap">
+                        {banner.cta1.text} <ArrowRight size={16} />
                       </Link>
                     )}
                     {banner.cta2 && (
-                      <Link href={banner.cta2.link} className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">
+                      <Link href={banner.cta2.link} className="bg-white text-neutral-900 px-6 py-3 rounded-full font-bold text-sm lg:text-base hover:bg-neutral-100 transition-all shadow-md flex items-center whitespace-nowrap">
                         {banner.cta2.text}
                       </Link>
                     )}
@@ -254,38 +304,18 @@ export default function HomeClient({
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Right side image */}
-            <div className="w-1/2 h-[90%] relative rounded-[2rem] overflow-hidden shadow-2xl bg-neutral-800 border border-white/10">
-               {heroBanners.map((banner, index) => (
-                <div 
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-1000 ${activeSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                >
-                  <Image 
-                    src={banner.image} 
-                    alt={banner.title}
-                    fill
-                    priority={index === 0}
-                    className="object-cover hover:scale-105 transition-transform duration-[10s]"
-                    sizes="50vw"
-                  />
-                </div>
-              ))}
-              
-              {/* Slider Indicators for Desktop */}
-              <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2.5 z-20">
-                {heroBanners.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActiveSlide(index)}
-                    className={`h-2.5 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "bg-white/40 w-2.5 hover:bg-white/60"}`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-            
+          {/* Desktop Slider Indicators */}
+          <div className="hidden md:flex absolute bottom-6 left-0 right-0 justify-center gap-2.5 z-30">
+            {heroBanners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveSlide(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-7 shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "bg-white/40 w-2 hover:bg-white/60"}`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
 
           {/* Mobile layout container */}
@@ -294,28 +324,28 @@ export default function HomeClient({
               key={activeSlide}
               className="w-full flex flex-col items-start text-left relative z-10 animate-fade-in-up-mobile"
             >
-              {/* Text Content Container (Max Width 85%) */}
-              <div className="w-[85%] flex flex-col items-start">
-                
-                <h2 className="text-[26px] font-[800] leading-[1.1] text-white w-full mb-[8px] [text-shadow:_0_2px_15px_rgb(0_0_0_/_80%)]">
+              {/* Text Content */}
+              <div className="w-full flex flex-col items-start">
+
+                <h2 className="text-[24px] font-[800] leading-[1.15] text-white w-[80%] mb-[6px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].title}
                 </h2>
-                
-                <p className="text-[13px] font-[600] leading-[1.5] text-white line-clamp-2 mb-[16px] [text-shadow:_0_2px_10px_rgb(0_0_0_/_80%)]">
+
+                <p className="text-[12px] font-[500] leading-[1.4] text-white/90 line-clamp-1 mb-[14px] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].subtitle}
                 </p>
               </div>
 
-              {/* Buttons Container (100% Width) */}
-              <div className="flex flex-col w-full">
+              {/* Buttons Side by Side */}
+              <div className="flex flex-row gap-2 w-full mt-1">
                 {heroBanners[activeSlide].cta1 && (
-                  <Link href={heroBanners[activeSlide].cta1.link} className="w-full h-[46px] bg-rose-600 text-white rounded-full font-[700] text-[15px] flex items-center justify-center gap-2 shadow-lg">
-                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={16} />
+                  <Link href={heroBanners[activeSlide].cta1.link} className="flex-1 h-[36px] bg-rose-600 text-white rounded-full font-[700] text-[12px] flex items-center justify-center gap-1.5 shadow-lg">
+                    {heroBanners[activeSlide].cta1.text} <ArrowRight size={12} />
                   </Link>
                 )}
-                
+
                 {heroBanners[activeSlide].cta2 && (
-                  <Link href={heroBanners[activeSlide].cta2.link} className="mt-[10px] w-full h-[44px] bg-white/10 backdrop-blur-md border border-white/60 text-white rounded-full font-[600] text-[15px] flex items-center justify-center">
+                  <Link href={heroBanners[activeSlide].cta2.link} className="flex-1 h-[36px] bg-white text-neutral-900 rounded-full font-[600] text-[12px] flex items-center justify-center shadow-md">
                     {heroBanners[activeSlide].cta2.text}
                   </Link>
                 )}
@@ -323,12 +353,12 @@ export default function HomeClient({
             </div>
 
             {/* Slider Indicators for Mobile */}
-            <div className="w-full flex justify-center gap-2.5 mt-[24px] relative z-10">
+            <div className="w-full flex justify-center gap-2 mt-[16px] relative z-10">
               {heroBanners.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveSlide(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-6" : "bg-white/40 w-2"}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${activeSlide === index ? "bg-white w-5" : "bg-white/40 w-1.5"}`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -340,14 +370,14 @@ export default function HomeClient({
         <section className="py-8 md:py-20 bg-neutral-50 border-b border-neutral-100">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-6 md:mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold">Shop by Category</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">Shop Handmade Crochet Gifts by Category</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {categories.slice(0, 4).map((cat) => {
                 const catImage = cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1;
                 return (
-                  <Link href={`/products?category=${cat.slug}`} key={cat.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-200">
-                    <Image src={catImage} alt={cat.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <Link href={`/products?category=${cat.slug}`} title={`Shop handmade crochet ${cat.name.toLowerCase()} India`} key={cat.id} className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-200">
+                    <Image src={catImage} alt={`Handmade crochet ${cat.name.toLowerCase()} gift`} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                     <div className="absolute bottom-6 left-6 right-6">
                       <h3 className="text-white font-bold text-xl">{cat.name}</h3>
@@ -355,6 +385,12 @@ export default function HomeClient({
                   </Link>
                 );
               })}
+            </div>
+
+            <div className="mt-10 md:mt-14 flex justify-center">
+              <Link href="/products" className="group inline-flex items-center justify-center gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-sm md:text-lg hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm w-[260px] md:w-[320px] max-w-full">
+                View All Categories <ArrowRight className="w-4 h-4 md:w-5 md:h-5 animate-bounce-x" />
+              </Link>
             </div>
           </div>
         </section>
@@ -365,57 +401,58 @@ export default function HomeClient({
         {/* Promotional Banners */}
         <section className="pt-2 pb-0 md:pt-12 md:pb-4 bg-white overflow-hidden">
           <div className="max-w-[100vw] px-4 md:px-6 xl:px-0 xl:max-w-7xl mx-auto">
-            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar -mx-4 px-4 md:-mx-6 md:px-6 xl:mx-0 xl:px-0">
-              
+            <div ref={categoriesScrollRef} className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 hide-scrollbar -mx-4 px-4 md:-mx-6 md:px-6 xl:mx-0 xl:px-0">
+
               {/* Banner 2 */}
               <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#0d9488]">
                 <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">FLOWER<br/>POTS</h3>
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">FLOWER<br />POTS</h3>
                   <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">VIBRANT & CUTE</p>
-                  <Link href="/products?category=flower-pots" className="bg-white text-[#0d9488] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
+                  <Link href="/products?category=flower-pots" title="Shop handmade crochet flower pots" className="bg-white text-[#0d9488] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Shop Pots
                   </Link>
                 </div>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0d9488] via-[#0d9488]/50 to-transparent z-10"></div>
-                  <Image src={flowerPotsImg} alt="Flower Pots" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
+                  <Image src={flowerPotsImg} alt="Handmade crochet flower pots - unique gifts" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
                 </div>
               </div>
 
               {/* Banner 3 */}
               <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#8b5cf6]">
                 <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">PLUSH<br/>TOYS</h3>
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">PLUSH<br />TOYS</h3>
                   <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">CUDDLY FRIENDS</p>
-                  <Link href="/products?category=toys" className="bg-white text-[#8b5cf6] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
+                  <Link href="/products?category=toys" title="Shop handmade amigurumi and crochet toys India" className="bg-white text-[#8b5cf6] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Shop Toys
                   </Link>
                 </div>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#8b5cf6] via-[#8b5cf6]/50 to-transparent z-10"></div>
-                  <Image src={plushToysImg} alt="Plush Toys" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
+                  <Image src={plushToysImg} alt="Handmade amigurumi crochet plush toys India" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
                 </div>
               </div>
 
               {/* Banner 4 */}
               <div className="snap-center shrink-0 w-[85vw] md:w-[500px] lg:w-[600px] h-[150px] md:h-[200px] rounded-3xl overflow-hidden relative flex bg-[#f59e0b]">
                 <div className="w-7/12 p-5 md:p-8 flex flex-col justify-center relative z-10 text-white">
-                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">CUSTOM<br/>ORDERS</h3>
+                  <h3 className="text-xl md:text-3xl font-black leading-tight mb-1 md:mb-2">CUSTOM<br />ORDERS</h3>
                   <p className="text-[10px] md:text-xs font-bold tracking-widest mb-3 md:mb-4 uppercase">YOUR DESIGN</p>
-                  <Link href="/custom" className="bg-white text-[#f59e0b] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
+                  <Link href="/custom" title="Order custom crochet flower bouquet" className="bg-white text-[#f59e0b] font-bold px-4 md:px-5 py-2 md:py-2.5 rounded-full self-start hover:bg-neutral-100 transition-colors text-xs md:text-sm shadow-sm">
                     Order Now
                   </Link>
                 </div>
                 <div className="absolute right-0 top-0 bottom-0 w-1/2">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b] via-[#f59e0b]/50 to-transparent z-10"></div>
-                  <Image src={featuredProducts[3]?.images?.[0]?.url || fallbackImage1} alt="Custom Orders" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
+                  <Image src={featuredProducts[3]?.images?.[0]?.url || fallbackImage1} alt="Custom handmade crochet gifts India" fill className="object-cover" sizes="(max-width: 768px) 100vw, 25vw" />
                 </div>
               </div>
 
             </div>
           </div>
-          
-          <style dangerouslySetInnerHTML={{__html: `
+
+          <style dangerouslySetInnerHTML={{
+            __html: `
             .hide-scrollbar::-webkit-scrollbar {
               display: none;
             }
@@ -429,17 +466,18 @@ export default function HomeClient({
 
 
         {/* Latest Additions */}
-        <section className="pt-4 pb-4 md:pt-10 md:pb-24 bg-white">
+        <section className="pt-4 pb-4 md:pt-10 md:pb-10 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
-              <div className="mb-4">
-                <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Latest Additions</h2>
+              <div>
+                <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">Latest Handmade Gifts</h2>
+                <p className="hidden md:block text-sm md:text-base text-neutral-500 mt-2 font-medium">Buy <Link href="/products" className="text-[#e11d48] hover:underline font-bold">crochet gifts online</Link> in India. Shop affordable <Link href="/products?category=keychains" className="text-[#e11d48] hover:underline font-bold">handmade gifts</Link> starting under ₹300.</p>
               </div>
-              <Link href="/products?sort=newest" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
-                See All <ChevronRight size={18} />
+              <Link href="/products?sort=newest" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
+                See All <ArrowRight size={16} className="animate-bounce-x" />
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
               {expandProductsByColor(latestProducts).map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -449,17 +487,17 @@ export default function HomeClient({
         </section>
 
         {/* Bestsellers */}
-        <section className="py-6 md:py-24 bg-rose-50/50 border-t border-neutral-100">
+        <section className="py-6 md:py-10 bg-rose-50/50 border-t border-neutral-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-8 md:mb-12">
-              <div className="mb-4">
-                <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Bestsellers</h2>
+              <div>
+                <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">Bestselling Crochet Gifts India</h2>
               </div>
-              <Link href="/products?sort=bestselling" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
-                See All <ChevronRight size={18} />
+              <Link href="/products?sort=bestselling" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
+                See All <ArrowRight size={16} className="animate-bounce-x" />
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
               {expandProductsByColor(featuredProducts.slice().reverse()).map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -468,19 +506,47 @@ export default function HomeClient({
           </div>
         </section>
 
+        {/* Trust Indicators / Value Props */}
+        <section className="py-8 md:py-12 bg-neutral-900 text-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-neutral-800 rounded-full flex items-center justify-center mb-3 md:mb-4">
+                  <span className="text-xl">🧶</span>
+                </div>
+                <h3 className="text-lg font-bold mb-1.5 md:mb-2">100% Handmade</h3>
+                <p className="text-sm text-neutral-400">Every single stitch is crafted by hand with premium, non-toxic yarn to create the best <Link href="/products" className="text-rose-400 hover:underline">handmade crochet gifts</Link> in India.</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-neutral-800 rounded-full flex items-center justify-center mb-3 md:mb-4">
+                  <span className="text-xl">✨</span>
+                </div>
+                <h3 className="text-lg font-bold mb-1.5 md:mb-2">Bespoke Customization</h3>
+                <p className="text-sm text-neutral-400">Want a different color? Adding a name? We build exactly what you envision for your <Link href="/custom" className="text-rose-400 hover:underline">custom crochet gifts</Link> online.</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-neutral-800 rounded-full flex items-center justify-center mb-3 md:mb-4">
+                  <span className="text-xl">🎁</span>
+                </div>
+                <h3 className="text-lg font-bold mb-1.5 md:mb-2">Ready to Gift</h3>
+                <p className="text-sm text-neutral-400">Premium unboxing experience with personalized gift notes included. The perfect crochet gift shop experience.</p>
+              </div>
+            </div>
+          </div>
+        </section>
         {/* Explore More (Random Products) */}
         {randomProducts && randomProducts.length > 0 && (
-          <section className="py-6 md:py-24 bg-white border-t border-neutral-100">
+          <section className="py-6 md:py-10 bg-white border-t border-neutral-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               <div className="flex items-center justify-between mb-8 md:mb-12">
-                <div className="mb-4">
-                  <h2 className="text-[26px] md:text-4xl font-serif text-[#001738] tracking-tight">Explore More</h2>
+                <div>
+                  <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">More Handmade Gifts</h2>
                 </div>
-                <Link href="/products" className="flex items-center gap-0.5 text-[14px] md:text-[15px] text-[#e11d48] font-medium hover:text-[#be123c] transition-colors">
-                  Shop All <ChevronRight size={18} />
+                <Link href="/products" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
+                  Shop All <ArrowRight size={16} className="animate-bounce-x" />
                 </Link>
               </div>
-              
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
                 {expandProductsByColor(randomProducts).map((product) => (
                   <ProductCard key={product.id} product={product} />
@@ -490,190 +556,133 @@ export default function HomeClient({
           </section>
         )}
 
-        {/* Trust Indicators / Value Props */}
-        <section className="py-12 md:py-24 bg-neutral-900 text-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
-                  <span className="text-2xl">🧶</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">100% Handmade</h3>
-                <p className="text-neutral-400">Every single stitch is crafted by hand with premium, non-toxic yarn.</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
-                  <span className="text-2xl">✨</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Bespoke Customization</h3>
-                <p className="text-neutral-400">Want a different color? Adding a name? We build exactly what you envision.</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-6">
-                  <span className="text-2xl">🎁</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Ready to Gift</h3>
-                <p className="text-neutral-400">Premium unboxing experience with personalized gift notes included.</p>
-              </div>
-            </div>
-          </div>
-        </section>
         {/* Personalized Gifts Section */}
-        <section className="py-12 md:py-24 bg-rose-50">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <div>
-                  <h2 className="text-3xl md:text-5xl font-black mb-6 text-neutral-900">Make it <span className="text-rose-600">Yours.</span></h2>
-                  <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
-                    Looking for a specific color palette? Want to add a name tag or a special accessory to a plushie? 
-                    Our bespoke service lets you co-create the perfect handmade gift.
+        <section className="py-4 md:py-10 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden bg-rose-50 border border-rose-100 flex flex-row items-stretch shadow-sm">
+              
+              {/* Text Side */}
+              <div className="w-7/12 md:w-1/2 lg:w-7/12 p-4 sm:p-8 md:p-12 lg:p-16 relative z-10 flex flex-col justify-center">
+                  <h2 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black mb-1.5 md:mb-3 text-neutral-900">Make Your Handmade Gift <span className="text-rose-600">Yours.</span></h2>
+                  <p className="text-[11px] sm:text-sm md:text-base lg:text-lg text-neutral-600 mb-2 md:mb-6 leading-relaxed max-w-lg">
+                    Co-create the perfect <Link href="/products" className="text-rose-600 hover:underline font-medium">handmade crochet gift</Link>. Choose colors, add initials & design your dream bouquet.
                   </p>
-                  <ul className="space-y-4 mb-10">
-                    <li className="flex items-center gap-3 font-medium"><span className="text-rose-600">✓</span> Choose custom yarn colors</li>
-                    <li className="flex items-center gap-3 font-medium"><span className="text-rose-600">✓</span> Add embroidered names or initials</li>
-                    <li className="flex items-center gap-3 font-medium"><span className="text-rose-600">✓</span> Build-your-own bouquet combinations</li>
-                  </ul>
-                  <Link href="/custom" className="inline-flex items-center gap-2 bg-neutral-900 text-white px-8 py-4 rounded-full font-bold hover:bg-neutral-800 transition-colors shadow-lg">
-                    Start a Custom Order <ArrowRight size={18} />
+                  <div className="hidden sm:flex items-center gap-4 mb-4 md:mb-5 text-sm font-medium text-neutral-700">
+                    <span className="flex items-center gap-1"><span className="text-rose-600">✓</span> Custom colors</span>
+                    <span className="flex items-center gap-1"><span className="text-rose-600">✓</span> Add initials</span>
+                  </div>
+                  <Link href="/custom" className="inline-flex items-center gap-1.5 bg-neutral-900 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-full font-bold text-[10px] sm:text-sm hover:bg-neutral-800 transition-colors w-fit">
+                    Custom Order <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
                   </Link>
-                </div>
               </div>
-              <div className="grid grid-cols-4 grid-rows-4 gap-3 h-[500px]">
-                {/* Large featured image - top left */}
-                <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden shadow-lg group">
-                  <Image 
-                    src="/crochet-teddy-bear.png" 
-                    alt="Handmade crochet teddy bear"
+
+              {/* Image Side - always visible on the right */}
+              <div className="w-5/12 md:w-1/2 lg:w-5/12 relative min-h-[140px] md:min-h-[320px]">
+                  <Image
+                    src="/crochet-flower-bouquet.png"
+                    alt="Custom Handmade Crochet Gifts"
                     fill
-                    sizes="(max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 768px) 40vw, 33vw"
+                    className="object-cover md:object-contain md:object-right"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                {/* Top right */}
-                <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
-                  <Image 
-                    src="/crochet-flower-bouquet.png" 
-                    alt="Crochet flower bouquet"
-                    fill
-                    sizes="(max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                {/* Middle right */}
-                <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
-                  <Image 
-                    src="/crochet-baby-blanket.png" 
-                    alt="Crochet baby blanket"
-                    fill
-                    sizes="(max-width: 1024px) 25vw, 12vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                {/* Middle right small */}
-                <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg group">
-                  <Image 
-                    src="/crochet-keychains.png" 
-                    alt="Crochet keychains"
-                    fill
-                    sizes="(max-width: 1024px) 25vw, 12vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                {/* Bottom full width */}
-                <div className="col-span-4 row-span-2 relative rounded-2xl overflow-hidden shadow-lg group">
-                  <Image 
-                    src="/crochet-tote-bag.png" 
-                    alt="Crochet tote bag"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-50 via-rose-50/40 to-transparent w-1/3"></div>
               </div>
+
             </div>
           </div>
         </section>
 
 
 
-        {/* Testimonials */}
-        <section className="py-12 md:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold mb-4">Loved by Crafters &amp; Gifters</h2>
-              <p className="text-neutral-500">Don&apos;t just take our word for it.</p>
-            </div>
-            <div className="overflow-hidden md:overflow-visible">
-              <div 
-                className="flex md:grid md:grid-cols-3 md:gap-8 transition-transform duration-500 ease-in-out md:transform-none"
-                style={{ transform: `translateX(-${activeReviewSlide * 100}%)` }}
-              >
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-full shrink-0 md:w-auto md:shrink">
-                    <div className="bg-neutral-50 p-8 rounded-2xl border border-neutral-100 mx-2 md:mx-0 h-full">
-                      <div className="flex text-amber-400 mb-4">
-                        {"★★★★★"}
-                      </div>
-                      <p className="text-neutral-700 italic mb-6">&quot;Absolutely stunning work! The custom bouquet I ordered for my mom&apos;s birthday arrived in perfect condition and she cried when she saw it.&quot;</p>
-                      <div className="flex items-center gap-3 mt-auto">
-                        <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold shrink-0">
-                          S
-                        </div>
-                        <div>
-                          <div className="font-bold text-sm">Sarah M.</div>
-                          <div className="text-xs text-neutral-500">Verified Buyer</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+        {/* You May Also Like */}
+        {randomProducts2 && randomProducts2.length > 0 && (
+          <section className="py-6 md:py-10 bg-rose-50/30 border-t border-neutral-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="flex items-center justify-between mb-8 md:mb-12">
+                <div>
+                  <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">You May Also Like</h2>
+                </div>
+                <Link href="/products" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
+                  Browse All <ArrowRight size={16} className="animate-bounce-x" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
+                {expandProductsByColor(randomProducts2).map((product) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             </div>
+          </section>
+        )}
+
+        {/* Testimonials */}
+        <section className="py-8 md:py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-xl md:text-2xl font-bold mb-2">Loved by Handmade Gift Shoppers in India</h2>
+              <p className="text-neutral-500 text-sm">Don&apos;t just take our word for it.</p>
+            </div>
             
-            {/* Mobile Carousel Indicators */}
-            <div className="flex justify-center gap-2 mt-6 md:hidden">
-              {[1, 2, 3].map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveReviewSlide(idx)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    activeReviewSlide === idx ? 'bg-rose-500' : 'bg-neutral-200'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
+            <div className="-mx-6">
+              <div ref={reviewsScrollRef} className="flex flex-nowrap gap-4 md:gap-6 overflow-x-auto pb-8 snap-x hide-scrollbar px-6">
+                {[
+                  { name: "Priya Sharma", initial: "P", text: "Absolutely stunning work! The custom bouquet I ordered for my mom's birthday arrived in perfect condition and she cried when she saw it." },
+                  { name: "Ananya", initial: "A", text: "The amigurumi bunny is so soft and well-made. My niece won't sleep without it now. Highly recommended for handmade gifts!" },
+                  { name: "Rohan Mehta", initial: "R", text: "Ordered a sunflower pot for my desk and it brings so much joy. The craftsmanship is flawless and delivery was right on time." },
+                  { name: "Sneha Kapoor", initial: "S", text: "The keychain I got is incredibly cute. You can really tell how much love and effort goes into every single stitch." },
+                  { name: "Neha", initial: "N", text: "I gifted a crochet rose bouquet to my wife for our anniversary. She absolutely loved it! Better than real flowers since these last forever." },
+                  { name: "Kavya Tiwari", initial: "K", text: "I requested a custom color combination for a plushie, and they nailed it perfectly. Very professional and friendly service." },
+                  { name: "Aarti", initial: "A", text: "Such beautiful packaging! It felt like opening a premium gift. The crochet teddy inside was just as perfect." },
+                  { name: "Vikas Patel", initial: "V", text: "Bought some crochet hair clips for my daughter and they are her absolute favorites now. Great quality and very durable." },
+                  { name: "Megha", initial: "M", text: "I'm amazed by the intricate details on the amigurumi dolls. This is true artistry. Will definitely be ordering more!" },
+                  { name: "Pooja Bansal", initial: "P", text: "Thank you for the beautiful flower pot. It sits on my window sill and completely brightens up the room. Wonderful handmade product." }
+                ].map((review, idx) => (
+                <div key={idx} className="snap-center min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] shrink-0">
+                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100 h-full flex flex-col">
+                    <div className="flex text-amber-400 mb-3 text-sm md:text-base">
+                      {"★★★★★"}
+                    </div>
+                    <p className="text-neutral-700 italic mb-5 text-sm md:text-base flex-grow">&quot;{review.text}&quot;</p>
+                    <div className="flex items-center gap-3 mt-auto">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold shrink-0 text-sm md:text-base">
+                        {review.initial}
+                      </div>
+                      <div>
+                        <div className="font-bold text-xs md:text-sm">{review.name}</div>
+                        <div className="text-[10px] md:text-xs text-neutral-500">Verified Buyer</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* Instagram Feed */}
-        <section className="py-12 md:py-24 bg-neutral-900 text-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Follow Our Journey</h2>
-            <p className="text-neutral-400">Join our community on Instagram <a href={`https://instagram.com/${instagramHandle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:text-rose-300">{instagramHandle}</a></p>
+        <section className="py-8 md:py-10 bg-neutral-900 text-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
+            <h2 className="text-xl md:text-2xl font-bold mb-2">Follow Our Handmade Crochet Journey</h2>
+            <p className="text-sm md:text-base text-neutral-400">Join our community on Instagram <a href={`https://instagram.com/${instagramHandle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:text-rose-300">{instagramHandle}</a></p>
           </div>
-          
+
           {/* A simple horizontal scrolling masonry-style grid simulation */}
-          <div className="flex flex-nowrap gap-4 px-6 overflow-x-auto pb-8 snap-x hide-scrollbar">
+          <div className="flex flex-nowrap gap-4 px-6 overflow-x-auto pb-4 snap-x hide-scrollbar">
             {manualReels.length > 0 ? (
               manualReels.map((url, i) => (
-                <div key={i} className="snap-center min-w-[320px] w-[320px] sm:min-w-[320px] relative rounded-2xl overflow-hidden group flex-shrink-0 bg-white shadow-md border border-neutral-100 flex items-center justify-center">
+                <div key={i} className="snap-center min-w-[240px] w-[240px] sm:min-w-[280px] sm:w-[280px] relative rounded-2xl overflow-hidden group flex-shrink-0 bg-white shadow-md border border-neutral-100 flex items-center justify-center">
                   <InstagramEmbed url={url} />
                 </div>
               ))
             ) : (
               [...featuredProducts, ...featuredProducts].slice(0, 5).map((product, i) => (
-                <div key={i} className="snap-center min-w-[280px] sm:min-w-[320px] aspect-square relative rounded-2xl overflow-hidden group flex-shrink-0">
+                <div key={i} className="snap-center min-w-[240px] sm:min-w-[280px] aspect-square relative rounded-2xl overflow-hidden group flex-shrink-0">
                   <Image src={product.images?.[0]?.url || fallbackImage1} alt="Instagram post" fill sizes="(max-width: 768px) 100vw, 320px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   <a href={`https://instagram.com/${instagramHandle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="text-white font-bold text-lg flex items-center gap-2">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
                       View on Instagram
                     </span>
                   </a>
@@ -684,20 +693,36 @@ export default function HomeClient({
         </section>
 
         {/* FAQ */}
-        <section className="py-12 md:py-24 bg-neutral-50 border-t border-neutral-200">
+        <section className="py-8 md:py-12 bg-neutral-50 border-t border-neutral-200">
           <div className="max-w-4xl mx-auto px-6">
 
             <div>
-              <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+              <h2 className="text-xl md:text-2xl font-bold mb-6 text-center">Handmade Crochet Gifts FAQ</h2>
+              <div className="space-y-2">
                 {[
-                  { q: "How long do custom orders take?", a: "Most custom pieces take 5-7 business days to create before shipping. We'll provide a specific estimate at checkout based on current queue volume." },
-                  { q: "Can I wash the amigurumi plushies?", a: "Yes! We recommend gentle spot cleaning or hand washing in cold water with mild detergent. Do not tumble dry." },
-                  { q: "Do you ship internationally?", a: "Currently, we ship all across India. We are working on adding international shipping soon!" }
+                  { q: "What is a crochet bouquet?", a: <>A crochet bouquet is a handcrafted arrangement of yarn flowers. Unlike real flowers, a crochet bouquet is a <Link href="/products" className="text-rose-600 hover:underline font-medium">handmade gift</Link> that lasts forever, making it perfect for gifting.</> },
+                  { q: "How long does a crochet bouquet last?", a: "Our handmade crochet flower bouquets are crafted from premium yarn and never wilt. They are beautiful forever flowers that last a lifetime." },
+                  { q: "What is an amigurumi toy?", a: <>An amigurumi toy is a small, stuffed yarn plushie made using the Japanese art of knitting or crocheting. You can explore our cuddly <Link href="/products?category=toys" className="text-rose-600 hover:underline font-medium">crochet plushies</Link> for unique gifts.</> },
+                  { q: "Are crochet plushies washable?", a: "Yes, we recommend gentle spot cleaning or hand washing in cold water with a mild detergent. Lay flat to dry to keep your handmade stuffed toys looking perfect." },
+                  { q: "How long does a custom crochet order take?", a: <>Most <Link href="/custom" className="text-rose-600 hover:underline font-medium">custom crochet orders</Link> take 5-7 business days to create before shipping across India. Specific estimates are provided at checkout.</> },
+                  { q: "Does Anuki Crochet deliver across India?", a: "Yes, we deliver our affordable handmade gifts across India. International shipping is coming soon!" }
                 ].map((faq, i) => (
-                  <div key={i} className="bg-white p-6 rounded-2xl border border-neutral-100 cursor-pointer hover:border-neutral-200 transition-colors">
-                    <h3 className="font-bold text-neutral-900 mb-2">{faq.q}</h3>
-                    <p className="text-neutral-600 text-sm leading-relaxed">{faq.a}</p>
+                  <div
+                    key={i}
+                    className="bg-white p-4 rounded-xl border border-neutral-100 cursor-pointer hover:border-neutral-200 transition-colors"
+                    onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-sm md:text-base text-neutral-900 mb-0">{faq.q}</h3>
+                      <div className={`transition-transform duration-300 ${openFaqIndex === i ? 'rotate-180' : ''}`}>
+                        <ChevronDown size={20} className="text-neutral-500" />
+                      </div>
+                    </div>
+                    {openFaqIndex === i && (
+                      <div className="mt-3 text-neutral-600 text-sm leading-relaxed animate-fade-in">
+                        {faq.a}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -705,7 +730,7 @@ export default function HomeClient({
           </div>
         </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
     </div>

@@ -67,12 +67,12 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://anukicrochet.in'),
   title: {
     template: '%s | Anuki Crochet',
-    default: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
+    default: 'Handmade Crochet Gifts India | Unique Handcrafted Products | Anuki Crochet',
   },
-  description: "Discover beautiful, bespoke handcrafted crochet flower bouquets, custom plushies, and unique handmade gifts for every occasion. Shop at Anuki Crochet in India.",
+  description: "Looking for the best handmade crochet gifts in India? Discover unique handcrafted birthday gifts, custom crochet anniversary gifts, and cute Valentine gifts online at Anuki Crochet. We offer beautiful handmade gifts delivered across India.",
   openGraph: {
-    title: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
-    description: 'Discover beautiful, bespoke handcrafted crochet flower bouquets, custom plushies, and unique handmade gifts for every occasion.',
+    title: 'Handmade Crochet Gifts India | Unique Handcrafted Products | Anuki Crochet',
+    description: 'Looking for the best handmade crochet gifts in India? Discover unique handcrafted birthday gifts, custom crochet anniversary gifts, and cute Valentine gifts online at Anuki Crochet. We offer beautiful handmade gifts delivered across India.',
     url: 'https://anukicrochet.in',
     siteName: 'Anuki Crochet',
     locale: 'en_IN',
@@ -80,8 +80,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Handmade Crochet Gifts & Custom Bouquets | Anuki Crochet',
-    description: 'Discover beautiful, bespoke handcrafted crochet flower bouquets and unique handmade gifts.',
+    title: 'Handmade Crochet Gifts India | Unique Handcrafted Products | Anuki Crochet',
+    description: 'Looking for the best handmade crochet gifts in India? Discover unique handcrafted birthday gifts, custom crochet anniversary gifts, and cute Valentine gifts online at Anuki Crochet. We offer beautiful handmade gifts delivered across India.',
   },
 };
 
@@ -140,10 +140,10 @@ export default async function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Handmade Crochet",
-              "url": "https://handmadecrochet.com",
-              "logo": "https://handmadecrochet.com/logo.png",
-              "description": "Bespoke handcrafted crochet items, custom flower bouquets, and handmade gifts."
+              "name": "Anuki Crochet",
+              "url": "https://anukicrochet.in",
+              "logo": "https://anukicrochet.in/logo.png",
+              "description": "Shop the best handmade crochet gifts in India. Unique handcrafted items, custom flower bouquets, and plushies online."
             })
           }}
         />

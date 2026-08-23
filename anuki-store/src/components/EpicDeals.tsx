@@ -96,10 +96,10 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
     <section className="bg-white pt-2 pb-8 md:py-8">
       {/* Banner */}
       <div className="max-w-[100vw] px-4 md:max-w-7xl mx-auto mb-6">
-        <Link href="/products" className="bg-gradient-to-r from-[#e4f1d3] via-[#d0ebaf] to-[#e4f1d3] w-full rounded-md py-6 px-4 flex flex-col items-center justify-center relative overflow-hidden shadow-sm block hover:opacity-95 transition-opacity">
-           <div className="flex items-center justify-center gap-6 md:gap-12 w-full">
+        <Link href="/products" className="bg-gradient-to-r from-[#e4f1d3] via-[#d0ebaf] to-[#e4f1d3] w-full rounded-md py-4 px-4 flex flex-col items-center justify-center relative overflow-hidden shadow-sm block hover:opacity-95 transition-opacity">
+           <div className="flex items-center justify-center gap-4 md:gap-8 w-full">
              {/* Decorative Pot Left */}
-             <div className="relative w-12 h-12 md:w-16 md:h-16 shrink-0 hidden sm:block">
+             <div className="relative w-10 h-10 md:w-12 md:h-12 shrink-0 hidden sm:block">
                <div className="absolute inset-0 bg-[#c35035] rounded-full flex items-center justify-center shadow-lg shadow-green-900/20">
                  <div className="w-2 h-2 bg-yellow-400 rounded-full" />
                  {/* Spiky halo */}
@@ -109,16 +109,16 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
 
              <div className="text-center">
                <h2 
-                 className="text-[#0d6e35] font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight"
+                 className="text-[#0d6e35] font-black text-3xl md:text-4xl lg:text-5xl uppercase tracking-tight"
                  style={{ 
                    WebkitTextStroke: '1px white',
                    textShadow: '2px 2px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff'
                  }}
                >
-                 SWAG <span className="text-2xl md:text-3xl inline-block -translate-y-2">से</span> SAVINGS
+                 SWAG <span className="text-xl md:text-2xl inline-block -translate-y-1">से</span> SAVINGS
                </h2>
-               <div className="flex items-center justify-center gap-2 text-[#4a3933] font-bold mt-1 text-sm md:text-lg tracking-wide">
-                 Epic Deals All Day
+               <div className="flex items-center justify-center gap-2 text-[#4a3933] font-bold mt-1 text-xs md:text-sm tracking-wide">
+                 Budget Handmade Gifts Under ₹500
                  <div className="bg-[#4a3933] text-white rounded-full p-0.5 shadow-sm">
                    <ChevronRight size={16} strokeWidth={3} />
                  </div>
@@ -126,7 +126,7 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
              </div>
 
              {/* Decorative Pot Right */}
-             <div className="relative w-12 h-12 md:w-16 md:h-16 shrink-0 hidden sm:block">
+             <div className="relative w-10 h-10 md:w-12 md:h-12 shrink-0 hidden sm:block">
                <div className="absolute inset-0 bg-[#c35035] rounded-full flex items-center justify-center shadow-lg shadow-green-900/20">
                  <div className="w-2 h-2 bg-yellow-400 rounded-full" />
                  {/* Spiky halo */}
@@ -150,9 +150,9 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
             const finalImage = productImg || deal.image;
             
             return (
-            <div key={deal.id} className="snap-start shrink-0 w-[220px] md:w-[260px] relative group px-2 py-2"> 
+            <div key={deal.id} className="snap-start shrink-0 w-[180px] md:w-[220px] relative group px-2 py-2"> 
               {/* Border Container */}
-              <Link href={deal.href} className="border-[4px] border-[#178524] rounded-xl flex flex-col h-[280px] md:h-[320px] relative shadow-sm block group-hover:shadow-md transition-shadow">
+              <Link href={deal.href} className="border-[4px] border-[#178524] rounded-xl flex flex-col h-[230px] md:h-[280px] relative shadow-sm block group-hover:shadow-md transition-shadow">
                 
                 {/* Image Section */}
                 <div className="relative flex-1 rounded-t-lg overflow-hidden">
@@ -168,15 +168,15 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
                   
                   {/* Text Overlay */}
                   <div className="absolute bottom-2 left-0 right-0 text-center px-2">
-                    <h3 className="text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow-md">{deal.discount}</h3>
-                    <p className="text-white/95 text-xs md:text-sm font-medium mt-0.5">{deal.category}</p>
+                    <h3 className="text-white font-extrabold text-base md:text-lg leading-tight drop-shadow-md">{deal.discount}</h3>
+                    <p className="text-white/95 text-[10px] md:text-xs font-medium mt-0.5">{deal.category}</p>
                   </div>
                 </div>
 
                 {/* Brands Section */}
-                <div className="h-[50px] bg-white rounded-b-lg flex items-center justify-center gap-3 px-2 relative shrink-0 border-t border-gray-100">
+                <div className="h-[40px] md:h-[50px] bg-white rounded-b-lg flex items-center justify-center gap-2 md:gap-3 px-2 relative shrink-0 border-t border-gray-100">
                   {deal.brands.map((brand, i) => (
-                    <span key={i} className="text-[#0d6e35] font-black text-[10px] md:text-[11px] tracking-wide uppercase">
+                    <span key={i} className="text-[#0d6e35] font-black text-[9px] md:text-[10px] tracking-wide uppercase">
                       {brand}
                     </span>
                   ))}

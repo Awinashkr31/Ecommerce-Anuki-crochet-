@@ -34,8 +34,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${category.name} - Anuki Crochet`,
-    description: category.description || `Browse our beautiful collection of handmade crochet ${category.name.toLowerCase()}.`,
+    title: `Buy ${category.name} Online in India | Handmade Crochet Gifts | Anuki Crochet`,
+    description: category.description 
+      ? `${category.description} Delivered safely across India.` 
+      : `Shop our beautiful collection of handmade crochet ${category.name.toLowerCase()} online in India. Perfect custom crochet gifts delivered across India.`,
+    alternates: {
+      canonical: `/categories/${category.slug}`
+    }
   };
 }
 

@@ -45,8 +45,8 @@ export function Footer() {
             <Link href="/" className="mb-6 inline-block">
               <Image src="/logo.png" alt="Anuki Logo" width={200} height={64} className="h-12 md:h-16 w-auto object-contain" />
             </Link>
-            <p className="text-neutral-600 leading-relaxed mb-8 max-w-sm">
-              Beautiful, bespoke handmade items carefully crafted to bring warmth, elegance, and joy to your everyday life.
+            <p className="text-neutral-600 leading-relaxed mb-8 max-w-md">
+              Anuki Crochet is a handmade crochet brand based in India, specializing in custom crochet gifts. We craft premium crochet flowers, unique crochet bouquets, cuddly amigurumi toys, and custom crochet hair accessories. Every product is 100% handmade and can be personalized for birthdays, anniversaries, and special gifting occasions. We deliver affordable, high-quality crochet gifts safely across India.
             </p>
             <div className="flex gap-4">
               {/* Instagram */}

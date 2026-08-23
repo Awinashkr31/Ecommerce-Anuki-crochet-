@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MobileLoginSheet } from "./MobileLoginSheet";
@@ -73,9 +74,11 @@ export function BottomNav() {
             className={`flex flex-col items-center justify-center w-16 h-full transition-colors ${pathname?.startsWith("/account") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             {profile?.avatarUrl ? (
-              <img 
+              <Image 
                 src={profile.avatarUrl} 
                 alt="Avatar" 
+                width={24}
+                height={24}
                 className={`w-6 h-6 rounded-full object-cover mb-1 border ${pathname?.startsWith("/account") ? "border-rose-600" : "border-neutral-200"}`} 
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';

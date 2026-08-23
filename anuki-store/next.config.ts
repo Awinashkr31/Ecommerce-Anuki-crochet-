@@ -31,7 +31,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'wzhxuzxfoayjzrhufyxw.supabase.co' },
       { protocol: 'https', hostname: 'placehold.co' },
-      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' }
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' }
     ],
   },
   async redirects() {

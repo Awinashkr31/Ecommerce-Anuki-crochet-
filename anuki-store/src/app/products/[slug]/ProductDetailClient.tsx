@@ -115,6 +115,14 @@ export default function ProductDetailClient({
           <ChevronRight size={14} />
           <Link href="/products" className="hover:text-rose-600 transition-colors">Shop</Link>
           <ChevronRight size={14} />
+          {product.category && (
+            <>
+              <Link href={`/products?category=${product.category.slug}`} className="hover:text-rose-600 transition-colors truncate max-w-[100px] sm:max-w-none">
+                {product.category.name}
+              </Link>
+              <ChevronRight size={14} />
+            </>
+          )}
           <span className="text-neutral-900 truncate">{product.name}</span>
         </nav>
       </div>
@@ -200,7 +208,7 @@ export default function ProductDetailClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-4">Why Choose Anuki Crochet?</h2>
-            <p className="text-neutral-500 max-w-2xl mx-auto">Every piece is carefully handcrafted with premium yarn, ensuring a lasting keepsake that brings joy for years to come.</p>
+            <p className="text-neutral-500 max-w-2xl mx-auto">Every piece is carefully handcrafted with premium yarn, ensuring a lasting <Link href="/products" className="text-rose-600 hover:underline">handmade crochet gift</Link> that brings joy for years to come.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100">
@@ -215,7 +223,7 @@ export default function ProductDetailClient({
                 <Heart size={24} />
               </div>
               <h3 className="text-lg font-bold text-neutral-900 mb-2">100% Handmade</h3>
-              <p className="text-sm text-neutral-600">Crafted with love by skilled artisans in India.</p>
+              <p className="text-sm text-neutral-600">Crafted with love by skilled artisans in India. Need something unique? Make a <Link href="/custom" className="text-rose-600 hover:underline">custom crochet order</Link>.</p>
             </div>
             <div className="flex flex-col items-center text-center p-6 bg-emerald-50/50 rounded-2xl border border-emerald-100">
               <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">

@@ -9,6 +9,7 @@ export async function GET() {
     { loc: '/contact', freq: 'monthly', prio: '0.8' },
     { loc: '/products', freq: 'daily', prio: '0.9' },
     { loc: '/categories', freq: 'weekly', prio: '0.8' },
+    { loc: '/custom', freq: 'monthly', prio: '0.7' },
     { loc: '/faq', freq: 'monthly', prio: '0.6' },
     { loc: '/policies/privacy', freq: 'yearly', prio: '0.5' },
     { loc: '/policies/terms', freq: 'yearly', prio: '0.5' },

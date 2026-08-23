@@ -31,6 +31,10 @@ const getProduct = cache(async (slug: string) => {
       category: true,
       variants: true,
       images: { orderBy: { order: 'asc' } },
+      reviews: { 
+        where: { approved: true },
+        include: { user: { select: { fullName: true } } }
+      },
     }
   });
 });
@@ -60,12 +64,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Product Not Found' };
   }
 
+  const title = product.seoTitle || `${product.name} - Buy Handmade Crochet Online`;
+  const description = product.seoDesc || (product.shortDesc || product.fullDesc || '').substring(0, 160);
+  const imageUrl = product.images?.length > 0 ? product.images[0].url : '/logo.png';
+  const productUrl = `https://anukicrochet.in/products/${product.slug}`;
+
   return {
-    title: `${product.name} - Anuki Crochet`,
-    description: (product.shortDesc || product.fullDesc || '').substring(0, 160),
+    title,
+    description,
     openGraph: {
-      images: ['/logo.png'],
+      title,
+      description,
+      images: [imageUrl],
+      url: productUrl,
+      type: 'website',
     },
+    twitter: {
+      card: 'summary_large_image',
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: productUrl
+    }
   };
 }
 
@@ -97,27 +117,78 @@ export default async function ProductDetailPage({ params }: Props) {
     );
   }
 
-  const structuredData = {
+  const structuredData: any = {
     "@context": "https://schema.org/",
     "@type": "Product",
     "name": product.name,
-    "image": product.images?.length > 0 ? product.images.map(img => img.url) : ["https://anukicrochet.in/logo.png"],
-    "description": product.shortDesc || product.fullDesc || '',
+    "image": product.images?.length > 0 ? product.images.map((img: any) => img.url) : ["https://anukicrochet.in/logo.png"],
+    "description": product.seoDesc || product.shortDesc || product.fullDesc || '',
     "sku": product.id,
     "brand": {
       "@type": "Brand",
       "name": "Anuki Crochet"
     },
     "offers": {
-      "@type": "AggregateOffer",
+      "@type": "Offer",
       "url": `https://anukicrochet.in/products/${product.slug}`,
       "priceCurrency": "INR",
-      "lowPrice": product.salePrice || product.basePrice,
-      "highPrice": product.basePrice,
-      "offerCount": product.variants?.length || 1,
-      "availability": product.stockStatus !== 'OUT_OF_STOCK' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+      "price": product.salePrice || product.basePrice,
+      "availability": product.stockStatus !== 'OUT_OF_STOCK' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition",
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "IN"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 3,
+            "maxValue": product.isMadeToOrder ? 14 : 5,
+            "unitCode": "d"
+          },
+          "transitTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 3,
+            "maxValue": 7,
+            "unitCode": "d"
+          }
+        }
+      },
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "IN",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+        "merchantReturnDays": 0
+      }
     }
   };
+
+  if (product.reviews && product.reviews.length > 0) {
+    const totalRating = product.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0);
+    const averageRating = (totalRating / product.reviews.length).toFixed(1);
+    
+    structuredData.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": averageRating,
+      "reviewCount": product.reviews.length
+    };
+    
+    structuredData.review = product.reviews.map((rev: any) => ({
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": rev.rating,
+        "bestRating": "5"
+      },
+      "author": {
+        "@type": "Person",
+        "name": rev.user?.fullName || "Verified Buyer"
+      }
+    }));
+  }
 
   return (
     <>

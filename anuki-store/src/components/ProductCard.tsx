@@ -1,11 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Star } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
-import React from "react";
+import { useCartStore } from "../store/cartStore";
+import React, { useState, useEffect } from "react";
 import useSWR from 'swr';
 import { apiGet } from '@/lib/api';
 
@@ -30,9 +31,36 @@ export interface Product {
 const ProductCardComponent = ({ product }: { product: Product }) => {
   const { profile } = useAuthStore();
   const isB2B = profile?.role === 'B2B_CUSTOMER';
+  const addItem = useCartStore((state) => state.addItem);
+  const setIsOpen = useCartStore((state) => state.setIsOpen);
 
   const primaryImage = product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600";
-  const secondaryImage = product.images?.[1]?.url || primaryImage; // Fallback to zoom on hover if no second image
+  
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!product.images || product.images.length <= 1) return;
+
+    // Add a random delay offset so cards don't all flip synchronously
+    const initialDelay = Math.random() * 3000;
+    let intervalId: NodeJS.Timeout;
+
+    const timeoutId = setTimeout(() => {
+      // First switch after initial delay
+      setCurrentImageIndex(prev => (prev + 1) % product.images.length);
+      
+      // Then cycle with a random interval between 4 to 8 seconds for this specific card
+      const randomInterval = 4000 + Math.random() * 4000;
+      intervalId = setInterval(() => {
+        setCurrentImageIndex(prev => (prev + 1) % product.images.length);
+      }, randomInterval);
+    }, 2000 + initialDelay);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [product.images]);
 
   let displayPrice = product.salePrice || product.basePrice;
   let originalPrice = product.salePrice ? product.basePrice : null;
@@ -61,6 +89,64 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
     ? (reviews.reduce((acc: number, curr: { rating: number; [key: string]: unknown }) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : 0;
 
+  const activeBadges = [];
+  if (product.bestseller) {
+    activeBadges.push(
+      <span key="bestseller" className="bg-orange-100 text-orange-600 text-[13px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+        Bestseller
+      </span>
+    );
+  }
+  if (product.isNew) {
+    activeBadges.push(
+      <span key="new" className="bg-orange-100 text-orange-600 text-[13px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+        New
+      </span>
+    );
+  }
+  if (product.isMadeToOrder) {
+    activeBadges.push(
+      <span key="handmade" className="bg-white/90 backdrop-blur text-neutral-800 text-[12px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+        Handmade
+      </span>
+    );
+  }
+  if (discount) {
+    activeBadges.push(
+      <span key="discount" className="bg-emerald-500 text-white text-[13px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+        -{discount}% Off
+      </span>
+    );
+  }
+  if (!inStock) {
+    activeBadges.push(
+      <span key="stock" className="bg-neutral-900 text-white text-[12px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+        Out of Stock
+      </span>
+    );
+  }
+
+  const [currentBadgeIndex, setCurrentBadgeIndex] = useState(0);
+
+  useEffect(() => {
+    if (activeBadges.length <= 1) return;
+    
+    let timeoutId: NodeJS.Timeout;
+    
+    const cycleBadge = () => {
+      setCurrentBadgeIndex(prev => (prev + 1) % activeBadges.length);
+      
+      // Randomize every single interval between 2.5 and 4.5 seconds
+      const nextDelay = 2500 + Math.random() * 2000;
+      timeoutId = setTimeout(cycleBadge, nextDelay);
+    };
+
+    // Randomize initial delay between 0.5 and 2.5 seconds
+    timeoutId = setTimeout(cycleBadge, 500 + Math.random() * 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [activeBadges.length]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -72,57 +158,72 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
       <div className="relative aspect-[4/5] bg-neutral-100 rounded-[20px] overflow-hidden block">
         
         {/* Badges */}
-        <div className="absolute top-0 left-0 z-20 flex flex-col items-start gap-1">
-          {product.bestseller && (
-            <span className="bg-orange-100 text-orange-600 text-[11px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
-              Bestseller
-            </span>
-          )}
-          {product.isNew && !product.bestseller && (
-            <span className="bg-orange-100 text-orange-600 text-[11px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
-              New
-            </span>
-          )}
-          {product.isMadeToOrder && (
-            <span className="bg-white/90 backdrop-blur text-neutral-800 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
-              Handmade
-            </span>
-          )}
-          {discount && !product.bestseller && (
-            <span className="bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
-              -{discount}%
-            </span>
-          )}
-          {!inStock && (
-            <span className="bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-br-[20px] shadow-sm">
-              Out of Stock
-            </span>
-          )}
+        <div className="absolute top-0 left-0 z-20">
+          <AnimatePresence mode="wait">
+            {activeBadges.length > 0 && (
+              <motion.div
+                key={currentBadgeIndex}
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+                className="flex"
+              >
+                {activeBadges[currentBadgeIndex]}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Images */}
         <Link href={`/products/${product.slug}`} prefetch={false} className="relative block w-full h-full">
+          {product.images && product.images.length > 0 ? (
+            product.images.slice(0, 4).map((img, idx) => (
+              <Image 
+                key={idx}
+                src={img.url} 
+                alt={img.altText || product.name} 
+                fill
+                className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
+                  idx === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              />
+            ))
+          ) : (
             <Image 
               src={primaryImage} 
               alt={product.name} 
               fill
-              className={`object-cover transition-transform duration-500 group-hover:scale-105 ${product.images?.length > 1 ? 'group-hover:opacity-0' : ''}`}
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             />
-            {product.images?.length > 1 && (
-              <Image 
-                src={secondaryImage} 
-                alt={`${product.name} alternate view`}
-                fill
-                className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              />
           )}
         </Link>
 
         {/* Quick Add Overlay */}
         <div className="absolute bottom-4 left-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 pointer-events-none lg:pointer-events-auto">
-          <button className="w-full bg-white/95 backdrop-blur-md text-neutral-900 font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-transform active:scale-[0.98]">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
+              const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
+              
+              addItem({
+                id: variant ? variant.id || product.id : product.id,
+                productId: product.id,
+                variantId: variant ? variant.id || product.id : product.id,
+                name: product.name,
+                price: price,
+                quantity: 1,
+                image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
+                variantText: variant ? (variant.color || variant.name) : undefined
+              });
+              setIsOpen(true);
+            }}
+            className="w-full bg-white/95 backdrop-blur-md text-neutral-900 font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-transform active:scale-[0.98]"
+          >
             <ShoppingBag size={16} />
             Quick Add
           </button>

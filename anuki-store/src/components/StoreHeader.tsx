@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Search, User, ShoppingCart, ArrowLeft, Truck, Sparkles, ShoppingBag, X } from "lucide-react";
@@ -106,7 +107,7 @@ export function StoreHeader() {
                   <div className="relative">
                     <div className="absolute inset-0 bg-rose-200 blur-md opacity-0 group-hover:opacity-50 transition-opacity rounded-full"></div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo2.webp" alt="Anuki Logo" className={`relative h-9 w-9 object-contain rounded-xl border-[1.5px] border-rose-100 shadow-sm p-0.5 bg-white transition-transform group-hover:scale-105 ${isMobileSearchExpanded ? '' : 'mr-2.5'}`} />
+                    <Image src="/logo2.webp" alt="Anuki Logo" width={36} height={36} priority className={`relative h-9 w-9 object-contain rounded-xl border-[1.5px] border-rose-100 shadow-sm p-0.5 bg-white transition-transform group-hover:scale-105 ${isMobileSearchExpanded ? '' : 'mr-2.5'}`} />
                   </div>
                   <div className={`flex flex-col -gap-1 transition-all duration-300 overflow-hidden ${isMobileSearchExpanded ? 'w-0 opacity-0' : 'opacity-100'}`}>
                     <span className="font-black text-[#781f33] tracking-tighter text-[17px] leading-none whitespace-nowrap">
@@ -176,7 +177,7 @@ export function StoreHeader() {
           <div className="flex items-center gap-3 relative z-10">
             <Link href="/" className="flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Anuki Logo" className="h-12 w-auto object-contain" />
+              <Image src="/logo.png" alt="Anuki Logo" width={150} height={48} priority className="h-12 w-auto object-contain" />
             </Link>
           </div>
 
@@ -228,9 +229,11 @@ export function StoreHeader() {
               >
                 {profile.avatarUrl ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
+                  <Image
                     src={profile.avatarUrl}
                     alt={profile.fullName}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover border-2 border-neutral-200"
                   />
                 ) : (

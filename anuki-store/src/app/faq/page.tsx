@@ -1,3 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Frequently Asked Questions | Anuki Crochet',
+  description: 'Have questions about our handmade crochet gifts, custom orders, or shipping across India? Read our FAQ for quick answers.',
+  alternates: {
+    canonical: '/faq'
+  }
+};
+
 export default function FAQPage() {
   return (
     <div className="bg-neutral-50 min-h-screen py-16">

@@ -9,9 +9,25 @@ export function expandProductsByColor(products: Product[]): Product[] {
     const uniqueColors = Array.from(new Set(colorVariants.map(v => v.color)));
     
     if (uniqueColors.length > 0) {
-      // Create a cloned product for each color
+      // First, add the main product images as a "default" card
+      // This represents the original/default color shown in product.images
+      const hasVariantWithDifferentImages = colorVariants.some(
+        v => v.imageUrls && v.imageUrls.length > 0
+      );
+      
+      if (hasVariantWithDifferentImages && product.images && product.images.length > 0) {
+        // The main product images are a different color than the variants
+        expanded.push({
+          ...product,
+          id: `${product.id}-default`,
+          originalId: product.id,
+          images: product.images,
+          variants: [] // No specific variant for the default
+        });
+      }
+
+      // Then create a card for each color variant that has its own images
       uniqueColors.forEach(color => {
-        // Find the variant corresponding to this color to use its image if possible
         const variant = colorVariants.find(v => v.color === color);
         
         let images = product.images;
@@ -21,11 +37,10 @@ export function expandProductsByColor(products: Product[]): Product[] {
 
         expanded.push({
           ...product,
-          id: `${product.id}-${color}`, // Unique ID for React key
+          id: `${product.id}-${color}`,
           originalId: product.id,
+          name: `${product.name} - ${color}`,
           images,
-          // We override the variants array to include all variants of this specific color.
-          // This ensures ProductCard correctly calculates stock and shows this single color dot.
           variants: colorVariants.filter(v => v.color === color)
         });
       });

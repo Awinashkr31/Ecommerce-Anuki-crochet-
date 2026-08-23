@@ -23,12 +23,12 @@ const portfolioImages = [
 const testimonials = [
   {
     rating: 5,
-    text: "I requested a custom embroidered denim jacket for my sister's wedding. Sana's team took my rough sketch and turned it into an absolute masterpiece!",
+    text: "I requested a custom crochet flower bouquet for my sister's wedding. Sana's team took my color scheme and turned it into an absolute masterpiece!",
     name: "Sneha P."
   },
   {
     rating: 5,
-    text: "Unbelievable attention to detail. The custom hoop art with my parents' portrait was the perfect anniversary gift. They were in tears.",
+    text: "The attention to detail is unbelievable. The personalized crochet plushie set was the perfect anniversary gift. My parents were in tears.",
     name: "Rahul M."
   },
   {
@@ -70,11 +70,11 @@ export default function CustomClient() {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-serif text-white font-medium mb-4">
-            Custom Design Request
+            Custom & Personalized Crochet Gifts
           </h1>
           
           <p className="text-white/90 text-lg md:text-xl max-w-xl mx-auto mb-10">
-            Let's bring your unique vision to life.
+            Let's bring your unique vision to life. Whether you want a custom crochet bouquet for a birthday, a personalized crochet plush gift, or aesthetic handmade custom gifts, we craft it for you.
           </p>
 
           <a href="#form-section" className="bg-white text-neutral-900 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-100 transition-colors shadow-lg flex items-center gap-2">
@@ -104,9 +104,9 @@ export default function CustomClient() {
       {/* Portfolio Section */}
       <section className="max-w-4xl mx-auto px-4 pb-12 pt-4 md:py-12 text-center">
         <h4 className="text-xs font-bold text-[#991b1b] uppercase tracking-widest mb-3">Our Portfolio</h4>
-        <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900 mb-4">Custom Masterpieces</h2>
+        <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900 mb-4">Custom Crochet Masterpieces</h2>
         <p className="text-neutral-500 max-w-lg mx-auto mb-10 text-sm md:text-base">
-          A glimpse into unique items we've hand-crafted for clients.
+          A glimpse into personalized crochet gifts and custom orders we've hand-crafted for clients.
         </p>
 
         <div className="grid grid-cols-2 gap-4 md:gap-6">
@@ -124,9 +124,9 @@ export default function CustomClient() {
           <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <MessageCircle size={32} />
           </div>
-          <h2 className="text-3xl font-serif font-medium text-neutral-900 mb-4">Tell Us Your Idea</h2>
+          <h2 className="text-3xl font-serif font-medium text-neutral-900 mb-4">Request Your Custom Crochet Gift</h2>
           <p className="text-neutral-500 text-sm md:text-base mb-8 max-w-md mx-auto">
-            Skip the forms! Simply message us on WhatsApp with your design idea, colors, or reference images, and we'll craft it for you.
+            Simply message us on WhatsApp with your personalized gift idea, color preferences, or reference images for your custom crochet flowers or plushie, and we'll handcraft it for you in India.
           </p>
           
           <button 
@@ -146,7 +146,7 @@ export default function CustomClient() {
       {/* Client Stories Section */}
       <section className="bg-neutral-50 py-12 mt-4">
         <div className="max-w-4xl mx-auto px-4 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900">Client Stories</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900">Happy Customer Stories</h2>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row gap-6">
