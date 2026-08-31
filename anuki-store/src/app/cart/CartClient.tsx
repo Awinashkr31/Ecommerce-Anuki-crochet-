@@ -202,7 +202,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                           {/* Quantity Selector */}
                           <div className="flex items-center gap-2 bg-neutral-100/80 rounded-full px-1.5 py-0.5 border border-neutral-200/50">
                             <button 
-                              onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                              onClick={() => item.quantity > 1 ? updateQuantity(item.id, item.quantity - 1) : removeItem(item.id)}
                               className="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
                             >
                               <Minus size={12} strokeWidth={2.5} />

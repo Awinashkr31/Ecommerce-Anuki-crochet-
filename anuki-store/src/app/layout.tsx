@@ -139,11 +139,17 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Organization",
+              "@type": ["Organization", "Store"],
               "name": "Anuki Crochet",
               "url": "https://anukicrochet.in",
               "logo": "https://anukicrochet.in/logo.png",
-              "description": "Shop the best handmade crochet gifts in India. Unique handcrafted items, custom flower bouquets, and plushies online."
+              "description": "Shop the best handmade crochet gifts in India. Buy premium custom flower bouquets, amigurumi plushies, and handmade gifts locally from Bihar.",
+              "address": {
+                "@type": "PostalAddress",
+                "addressRegion": "Bihar",
+                "addressCountry": "IN"
+              },
+              "areaServed": "IN"
             })
           }}
         />

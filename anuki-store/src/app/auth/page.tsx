@@ -27,7 +27,22 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const { setAuth, profile, isLoading } = useAuthStore();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isLoading && profile) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectUrl = searchParams.get('redirect');
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else if (ADMIN_ROLES.includes(profile.role)) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [profile, isLoading, router]);
 
   // Prefetch routes to make login navigation feel instant
   useEffect(() => {

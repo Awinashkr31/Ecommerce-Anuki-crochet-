@@ -128,7 +128,7 @@ export default async function Page() {
         "@id": "https://anukicrochet.in/#website",
         "url": "https://anukicrochet.in/",
         "name": "Anuki Crochet",
-        "description": "Shop unique handmade crochet gifts online in India. Custom bouquets, cute plushies, and handcrafted gifts.",
+        "description": "Shop unique handmade crochet gifts online in India. Custom bouquets, cute plushies, and handcrafted gifts delivered from Bihar.",
         "potentialAction": {
           "@type": "SearchAction",
           "target": "https://anukicrochet.in/search?query={search_term_string}",
@@ -136,16 +136,18 @@ export default async function Page() {
         }
       },
       {
-        "@type": "Organization",
+        "@type": ["Organization", "Store"],
         "@id": "https://anukicrochet.in/#organization",
         "name": "Anuki Crochet",
         "url": "https://anukicrochet.in/",
         "logo": "https://anukicrochet.in/logo.png",
-        "description": "Anuki Crochet is a handmade crochet brand in India specializing in custom crochet gifts, including crochet flowers, crochet bouquets, crochet keychains, amigurumi toys, and crochet hair accessories.",
-        "areaServed": {
-          "@type": "Country",
-          "name": "India"
+        "description": "Anuki Crochet is a top-rated handmade crochet brand in Bihar, India specializing in custom crochet gifts, including crochet flowers, crochet bouquets, amigurumi toys, and keychains.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "Bihar",
+          "addressCountry": "IN"
         },
+        "areaServed": "IN",
         "knowsAbout": [
           "Handmade Crochet",
           "Crochet Gifts",
