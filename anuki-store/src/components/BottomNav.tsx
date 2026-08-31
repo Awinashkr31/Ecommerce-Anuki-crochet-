@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MobileLoginSheet } from "./MobileLoginSheet";
-import { Home, Search, LayoutGrid, User, Shield, Wand2 } from "lucide-react";
+import { Home, Search, LayoutGrid, User, Shield, Wand2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -41,7 +41,7 @@ export function BottomNav() {
           href="/products" 
           className={`flex flex-col items-center justify-center w-16 h-full transition-colors ${pathname?.startsWith("/products") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
         >
-          <Search size={24} className="mb-1" />
+          <ShoppingBag size={24} className="mb-1" />
           <span className="text-[10px] font-bold">Shop</span>
         </Link>
         <Link 

@@ -109,7 +109,7 @@ export default function ProductDetailClient({
       
       
       {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-2 md:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-2 md:py-4">
         <nav className="text-sm font-medium text-neutral-500 flex items-center gap-2">
           <Link href="/" className="hover:text-rose-600 transition-colors">Home</Link>
           <ChevronRight size={14} />
@@ -139,20 +139,20 @@ export default function ProductDetailClient({
 
           {/* Right Column: Product Information */}
           <div className="lg:col-span-7 relative">
-            <ProductInfo 
-              product={product} 
-              displayPrice={displayPrice}
-              originalPrice={originalPrice}
-              discount={discount}
-              inStock={inStock}
-            />
-
             <VariantSelector 
               variants={product.variants || []}
               selectedVariantId={selectedVariantId}
               setSelectedVariantId={setSelectedVariantId}
               baseColor={product.color}
               baseProduct={product}
+            />
+
+            <ProductInfo 
+              product={product} 
+              displayPrice={displayPrice}
+              originalPrice={originalPrice}
+              discount={discount}
+              inStock={inStock}
             />
 
             <ProductAccordions product={product} />
@@ -177,9 +177,9 @@ export default function ProductDetailClient({
 
       {/* Complete the Gift Section */}
       {completeTheGift.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
+        <section className="bg-white border-t border-neutral-100 py-4 md:py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">Complete the Gift</h2>
+            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-4">Complete the Gift</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
               {completeTheGift.map((p) => (
                 <ProductCard key={p.id} product={p} />
@@ -191,9 +191,9 @@ export default function ProductDetailClient({
 
       {/* You May Also Like Section */}
       {youMayAlsoLike.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
+        <section className="bg-white border-t border-neutral-100 py-4 md:py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-8">You May Also Like</h2>
+            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-4">You May Also Like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
               {youMayAlsoLike.map((p) => (
                 <ProductCard key={p.id} product={p} />
@@ -204,11 +204,11 @@ export default function ProductDetailClient({
       )}
 
       {/* EEAT & Trust Signals Section */}
-      <section className="bg-white border-y border-neutral-100 py-2 md:py-16">
+      <section className="bg-white border-y border-neutral-100 py-4 md:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-serif text-neutral-900 mb-4">Why Choose Anuki Crochet?</h2>
-            <p className="text-neutral-500 max-w-2xl mx-auto">Every piece is carefully handcrafted with premium yarn, ensuring a lasting <Link href="/products" className="text-rose-600 hover:underline">handmade crochet gift</Link> that brings joy for years to come.</p>
+          <div className="text-center mb-6">
+            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-3">Why Choose Anuki Crochet?</h2>
+            <p className="text-neutral-500 max-w-2xl mx-auto text-sm">Every piece is carefully handcrafted with premium yarn, ensuring a lasting <Link href="/products" className="text-rose-600 hover:underline">handmade crochet gift</Link> that brings joy for years to come.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100">

@@ -80,16 +80,16 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
   return (
     <div className="min-h-screen bg-white">
       {/* Header Banner */}
-      <div className="hidden md:block bg-neutral-50 border-b border-neutral-100 py-12 px-4">
+      <div className="hidden md:block bg-neutral-50 border-b border-neutral-100 py-6 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-black text-neutral-900 mb-4 tracking-tight">Shop Collection</h1>
-          <p className="text-neutral-500 text-lg max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-black text-neutral-900 mb-2 tracking-tight">Shop Collection</h1>
+          <p className="text-neutral-500 text-sm max-w-2xl mx-auto">
             Discover beautifully handcrafted crochet creations made with love, perfect for gifting or bringing warmth to your home.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-4 md:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-4 md:py-4">
         
         {/* Utility Bar - always visible */}
         <div className="sticky top-0 z-[35] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-neutral-100">
@@ -109,7 +109,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           
           {/* Left Sidebar (Desktop) */}
           <div className="hidden lg:block lg:col-span-3">
@@ -129,16 +129,16 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
           <div className="lg:col-span-9">
             {filteredProducts.length > 0 ? (
               <div className="w-full">
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 mt-2">
                   {filteredProducts.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
                 
                 {filteredProducts.length < 8 && (
-                  <div className="mt-8 pt-6 md:mt-16 md:pt-10 border-t border-neutral-100">
-                    <h3 className="text-xl font-serif font-medium text-neutral-900 mb-6">More to Love</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                  <div className="mt-6 pt-4 md:mt-8 md:pt-6 border-t border-neutral-100">
+                    <h3 className="text-lg font-serif font-medium text-neutral-900 mb-4">More to Love</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8">
                       {initialProducts
                         .filter(p => !filteredProducts.some(fp => fp.id === p.id))
                         .slice(0, 12 - filteredProducts.length)
@@ -164,8 +164,8 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                   </button>
                 </div>
                 
-                <h3 className="text-xl font-serif font-medium text-neutral-900 mb-6">Recommended For You</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 sm:gap-y-12">
+                <h3 className="text-lg font-serif font-medium text-neutral-900 mb-4">Recommended For You</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8">
                   {initialProducts.slice(0, 12).map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}

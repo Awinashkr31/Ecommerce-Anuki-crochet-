@@ -72,8 +72,8 @@ export default function CartRecommendations({ products = [] }: { products: any[]
             const discountPercent = hasDiscount ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
             
             return (
-              <div key={product.id} className="bg-white border border-[#eaeaec] shrink-0 w-[200px] flex flex-col transition-shadow hover:shadow-lg">
-                <Link href={`/products/${product.slug}`} className="block relative w-full h-[240px] bg-neutral-100">
+              <div key={product.id} className="bg-white border border-[#eaeaec] shrink-0 w-[140px] sm:w-[160px] md:w-[170px] flex flex-col transition-shadow hover:shadow-lg">
+                <Link href={`/products/${product.slug}`} className="block relative w-full h-[170px] sm:h-[190px] md:h-[210px] bg-neutral-100">
                   {product.images && product.images[0] ? (
                     <Image 
                       src={product.images[0].url} 
@@ -87,7 +87,7 @@ export default function CartRecommendations({ products = [] }: { products: any[]
                   )}
                 </Link>
                 
-                <div className="p-3 flex-1 flex flex-col">
+                <div className="p-2 sm:p-3 flex-1 flex flex-col">
                   <div className="flex-1">
                     <h3 className="font-bold text-[#282c3f] text-[13px] line-clamp-1 mb-0.5">
                       {product.category?.name?.toUpperCase() || 'ANUKI'}
@@ -96,12 +96,12 @@ export default function CartRecommendations({ products = [] }: { products: any[]
                       {product.name}
                     </p>
                     
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className="font-bold text-sm text-[#282c3f]">₹{price}</span>
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <span className="font-bold text-[13px] sm:text-sm text-[#282c3f]">₹{price}</span>
                       {hasDiscount && (
                         <>
-                          <span className="text-xs text-[#7e818c] line-through">₹{originalPrice}</span>
-                          <span className="text-xs text-[#ff905a] font-medium">({discountPercent}% OFF)</span>
+                          <span className="text-[10px] sm:text-xs text-[#7e818c] line-through">₹{originalPrice}</span>
+                          <span className="text-[10px] sm:text-xs text-[#ff905a] font-medium">({discountPercent}% OFF)</span>
                         </>
                       )}
                     </div>

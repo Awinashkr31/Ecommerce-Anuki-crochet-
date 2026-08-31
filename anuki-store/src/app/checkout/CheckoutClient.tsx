@@ -302,10 +302,10 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
       {/* Main Content */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           
           {/* Left Column */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="lg:col-span-8 flex flex-col gap-3">
             
             {subtotal < minOrderValue && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl font-medium text-sm flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
             )}
             
             {/* Delivery Address */}
-            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 relative overflow-hidden flex items-start justify-between gap-4">
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 relative overflow-hidden flex items-start justify-between gap-3">
               {selectedAddress ? (
                 <>
                   <div>
@@ -328,7 +328,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
                     <p className="text-sm text-neutral-500 mt-0.5 ml-8">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}</p>
                     <p className="text-xs text-neutral-400 mt-0.5 ml-8">Phone: {selectedAddress.phone}</p>
                   </div>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-1.5 border border-indigo-200 text-indigo-600 font-medium text-sm rounded-lg hover:bg-indigo-50 transition-colors bg-white shrink-0 mt-1">
+                  <button onClick={() => setIsAddressModalOpen(true)} className="px-3 py-1 border border-indigo-200 text-indigo-600 font-medium text-xs rounded-lg hover:bg-indigo-50 transition-colors bg-white shrink-0 mt-1">
                     Change
                   </button>
                 </>
@@ -338,7 +338,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
                     <MapPin size={20} />
                   </div>
                   <p className="text-sm text-neutral-500">No delivery address selected</p>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-5 py-2.5 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
                     Add New Address
                   </button>
                 </div>
@@ -347,13 +347,13 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
 
             {/* Payment Method */}
-            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5">
-              <h3 className="font-serif text-lg text-neutral-900 mb-4">Payment Method</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3">
+              <h3 className="font-serif text-base text-neutral-900 mb-3">Payment Method</h3>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {/* UPI / Cards */}
-                <label className={`block p-4 rounded-xl border-2 transition-all cursor-pointer ${paymentMethod === 'upi' ? 'border-[#FFC107] bg-[#FFFBF0]' : 'border-neutral-100 hover:border-neutral-200'}`}>
-                  <div className="flex items-start gap-4">
+                <label className={`block p-3 rounded-xl border-2 transition-all cursor-pointer ${paymentMethod === 'upi' ? 'border-[#FFC107] bg-[#FFFBF0]' : 'border-neutral-100 hover:border-neutral-200'}`}>
+                  <div className="flex items-start gap-3">
                     <div className="mt-0.5">
                       {paymentMethod === 'upi' ? (
                         <CheckCircle2 className="text-[#FFC107]" size={20} fill="currentColor" stroke="white" />
@@ -390,8 +390,8 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
                 {/* COD Option */}
                 {codPaymentStatus !== 'hide' && (
-                  <label className={`block p-4 rounded-xl border-2 transition-all ${codPaymentStatus === 'coming_soon' ? 'opacity-50 cursor-not-allowed border-neutral-100 bg-neutral-50' : (paymentMethod === 'cod' ? 'border-[#FFC107] bg-[#FFFBF0] cursor-pointer' : 'border-neutral-100 hover:border-neutral-200 cursor-pointer')}`}>
-                    <div className="flex items-start gap-4">
+                  <label className={`block p-3 rounded-xl border-2 transition-all ${codPaymentStatus === 'coming_soon' ? 'opacity-50 cursor-not-allowed border-neutral-100 bg-neutral-50' : (paymentMethod === 'cod' ? 'border-[#FFC107] bg-[#FFFBF0] cursor-pointer' : 'border-neutral-100 hover:border-neutral-200 cursor-pointer')}`}>
+                    <div className="flex items-start gap-3">
                       <div className="mt-0.5">
                         {paymentMethod === 'cod' ? (
                           <CheckCircle2 className="text-[#FFC107]" size={20} fill="currentColor" stroke="white" />
@@ -435,25 +435,25 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
           {/* Right Column */}
           <div className="lg:col-span-4 sticky top-24">
-            <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-6">
-              <h3 className="font-serif text-lg text-neutral-900 mb-6">Order Summary</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4">
+              <h3 className="font-serif text-base text-neutral-900 mb-4">Order Summary</h3>
               
-              <div className="space-y-4 mb-6 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+              <div className="space-y-3 mb-4 max-h-60 overflow-y-auto custom-scrollbar pr-1">
                 {items.map(item => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="w-16 h-16 bg-neutral-100 rounded-xl overflow-hidden shrink-0 relative">
+                  <div key={item.id} className="flex gap-3">
+                    <div className="w-12 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0 relative">
                       {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />}
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-serif text-neutral-800 leading-tight">{item.name}</h4>
-                      <p className="text-xs text-neutral-500 mt-1">Qty: {item.quantity}</p>
+                      <h4 className="text-xs font-serif text-neutral-800 leading-tight line-clamp-1">{item.name}</h4>
+                      <p className="text-[10px] text-neutral-500 mt-0.5">Qty: {item.quantity}</p>
                     </div>
-                    <div className="text-sm font-bold text-neutral-900">₹{item.price}</div>
+                    <div className="text-xs font-bold text-neutral-900">₹{item.price}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-3 text-sm text-neutral-600 border-t border-neutral-100 pt-6">
+              <div className="space-y-2 text-xs text-neutral-600 border-t border-neutral-100 pt-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-medium text-neutral-900">₹{subtotal}</span>
@@ -464,25 +464,25 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
                     <span className="font-medium text-neutral-900">₹29</span>
                   </div>
                 )}
-                <div className="flex justify-between border-b border-neutral-100 pb-4">
+                <div className="flex justify-between border-b border-neutral-100 pb-3">
                   <span>Shipping</span>
                   <span className={`font-medium ${shippingCost === 0 ? 'text-[#059669]' : 'text-neutral-900'}`}>
                     {shippingCost === 0 ? 'Free' : `₹${shippingCost}`}
                   </span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between border-b border-neutral-100 pb-4 text-[#059669]">
+                  <div className="flex justify-between border-b border-neutral-100 pb-3 text-[#059669]">
                     <span>Discount applied</span>
                     <span className="font-medium">-₹{discount}</span>
                   </div>
                 )}
                 {paymentMethod === 'cod' && codExtraChargeConfig > 0 && (
-                  <div className="flex justify-between border-b border-neutral-100 pb-4 text-[#E11D48]">
+                  <div className="flex justify-between border-b border-neutral-100 pb-3 text-[#E11D48]">
                     <span>COD Charge</span>
                     <span className="font-medium">₹{codExtraChargeConfig}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 text-lg font-bold text-neutral-900">
+                <div className="flex justify-between pt-1 text-sm font-bold text-neutral-900">
                   <span>Total Pay</span>
                   <span>₹{totalAmount}</span>
                 </div>

@@ -25,7 +25,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
       {/* Main Image */}
       <div 
         ref={imageRef}
-        className="relative aspect-square w-full bg-neutral-100 rounded-[24px] overflow-hidden group"
+        className="relative aspect-[4/5] sm:aspect-[4/5] lg:aspect-[4/5] w-full bg-neutral-100 rounded-[24px] overflow-hidden group"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -53,6 +53,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 priority
+                unoptimized
               />
           </motion.div>
         </AnimatePresence>
@@ -101,7 +102,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 activeIndex === idx ? 'ring-2 ring-rose-500 ring-offset-2' : 'opacity-60 hover:opacity-100'
               }`}
             >
-              <Image src={img.url} alt={img.altText || altText} fill sizes="(max-width: 768px) 80px, 96px" className="object-cover" />
+              <Image src={img.url} alt={img.altText || altText} fill sizes="(max-width: 768px) 80px, 96px" className="object-cover" unoptimized />
             </button>
           ))}
         </div>

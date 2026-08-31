@@ -54,12 +54,12 @@ export default function VariantSelector({
   };
 
   return (
-    <div className="space-y-6 mt-6">
+    <div className="space-y-6 mb-6">
       {colors.length > 0 && (
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-neutral-900">Color</span>
-            <span className="text-sm font-medium text-neutral-500">{colors.length > 0 ? currentVariant?.color : baseColor}</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm font-bold text-neutral-900">Color:</span>
+            <span className="text-sm font-medium text-neutral-600">{colors.length > 0 ? currentVariant?.color : baseColor}</span>
           </div>
           <div className="flex flex-wrap gap-3">
             {colors.map((c: any) => {
@@ -70,15 +70,16 @@ export default function VariantSelector({
                 <button
                   key={c}
                   onClick={() => handleSelect('color', c)}
-                  className={`relative w-12 h-14 rounded-lg flex items-center justify-center transition-all ${isSelected ? 'ring-2 ring-rose-500 ring-offset-2' : 'ring-1 ring-neutral-200 hover:ring-neutral-400'}`}
+                  className={`relative p-1 pb-1.5 rounded-lg flex flex-col items-center gap-1 transition-all w-[60px] ${isSelected ? 'ring-2 ring-rose-500 ring-offset-2 bg-rose-50' : 'ring-1 ring-neutral-200 hover:ring-neutral-400 bg-white'}`}
                   title={c}
                 >
                   <span 
-                    className="w-10 h-12 rounded-md border border-black/10 overflow-hidden block" 
+                    className="w-[50px] h-[56px] rounded-md border border-black/10 overflow-hidden block shrink-0" 
                     style={{ backgroundColor: colorMap[c] || c }}
                   >
                     {imgUrl && <img src={imgUrl} alt={c} className="w-full h-full object-cover" />}
                   </span>
+                  <span className={`text-[10px] font-bold w-full text-center truncate px-0.5 leading-none ${isSelected ? 'text-rose-600' : 'text-neutral-700'}`}>{c}</span>
                 </button>
               );
             })}

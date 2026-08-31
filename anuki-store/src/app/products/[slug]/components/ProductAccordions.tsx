@@ -7,11 +7,11 @@ const AccordionItem = ({ title, children, isOpen, onClick }: { title: string, ch
   <div className="border-b border-neutral-200">
     <button 
       onClick={onClick}
-      className="w-full flex items-center justify-between py-6 text-left outline-none group"
+      className="w-full flex items-center justify-between py-3 text-left outline-none group"
     >
-      <span className="text-lg font-bold text-neutral-900 group-hover:text-rose-600 transition-colors">{title}</span>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-rose-50 text-rose-500' : 'bg-neutral-50 text-neutral-400 group-hover:bg-neutral-100'}`}>
-        {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+      <span className="text-base font-bold text-neutral-900 group-hover:text-rose-600 transition-colors">{title}</span>
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-rose-50 text-rose-500' : 'bg-neutral-50 text-neutral-400 group-hover:bg-neutral-100'}`}>
+        {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </div>
     </button>
     <AnimatePresence>
@@ -23,7 +23,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }: { title: string, ch
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="overflow-hidden"
         >
-          <div className="pb-6 text-neutral-600 leading-relaxed text-base">
+          <div className="pb-3 text-neutral-600 leading-relaxed text-sm">
             {children}
           </div>
         </motion.div>
@@ -40,13 +40,13 @@ export default function ProductAccordions({ product }: { product: any }) {
   };
 
   return (
-    <div className="mt-8 border-t border-neutral-200">
+    <div className="mt-4 border-t border-neutral-200">
       <AccordionItem 
         title="Specifications" 
         isOpen={openSection === "specs"} 
         onClick={() => toggle("specs")}
       >
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {product.material && <li><strong>Material:</strong> {product.material}</li>}
           {product.countryOfOrigin && <li><strong>Origin:</strong> {product.countryOfOrigin}</li>}
           {product.weight && <li><strong>Weight:</strong> {product.weight}g</li>}

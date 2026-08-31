@@ -59,36 +59,36 @@ export default function CartOffers({ subtotal }: { subtotal: number }) {
 
   return (
     <>
-      <div className="bg-white mb-2 pb-2 rounded-[20px] overflow-hidden shadow-sm border border-neutral-100">
-        <div className="bg-[#f5f5f6] px-5 py-3 text-xs font-bold text-[#696e79] tracking-wider mb-2 uppercase">
+      <div className="bg-white mb-2 pb-1 rounded-xl overflow-hidden shadow-sm border border-neutral-100">
+        <div className="bg-[#f5f5f6] px-3 py-2 text-[11px] font-bold text-[#696e79] tracking-wider mb-1 uppercase">
           OFFERS
         </div>
         
-        <div className="px-5 py-2">
+        <div className="px-3 py-1">
           {!appliedCoupon ? (
             <div 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-between p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors"
+              className="flex items-center justify-between p-2.5 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <Tag size={18} className="text-[#282c3f]" />
-                <span className="text-sm font-bold text-[#282c3f]">Apply Coupon</span>
+              <div className="flex items-center gap-2">
+                <Tag size={16} className="text-[#282c3f]" />
+                <span className="text-xs font-bold text-[#282c3f]">Apply Coupon</span>
               </div>
-              <ChevronRight size={18} className="text-neutral-400" />
+              <ChevronRight size={16} className="text-neutral-400" />
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-bold text-[#282c3f]">Coupon & Bank Offers</h3>
+            <div className="flex flex-col gap-2.5 pb-2">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-bold text-[#282c3f]">Coupon & Bank Offers</h3>
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  className="text-[#ff3f6c] text-[13px] font-bold hover:underline"
+                  className="text-[#ff3f6c] text-[11px] font-bold hover:underline"
                 >
                   All Offers &gt;
                 </button>
               </div>
 
-              <div className="border border-[#03a685] bg-white rounded-lg p-4">
+              <div className="border border-[#03a685] bg-white rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="relative border border-dashed border-[#03a685] bg-[#e6f6f3] text-[#282c3f] font-bold text-xs px-3 py-1.5 inline-flex items-center uppercase">

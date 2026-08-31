@@ -92,35 +92,35 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
   const activeBadges = [];
   if (product.bestseller) {
     activeBadges.push(
-      <span key="bestseller" className="bg-orange-100 text-orange-600 text-[13px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+      <span key="bestseller" className="bg-orange-100 text-orange-600 text-[10px] font-bold capitalize tracking-wide px-2 py-1 rounded-br-[16px]">
         Bestseller
       </span>
     );
   }
   if (product.isNew) {
     activeBadges.push(
-      <span key="new" className="bg-orange-100 text-orange-600 text-[13px] font-bold capitalize tracking-wide px-4 py-1.5 rounded-br-[20px]">
+      <span key="new" className="bg-orange-100 text-orange-600 text-[10px] font-bold capitalize tracking-wide px-2 py-1 rounded-br-[16px]">
         New
       </span>
     );
   }
   if (product.isMadeToOrder) {
     activeBadges.push(
-      <span key="handmade" className="bg-white/90 backdrop-blur text-neutral-800 text-[12px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+      <span key="handmade" className="bg-white/90 backdrop-blur text-neutral-800 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
         Handmade
       </span>
     );
   }
   if (discount) {
     activeBadges.push(
-      <span key="discount" className="bg-emerald-500 text-white text-[13px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+      <span key="discount" className="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
         -{discount}% Off
       </span>
     );
   }
   if (!inStock) {
     activeBadges.push(
-      <span key="stock" className="bg-neutral-900 text-white text-[12px] font-black uppercase tracking-wider px-3 py-1.5 rounded-br-[20px] shadow-sm">
+      <span key="stock" className="bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
         Out of Stock
       </span>
     );
@@ -188,6 +188,7 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
                   idx === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                 }`}
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                unoptimized
               />
             ))
           ) : (
@@ -197,6 +198,7 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              unoptimized
             />
           )}
         </Link>

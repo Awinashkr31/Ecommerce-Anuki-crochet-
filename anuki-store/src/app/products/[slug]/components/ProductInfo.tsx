@@ -25,28 +25,11 @@ export default function ProductInfo({
     : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Badges & Breadcrumb (Mobile only, hidden on desktop if moved to top) */}
-      <div className="flex flex-wrap gap-2">
-        {product.isHandmade && (
-          <span className="px-3 py-1 bg-rose-50 text-rose-600 text-xs font-bold rounded-full border border-rose-100">
-            Handmade
-          </span>
-        )}
-        {product.bestseller && (
-          <span className="px-3 py-1 bg-amber-50 text-amber-600 text-xs font-bold rounded-full border border-amber-100">
-            Best Seller
-          </span>
-        )}
-        {product.limitedEdition && (
-          <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full border border-indigo-100">
-            Limited Edition
-          </span>
-        )}
-      </div>
+    <div className="space-y-4">
+      {/* Badges removed to keep layout clean */}
 
       <div>
-        <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-tight">
+        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-tight">
           {product.name}
         </h1>
         <div className="flex items-center gap-4 mt-3">
@@ -71,7 +54,7 @@ export default function ProductInfo({
           key={displayPrice}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-black text-rose-600"
+          className="text-3xl font-black text-rose-600"
         >
           ₹{displayPrice}
         </motion.span>
@@ -87,11 +70,11 @@ export default function ProductInfo({
         )}
       </div>
 
-      <p className="text-base text-neutral-600 leading-relaxed max-w-xl">
+      <p className="text-sm text-neutral-600 leading-relaxed max-w-xl">
         {product.shortDesc}
       </p>
 
-      <Link href="/custom" title="Request custom and personalized crochet gifts" className="block w-full max-w-xl bg-rose-50 border border-rose-100 rounded-xl p-4 mt-6 text-rose-700 font-bold text-center hover:bg-rose-100 transition-colors">
+      <Link href="/custom" title="Request custom and personalized crochet gifts" className="block w-full max-w-xl bg-rose-50 border border-rose-100 rounded-xl p-3 mt-4 text-rose-700 font-bold text-center hover:bg-rose-100 transition-colors text-sm">
         Request custom crochet gifts
       </Link>
 
@@ -104,7 +87,7 @@ export default function ProductInfo({
       </div>
 
       {/* Benefits */}
-      <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100 mt-6 pb-24 lg:pb-4">
+      <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100 mt-4">
         <div className="flex items-center gap-3">
           <ShieldCheck className="text-emerald-500" size={24} />
           <div className="text-sm">

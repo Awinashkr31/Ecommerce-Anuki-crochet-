@@ -91,7 +91,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   const totalAmount = Math.max(0, subtotal + giftCharge + deliveryCharge - appliedDiscount);
 
   return (
-    <div className="min-h-screen bg-[#F2EBE5] lg:bg-[#FDFDFD] pb-32 lg:pb-10 pt-0 lg:pt-10 px-0 lg:px-8">
+    <div className="min-h-screen bg-[#F2EBE5] lg:bg-[#FDFDFD] pb-24 lg:pb-6 pt-0 lg:pt-6 px-0 lg:px-4">
       
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center gap-4 bg-white p-4 sticky top-0 z-50 border-b border-neutral-100 shadow-sm">
@@ -112,14 +112,14 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             
             {/* Left Column */}
-            <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className="lg:col-span-8 flex flex-col gap-3">
               
               {/* Address Block */}
               {!selectedAddress ? (
-                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 py-3 px-4 flex items-center justify-between gap-4">
+                <div className="bg-white rounded-xl shadow-sm border border-neutral-100 py-2 px-3 flex items-center justify-between gap-3">
                   <div className="flex gap-3 items-center">
                     <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
                       <MapPin size={18} className="text-neutral-500" />
@@ -136,8 +136,8 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 py-3 px-4 flex items-start justify-between gap-3 relative">
-                  <div className="flex gap-3 pl-1">
+                <div className="bg-white rounded-xl shadow-sm border border-neutral-100 py-2 px-3 flex items-start justify-between gap-3 relative">
+                  <div className="flex gap-2 pl-1">
                     <div className="mt-1 shrink-0">
                       <MapPin size={20} className="text-neutral-500" strokeWidth={1.5} />
                     </div>
@@ -161,17 +161,17 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
               {items.map((item) => {
                 const originalPrice = Math.round(item.price * 1.5);
                 return (
-                  <div key={item.id} className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-5 relative">
+                  <div key={item.id} className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 relative">
                     <button 
                       onClick={() => removeItem(item.id)}
-                      className="absolute top-4 right-4 text-neutral-300 hover:text-red-500 transition-colors"
+                      className="absolute top-3 right-3 text-neutral-300 hover:text-red-500 transition-colors"
                     >
-                      <X size={20} strokeWidth={2.5} />
+                      <X size={16} strokeWidth={2.5} />
                     </button>
                     
-                    <div className="flex gap-5">
+                    <div className="flex gap-3">
                       {/* Image */}
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 bg-neutral-100 rounded-2xl overflow-hidden relative shrink-0">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-neutral-100 rounded-xl overflow-hidden relative shrink-0">
                         {item.image ? (
                           <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
                         ) : (
@@ -182,37 +182,37 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                       {/* Details */}
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-base text-neutral-800 font-medium pr-8">{item.name}</h3>
-                          <div className="flex items-center gap-1.5 text-[#E77F38] text-xs font-semibold mt-1">
-                            <Sparkles size={12} fill="currentColor" />
+                          <h3 className="text-sm text-neutral-800 font-medium pr-6 line-clamp-2">{item.name}</h3>
+                          <div className="flex items-center gap-1.5 text-[#E77F38] text-[10px] font-semibold mt-0.5">
+                            <Sparkles size={10} fill="currentColor" />
                             Handmade on order
                           </div>
-                          <div className="text-sm text-neutral-500 mt-2">
+                          <div className="text-xs text-neutral-500 mt-1">
                             {item.variantText ? item.variantText : 'Color: Original'}
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-base font-bold text-neutral-900">₹{item.price}</span>
-                            <span className="text-xs text-neutral-400 line-through">₹{originalPrice}</span>
-                            <span className="bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide ml-1">33% OFF</span>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-sm font-bold text-neutral-900">₹{item.price}</span>
+                            <span className="text-[10px] text-neutral-400 line-through">₹{originalPrice}</span>
+                            <span className="bg-rose-100 text-rose-600 px-1 py-0.5 rounded-full text-[9px] font-black tracking-wide ml-1">33% OFF</span>
                           </div>
 
                           {/* Quantity Selector */}
-                          <div className="flex items-center gap-4 bg-neutral-100/80 rounded-full px-2 py-1 border border-neutral-200/50">
+                          <div className="flex items-center gap-2 bg-neutral-100/80 rounded-full px-1.5 py-0.5 border border-neutral-200/50">
                             <button 
                               onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                              className="w-7 h-7 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
+                              className="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
                             >
-                              <Minus size={14} strokeWidth={2.5} />
+                              <Minus size={12} strokeWidth={2.5} />
                             </button>
-                            <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                            <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                             <button 
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-7 h-7 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
+                              className="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
                             >
-                              <Plus size={14} strokeWidth={2.5} />
+                              <Plus size={12} strokeWidth={2.5} />
                             </button>
                           </div>
                         </div>
@@ -223,9 +223,9 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
               })}
 
               {/* Gift Packaging */}
-              <div className="bg-[#FFF8FA] rounded-[20px] shadow-sm border border-[#FDE3E9] p-4 flex items-center justify-between">
-                <div className="flex gap-3 items-center">
-                  <div className="text-xl">
+              <div className="bg-[#FFF8FA] rounded-xl shadow-sm border border-[#FDE3E9] p-3 flex items-center justify-between">
+                <div className="flex gap-2 items-center">
+                  <div className="text-lg">
                     🎁
                   </div>
                   <div>
@@ -251,12 +251,12 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
             </div>
 
             {/* Right Column (Sticky) */}
-            <div className="lg:col-span-4 sticky top-24 flex flex-col gap-6">
+            <div className="lg:col-span-4 sticky top-24 flex flex-col gap-4">
               
-              <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-6">
-                <h3 className="text-lg font-serif text-neutral-900 mb-6">Price Details</h3>
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4">
+                <h3 className="text-base font-serif text-neutral-900 mb-4">Price Details</h3>
                 
-                <div className="space-y-4 text-sm text-neutral-600">
+                <div className="space-y-3 text-xs text-neutral-600">
                   <div className="flex justify-between pb-4 border-b border-neutral-100 border-dashed">
                     <span>MRP (incl. of all taxes)</span>
                     <span className="font-medium text-neutral-900">₹{Math.round(totalMRP)}</span>
@@ -295,28 +295,28 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                     </div>
                   )}
 
-                  <div className="flex justify-between py-2 text-base font-bold text-neutral-900">
+                  <div className="flex justify-between py-2 text-sm font-bold text-neutral-900">
                     <span>Total Amount</span>
                     <span>₹{totalAmount}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 bg-[#ECFDF5] text-[#059669] text-sm font-semibold p-3 rounded-xl flex items-center justify-center gap-2 border border-[#D1FAE5]">
-                  <Tag size={16} fill="currentColor" />
+                <div className="mt-3 bg-[#ECFDF5] text-[#059669] text-xs font-semibold p-2.5 rounded-lg flex items-center justify-center gap-1.5 border border-[#D1FAE5]">
+                  <Tag size={14} fill="currentColor" />
                   You&apos;ll save ₹{Math.round(discounts)} on this order!
                 </div>
 
                 <button 
                   onClick={handlePlaceOrder}
-                  className="hidden lg:block w-full mt-6 bg-[#FFC107] text-black font-black text-lg py-4 rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] active:scale-[0.98] transition-all"
+                  className="hidden lg:block w-full mt-4 bg-[#FFC107] text-black font-black text-base py-3 rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] active:scale-[0.98] transition-all"
                 >
                   PLACE ORDER
                 </button>
               </div>
 
               {/* Trust Badges */}
-              <div className="bg-white rounded-[20px] shadow-sm border border-neutral-100 p-6 flex justify-between items-center text-center">
-                <div className="flex flex-col items-center gap-2">
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 flex justify-between items-center text-center">
+                <div className="flex flex-col items-center gap-1.5">
                   <div className="w-10 h-10 rounded-full bg-neutral-50 flex items-center justify-center text-neutral-400">
                     <ShieldCheck size={20} strokeWidth={1.5} />
                   </div>
