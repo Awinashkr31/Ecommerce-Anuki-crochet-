@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, apiGet } from "@/lib/api";
-import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import AddressModal, { Address } from "@/components/AddressModal";
@@ -23,6 +23,8 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const processingRef = useRef(false); // Double-click protection
+  const cashfreeRef = useRef<any>(null); // Cache preloaded SDK
+  const [paymentStep, setPaymentStep] = useState<string | null>(null); // For animated overlay
 
   // If cart is empty or user is not logged in, redirect
   useEffect(() => {
@@ -66,6 +68,8 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   useEffect(() => {
     load({
       mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
+    }).then((sdk: any) => {
+      cashfreeRef.current = sdk;
     }).catch(console.error);
   }, []);
 
@@ -120,7 +124,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       };
       const payload = {
         userId: profile?.id,
-        items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization })),
+        items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization, name: i.name })),
         address, totalAmount, paymentMethod: 'cod',
         couponCode: appliedCoupon?.code,
         discountAmount: discount
@@ -142,10 +146,11 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     if (!selectedAddress) {
       toast.error("Please select a delivery address");
       setIsProcessing(false);
+      processingRef.current = false;
       return;
     }
     
-    const loadingToastId = toast.loading("Securely initializing payment...");
+    setPaymentStep('creating');
     
     try {
       const address = { 
@@ -160,7 +165,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       
       const orderPayload = {
         userId: profile?.id,
-        items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization })),
+        items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization, name: i.name })),
         address, totalAmount, paymentMethod: 'online',
         couponCode: appliedCoupon?.code,
         discountAmount: discount
@@ -174,12 +179,19 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
         throw new Error("Failed to initialize secure payment session. Please try again.");
       }
 
-      const cashfree = await load({
-        mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
-      });
+      setPaymentStep('gateway');
+
+      // Use cached SDK or load fresh
+      let cashfree = cashfreeRef.current;
+      if (!cashfree) {
+        cashfree = await load({
+          mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
+        });
+        cashfreeRef.current = cashfree;
+      }
 
       if (!cashfree) {
-        throw new Error("Cashfree initialization failed");
+        throw new Error("Payment gateway initialization failed. Please refresh and try again.");
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -188,7 +200,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
         redirectTarget: "_modal",
       };
 
-      toast.dismiss(loadingToastId);
+      setPaymentStep(null); // Hide overlay — gateway modal is opening
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cashfree.checkout(checkoutOptions).then((result: any) => {
@@ -230,7 +242,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       });
 
     } catch (err: unknown) {
-      toast.dismiss(loadingToastId);
+      setPaymentStep(null);
       const error = err as { message?: string };
       toast.error(error.message || "Failed to initialize payment.");
       setIsProcessing(false);
@@ -240,6 +252,34 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col relative pb-32">
+      
+      {/* Payment Processing Overlay */}
+      {paymentStep && (
+        <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6 animate-fade-in">
+          <div className="w-16 h-16 rounded-full bg-[#FFC107]/10 flex items-center justify-center">
+            <Loader2 size={32} className="text-[#FFC107] animate-spin" />
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-neutral-900 mb-1">
+              {paymentStep === 'creating' ? 'Securing your order...' : 'Opening payment gateway...'}
+            </p>
+            <p className="text-sm text-neutral-500">
+              {paymentStep === 'creating' ? 'Verifying stock & preparing invoice' : 'Almost there — do not close this page'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${paymentStep === 'creating' ? 'bg-[#FFC107] animate-pulse' : 'bg-[#059669]'}`} />
+            <div className="w-8 h-0.5 bg-neutral-200 rounded-full overflow-hidden">
+              <div className={`h-full bg-[#FFC107] rounded-full transition-all duration-700 ${paymentStep === 'gateway' ? 'w-full' : 'w-0'}`} />
+            </div>
+            <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${paymentStep === 'gateway' ? 'bg-[#FFC107] animate-pulse' : 'bg-neutral-200'}`} />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 mt-2">
+            <ShieldCheck size={12} />
+            <span>256-bit SSL encrypted</span>
+          </div>
+        </div>
+      )}
       
       
       {/* Header */}

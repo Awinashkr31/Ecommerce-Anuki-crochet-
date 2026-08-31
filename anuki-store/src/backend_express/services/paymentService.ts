@@ -78,8 +78,8 @@ export class PaymentService {
         }
       });
 
-      await this.logEvent(updated.id, 'RETRY_INITIATED', `Retry #${updated.retryCount}`, meta);
-      await this.logPayment(updated.id, 'RETRY', 'INITIATED', { orderId, amount }, cfOrder, meta);
+      this.logEvent(updated.id, 'RETRY_INITIATED', `Retry #${updated.retryCount}`, meta).catch(console.error);
+      this.logPayment(updated.id, 'RETRY', 'INITIATED', { orderId, amount }, cfOrder, meta).catch(console.error);
 
       return {
         payment: updated,
@@ -111,7 +111,7 @@ export class PaymentService {
         }
       });
 
-      await this.logEvent(updated.id, 'PAYMENT_REINITIATED', 'New payment session created', meta);
+      this.logEvent(updated.id, 'PAYMENT_REINITIATED', 'New payment session created', meta).catch(console.error);
 
       return {
         payment: updated,
@@ -140,8 +140,8 @@ export class PaymentService {
       }
     });
 
-    await this.logEvent(payment.id, 'CHECKOUT_STARTED', 'Payment initiated', meta);
-    await this.logPayment(payment.id, 'CREATE_ORDER', 'INITIATED', { orderId, amount, user: { id: user.id, email: user.email } }, cfOrder, meta);
+    this.logEvent(payment.id, 'CHECKOUT_STARTED', 'Payment initiated', meta).catch(console.error);
+    this.logPayment(payment.id, 'CREATE_ORDER', 'INITIATED', { orderId, amount, user: { id: user.id, email: user.email } }, cfOrder, meta).catch(console.error);
 
     return {
       payment,

@@ -327,9 +327,9 @@ export default function HomeClient({
               {/* Text Content */}
               <div className="w-full flex flex-col items-start">
 
-                <h2 className="text-[24px] font-[800] leading-[1.15] text-white w-[80%] mb-[6px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                <h1 className="text-[24px] font-[800] leading-[1.15] text-white w-[80%] mb-[6px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].title}
-                </h2>
+                </h1>
 
                 <p className="text-[12px] font-[500] leading-[1.4] text-white/90 line-clamp-1 mb-[14px] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].subtitle}
@@ -368,7 +368,7 @@ export default function HomeClient({
 
         {/* Shop by Category */}
         <section className="py-8 md:py-20 bg-neutral-50 border-b border-neutral-100">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8">
             <div className="text-center mb-6 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-bold">Shop Handmade Crochet Gifts by Category</h2>
             </div>
@@ -474,7 +474,7 @@ export default function HomeClient({
                 <p className="hidden md:block text-sm md:text-base text-neutral-500 mt-2 font-medium">Buy <Link href="/products" className="text-[#e11d48] hover:underline font-bold">crochet gifts online</Link> in India. Shop affordable <Link href="/products?category=keychains" className="text-[#e11d48] hover:underline font-bold">handmade gifts</Link> starting under ₹300.</p>
               </div>
               <Link href="/products?sort=newest" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
-                See All <ArrowRight size={16} className="animate-bounce-x" />
+                Shop All <ArrowRight size={16} className="animate-bounce-x" />
               </Link>
             </div>
 
@@ -494,7 +494,7 @@ export default function HomeClient({
                 <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">Bestselling Crochet Gifts India</h2>
               </div>
               <Link href="/products?sort=bestselling" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
-                See All <ArrowRight size={16} className="animate-bounce-x" />
+                Shop All <ArrowRight size={16} className="animate-bounce-x" />
               </Link>
             </div>
 
@@ -508,7 +508,7 @@ export default function HomeClient({
 
         {/* Trust Indicators / Value Props */}
         <section className="py-8 md:py-12 bg-neutral-900 text-white">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 md:w-14 md:h-14 bg-neutral-800 rounded-full flex items-center justify-center mb-3 md:mb-4">
@@ -534,27 +534,7 @@ export default function HomeClient({
             </div>
           </div>
         </section>
-        {/* Explore More (Random Products) */}
-        {randomProducts && randomProducts.length > 0 && (
-          <section className="py-6 md:py-10 bg-white border-t border-neutral-100">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between mb-8 md:mb-12">
-                <div>
-                  <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">More Handmade Gifts</h2>
-                </div>
-                <Link href="/products" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
-                  Shop All <ArrowRight size={16} className="animate-bounce-x" />
-                </Link>
-              </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-                {expandProductsByColor(randomProducts).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Personalized Gifts Section */}
         <section className="py-4 md:py-10 bg-white">
@@ -564,7 +544,7 @@ export default function HomeClient({
               {/* Text Side */}
               <div className="w-7/12 md:w-1/2 lg:w-7/12 p-4 sm:p-8 md:p-12 lg:p-16 relative z-10 flex flex-col justify-center">
                   <h2 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-black mb-1.5 md:mb-3 text-neutral-900">Make Your Handmade Gift <span className="text-rose-600">Yours.</span></h2>
-                  <p className="text-[11px] sm:text-sm md:text-base lg:text-lg text-neutral-600 mb-2 md:mb-6 leading-relaxed max-w-lg">
+                  <p className="text-sm sm:text-base lg:text-lg text-neutral-600 mb-2 md:mb-6 leading-relaxed max-w-lg">
                     Co-create the perfect <Link href="/products" className="text-rose-600 hover:underline font-medium">handmade crochet gift</Link>. Choose colors, add initials & design your dream bouquet.
                   </p>
                   <div className="hidden sm:flex items-center gap-4 mb-4 md:mb-5 text-sm font-medium text-neutral-700">
@@ -594,31 +574,11 @@ export default function HomeClient({
 
 
 
-        {/* You May Also Like */}
-        {randomProducts2 && randomProducts2.length > 0 && (
-          <section className="py-6 md:py-10 bg-rose-50/30 border-t border-neutral-100">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between mb-8 md:mb-12">
-                <div>
-                  <h2 className="text-xl md:text-3xl font-serif text-[#001738] tracking-tight">You May Also Like</h2>
-                </div>
-                <Link href="/products" className="group inline-flex items-center gap-1.5 md:gap-2 bg-neutral-900 text-white border-2 border-neutral-900 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-neutral-800 hover:border-neutral-800 transition-all shadow-md hover:shadow-lg active:scale-95 active:shadow-sm shrink-0">
-                  Browse All <ArrowRight size={16} className="animate-bounce-x" />
-                </Link>
-              </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-                {expandProductsByColor(randomProducts2).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Testimonials */}
         <section className="py-8 md:py-12 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8">
             <div className="text-center mb-8">
               <h2 className="text-xl md:text-2xl font-bold mb-2">Loved by Handmade Gift Shoppers in India</h2>
               <p className="text-neutral-500 text-sm">Don&apos;t just take our word for it.</p>
@@ -663,7 +623,7 @@ export default function HomeClient({
 
         {/* Instagram Feed */}
         <section className="py-8 md:py-10 bg-neutral-900 text-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8 mb-8 text-center">
             <h2 className="text-xl md:text-2xl font-bold mb-2">Follow Our Handmade Crochet Journey</h2>
             <p className="text-sm md:text-base text-neutral-400">Join our community on Instagram <a href={`https://instagram.com/${instagramHandle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-rose-400 hover:text-rose-300">{instagramHandle}</a></p>
           </div>

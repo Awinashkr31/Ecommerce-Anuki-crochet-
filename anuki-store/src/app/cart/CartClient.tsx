@@ -12,6 +12,7 @@ import CartRecommendations from "./CartRecommendations";
 import { apiGet } from "@/lib/api";
 import CartOffers from "./CartOffers";
 import { MobileLoginSheet } from "@/components/MobileLoginSheet";
+import useSWR from 'swr';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartClient({ crossSellProducts = [] }: { crossSellProducts?: any[] }) {
@@ -80,8 +81,11 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
   const discounts = totalMRP - subtotal;
   const giftCharge = isGiftPacked ? 29 : 0;
-  const freeDeliveryThreshold = 500;
-  const deliveryCharge = subtotal >= freeDeliveryThreshold ? 0 : 50;
+  const { data: settings } = useSWR('/settings/public', (url: string) => apiGet<Record<string, string>>(url));
+  const freeDeliveryThreshold = settings ? (Number(settings['free_delivery_threshold']) || 0) : 500;
+  const deliveryChargeSetting = settings ? (Number(settings['delivery_charge']) || 0) : 50;
+  
+  const deliveryCharge = subtotal >= freeDeliveryThreshold ? 0 : deliveryChargeSetting;
   const amountToFreeDelivery = freeDeliveryThreshold - subtotal;
   const appliedDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalAmount = Math.max(0, subtotal + giftCharge + deliveryCharge - appliedDiscount);

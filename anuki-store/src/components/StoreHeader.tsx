@@ -218,7 +218,7 @@ export function StoreHeader() {
                 type="text"
                 name="q"
                 placeholder="Search store..."
-                className="bg-transparent border-none outline-none text-sm w-32 focus:w-48 transition-all duration-300 text-neutral-800 placeholder:text-neutral-500"
+                className="bg-transparent border-none outline-none text-sm w-48 focus:w-64 md:focus:w-80 transition-all duration-300 text-neutral-800 placeholder:text-neutral-500"
               />
             </form>
 

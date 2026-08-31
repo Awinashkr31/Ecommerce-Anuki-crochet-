@@ -91,9 +91,9 @@ export default function ProductInfo({
         {product.shortDesc}
       </p>
 
-      <div className="text-sm font-medium text-neutral-500 bg-neutral-50 p-3 rounded-lg border border-neutral-100 max-w-xl mt-4">
-        Looking for a personalized birthday or anniversary gift? <Link href="/custom" title="Request custom and personalized crochet gifts" className="text-rose-600 font-bold hover:underline">Request custom crochet gifts</Link>
-      </div>
+      <Link href="/custom" title="Request custom and personalized crochet gifts" className="block w-full max-w-xl bg-rose-50 border border-rose-100 rounded-xl p-4 mt-6 text-rose-700 font-bold text-center hover:bg-rose-100 transition-colors">
+        Request custom crochet gifts
+      </Link>
 
       {/* Stock Status */}
       <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function ProductInfo({
       </div>
 
       {/* Benefits */}
-      <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100 mt-6">
+      <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100 mt-6 pb-24 lg:pb-4">
         <div className="flex items-center gap-3">
           <ShieldCheck className="text-emerald-500" size={24} />
           <div className="text-sm">

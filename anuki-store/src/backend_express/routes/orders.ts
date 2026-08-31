@@ -79,129 +79,137 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
     // In a real scenario, we'd calculate totalAmount securely here by fetching variant prices from DB
     // rather than trusting the client's totalAmount.
 
+    // Fetch user in parallel with the order transaction to save time
+    const userPromise = paymentMethod === 'online'
+      ? prisma.user.findUnique({ where: { id: req.user.userId } })
+      : Promise.resolve(null);
+
     // Using Prisma Transaction for safety
-    const result = await prisma.$transaction(async (tx) => {
-      
-      // 1. Verify and deduct stock for each item
-      for (const item of items) {
-        let variant: any = await tx.variant.findUnique({
-          where: { id: item.variantId },
-          include: { product: true }
-        });
+    const [result, userRecord] = await Promise.all([
+      prisma.$transaction(async (tx) => {
         
-        if (!variant) {
-          // Check if it's a base product (frontend might send productId if no variants exist)
-          const product = await tx.product.findUnique({ where: { id: item.variantId } });
-          if (product) {
-            // Find or create a base variant
-            variant = await tx.variant.findFirst({ where: { productId: product.id, sku: `${product.id.slice(0, 8)}-base` }, include: { product: true } });
-            if (!variant) {
-              const baseVariant = await tx.variant.create({
-                data: {
-                  productId: product.id,
-                  sku: `${product.id.slice(0, 8)}-base`,
-                  price: product.salePrice || product.basePrice,
-                  stock: product.stock,
-                  color: product.color,
-                  size: product.size,
-                  material: product.material || null,
-                }
-              });
-              variant = { ...baseVariant, product };
+        // 1. Verify and deduct stock for each item
+        for (const item of items) {
+          let variant: any = await tx.variant.findUnique({
+            where: { id: item.variantId },
+            include: { product: true }
+          });
+          
+          if (!variant) {
+            // Check if it's a base product (frontend might send productId if no variants exist)
+            const product = await tx.product.findUnique({ where: { id: item.variantId } });
+            if (product) {
+              // Find or create a base variant
+              variant = await tx.variant.findFirst({ where: { productId: product.id, sku: `${product.id.slice(0, 8)}-base` }, include: { product: true } });
+              if (!variant) {
+                const baseVariant = await tx.variant.create({
+                  data: {
+                    productId: product.id,
+                    sku: `${product.id.slice(0, 8)}-base`,
+                    price: product.salePrice || product.basePrice,
+                    stock: product.stock,
+                    color: product.color,
+                    size: product.size,
+                    material: product.material || null,
+                  }
+                });
+                variant = { ...baseVariant, product };
+              }
+              item.variantId = variant.id; // Update payload for OrderItem creation
+            } else {
+              throw new Error(`Item "${item.name || 'Unknown'}" is no longer available. Please remove it from your cart.`);
             }
-            item.variantId = variant.id; // Update payload for OrderItem creation
-          } else {
-            throw new Error(`Variant not found: ${item.variantId}`);
-          }
-        }
-        
-        // If not made to order, ensure stock is sufficient and deduct
-        if (!variant.product.isMadeToOrder) {
-          if (variant.stock < item.quantity) {
-            throw new Error(`Insufficient stock for ${variant.product.name}`);
           }
           
-          await tx.variant.update({
-            where: { id: item.variantId },
-            data: { stock: { decrement: item.quantity } }
+          // If not made to order, ensure stock is sufficient and deduct
+          if (!variant.product.isMadeToOrder) {
+            if (variant.stock < item.quantity) {
+              throw new Error(`Insufficient stock for ${variant.product.name}`);
+            }
+            
+            await tx.variant.update({
+              where: { id: item.variantId },
+              data: { stock: { decrement: item.quantity } }
+            });
+          }
+        }
+
+        // Validate and increment coupon if provided
+        let appliedCouponId = null;
+        if (couponCode) {
+          const coupon = await tx.coupon.findUnique({ where: { code: couponCode } });
+          if (coupon && (coupon.status === 'ACTIVE' || coupon.isActive)) {
+            if ((!coupon.validTo || new Date() <= new Date(coupon.validTo)) && (!coupon.usageLimit || coupon.usedCount < coupon.usageLimit)) {
+              await tx.coupon.update({
+                where: { code: couponCode },
+                data: { usedCount: { increment: 1 } }
+              });
+              appliedCouponId = coupon.id;
+            }
+          }
+        }
+
+        // 2. Create the Order
+        const order = await tx.order.create({
+          data: {
+            userId: req.user.userId,
+            totalAmount,
+            status: paymentMethod === 'cod' ? 'PENDING' : 'AWAITING_PAYMENT',
+            internalNotes: address ? `Shipping Address: ${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}, Phone: ${address.phone || 'N/A'}` : null,
+            items: {
+              create: items.map((item: any) => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+                price: item.price,
+                customization: item.customization || null
+              }))
+            },
+          },
+          include: { items: true, payment: true }
+        });
+        
+        // 3. Create CouponUsage if applicable
+        if (appliedCouponId) {
+          await tx.couponUsage.create({
+            data: {
+              userId: req.user.userId,
+              orderId: order.id,
+              couponId: appliedCouponId,
+              discountAmount: discountAmount,
+              orderTotal: totalAmount,
+              ipAddress: req.ip || null
+            }
           });
         }
-      }
 
-      // Validate and increment coupon if provided
-      let appliedCouponId = null;
-      if (couponCode) {
-        const coupon = await tx.coupon.findUnique({ where: { code: couponCode } });
-        if (coupon && (coupon.status === 'ACTIVE' || coupon.isActive)) {
-          if ((!coupon.validTo || new Date() <= new Date(coupon.validTo)) && (!coupon.usageLimit || coupon.usedCount < coupon.usageLimit)) {
-            await tx.coupon.update({
-              where: { code: couponCode },
-              data: { usedCount: { increment: 1 } }
-            });
-            appliedCouponId = coupon.id;
+        // 4. Redeem Points if any
+        if (redeemPoints > 0) {
+          const user = await tx.user.findUnique({ where: { id: req.user.userId } });
+          if (!user || user.pointsBalance < redeemPoints) {
+            throw new Error('Insufficient points balance');
           }
+          await tx.user.update({
+            where: { id: req.user.userId },
+            data: { pointsBalance: { decrement: redeemPoints } }
+          });
+          await tx.rewardTransaction.create({
+            data: {
+              userId: req.user.userId,
+              orderId: order.id,
+              points: redeemPoints,
+              type: 'REDEEMED',
+              description: `Redeemed for order ${order.id.slice(-8).toUpperCase()}`
+            }
+          });
         }
-      }
-
-      // 2. Create the Order
-      const order = await tx.order.create({
-        data: {
-          userId: req.user.userId,
-          totalAmount,
-          status: paymentMethod === 'cod' ? 'PENDING' : 'AWAITING_PAYMENT',
-          internalNotes: address ? `Shipping Address: ${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}, Phone: ${address.phone || 'N/A'}` : null,
-          items: {
-            create: items.map((item: any) => ({
-              variantId: item.variantId,
-              quantity: item.quantity,
-              price: item.price,
-              customization: item.customization || null
-            }))
-          },
-        },
-        include: { items: true, payment: true }
-      });
-      
-      // 3. Create CouponUsage if applicable
-      if (appliedCouponId) {
-        await tx.couponUsage.create({
-          data: {
-            userId: req.user.userId,
-            orderId: order.id,
-            couponId: appliedCouponId,
-            discountAmount: discountAmount,
-            orderTotal: totalAmount,
-            ipAddress: req.ip || null
-          }
-        });
-      }
-
-      // 4. Redeem Points if any
-      if (redeemPoints > 0) {
-        const user = await tx.user.findUnique({ where: { id: req.user.userId } });
-        if (!user || user.pointsBalance < redeemPoints) {
-          throw new Error('Insufficient points balance');
-        }
-        await tx.user.update({
-          where: { id: req.user.userId },
-          data: { pointsBalance: { decrement: redeemPoints } }
-        });
-        await tx.rewardTransaction.create({
-          data: {
-            userId: req.user.userId,
-            orderId: order.id,
-            points: redeemPoints,
-            type: 'REDEEMED',
-            description: `Redeemed for order ${order.id.slice(-8).toUpperCase()}`
-          }
-        });
-      }
-      
-      return order;
-    }, {
-      maxWait: 10000,
-      timeout: 20000
-    });
+        
+        return order;
+      }, {
+        maxWait: 10000,
+        timeout: 20000
+      }),
+      userPromise
+    ]);
 
     // Handle COD payment via PaymentService (outside transaction)
     if (paymentMethod === 'cod') {
@@ -219,13 +227,12 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
     let paymentSessionId = undefined;
     let cashfreeOrderId = undefined;
     if (paymentMethod === 'online') {
-      const user = await prisma.user.findUnique({ where: { id: result.userId || '' } });
       const paymentResult = await PaymentService.initiatePayment(
         result.id,
         totalAmount,
         {
           id: result.userId || 'guest',
-          email: user?.email || '',
+          email: userRecord?.email || '',
           phone: address.phone,
           name: `${address.firstName || ''} ${address.lastName || ''}`.trim(),
         },
@@ -238,34 +245,36 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
       cashfreeOrderId = paymentResult.order_id;
     }
 
-    // Fire notifications AFTER transaction succeeds
-    // Notify Customer
-    if (result.userId) {
-      NotificationService.send({
-        userId: result.userId,
-        role: 'customer',
-        title: 'Order Placed Successfully',
-        message: `Thank you for your order! Your order ID is ${result.id.slice(-8).toUpperCase()}.`,
-        category: 'orders',
-        priority: 'high',
-        actionUrl: `/account`
-      }).catch(console.error);
-    }
-
-    // Notify Admins
-    NotificationService.sendAdminAlert({
-      title: 'New Order Received',
-      message: `A new order of ₹${totalAmount} has been placed.`,
-      category: 'orders',
-      priority: 'high',
-      actionUrl: `/admin/orders/${result.id}`
-    }).catch(console.error);
-
-    return res.status(201).json({
+    // Respond IMMEDIATELY — send notifications in background after response
+    const responsePayload = {
       ...result,
       payment_session_id: paymentSessionId,
       cashfree_order_id: cashfreeOrderId
-    });
+    };
+    res.status(201).json(responsePayload);
+
+    // Fire notifications AFTER response is sent (non-blocking)
+    try {
+      if (result.userId) {
+        NotificationService.send({
+          userId: result.userId,
+          role: 'customer',
+          title: 'Order Placed Successfully',
+          message: `Thank you for your order! Your order ID is ${result.id.slice(-8).toUpperCase()}.`,
+          category: 'orders',
+          priority: 'high',
+          actionUrl: `/account`
+        }).catch(console.error);
+      }
+      NotificationService.sendAdminAlert({
+        title: 'New Order Received',
+        message: `A new order of ₹${totalAmount} has been placed.`,
+        category: 'orders',
+        priority: 'high',
+        actionUrl: `/admin/orders/${result.id}`
+      }).catch(console.error);
+    } catch { /* ignore notification errors */ }
+    return;
   } catch (error: unknown) {
     console.error("Order creation failed:", (error as Error).message);
     const msg = (error as Error).message && !(error as Error).message.includes('\n') ? (error as Error).message : 'Failed to create order. Please try again.';

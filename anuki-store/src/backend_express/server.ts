@@ -159,13 +159,20 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     method: req.method,
   });
   
-  // Return the error message to the client temporarily for debugging the 500 error
   const statusCode = err.status || err.statusCode || 500;
-  res.status(statusCode).json({ 
-    error: 'Something went wrong.',
-    details: err.message,
-    stack: err.stack
-  });
+  
+  if (process.env.NODE_ENV === 'production') {
+    res.status(statusCode).json({ 
+      error: 'Something went wrong.',
+    });
+  } else {
+    // Return the error message to the client temporarily for debugging the 500 error
+    res.status(statusCode).json({ 
+      error: 'Something went wrong.',
+      details: err.message,
+      stack: err.stack
+    });
+  }
 });
 
 // When running as a Next.js API route, we do not want Express to start its own server.
