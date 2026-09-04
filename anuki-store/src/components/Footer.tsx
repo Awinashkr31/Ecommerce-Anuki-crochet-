@@ -39,10 +39,10 @@ export function Footer() {
 
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-6 pt-10 pb-6">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 lg:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8 lg:gap-6">
           
           {/* Brand & Contact */}
-          <div className="col-span-2 md:col-span-4 lg:col-span-3">
+          <div className="col-span-2 md:col-span-4 lg:col-span-2">
             <Link href="/" className="mb-4 inline-block">
               <Image src="/logo.png" alt="Anuki Crochet" width={160} height={48} className="h-10 w-auto object-contain brightness-0 invert" unoptimized />
             </Link>
@@ -74,24 +74,35 @@ export function Footer() {
           </div>
 
           {/* Shop */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+          <div className="col-span-1 md:col-span-1 lg:col-span-1">
             <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Shop</h3>
             <ul className="space-y-2.5 text-xs">
               <li><Link href="/products" className="text-neutral-400 hover:text-rose-400 transition-colors">All Products</Link></li>
               {activeCategories.slice(0, 5).map((category: Category) => (
                 <li key={category.id}>
-                  <Link href={`/products?category=${category.slug}`} className="text-neutral-400 hover:text-rose-400 transition-colors">
+                  <Link href={`/categories/${category.slug}`} className="text-neutral-400 hover:text-rose-400 transition-colors">
                     {category.name}
                   </Link>
                 </li>
               ))}
+              <li><Link href="/categories" className="text-neutral-400 hover:text-rose-400 transition-colors">All Categories</Link></li>
+            </ul>
+          </div>
+
+          {/* Gift Ideas */}
+          <div className="col-span-1 md:col-span-1 lg:col-span-1">
+            <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Gift Ideas</h3>
+            <ul className="space-y-2.5 text-xs">
+              <li><Link href="/gifts/under-500" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹500</Link></li>
+              <li><Link href="/gifts/under-1000" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹1000</Link></li>
+              <li><Link href="/gifts/birthday" className="text-neutral-400 hover:text-rose-400 transition-colors">Birthday Gifts</Link></li>
+              <li><Link href="/gifts/anniversary" className="text-neutral-400 hover:text-rose-400 transition-colors">Anniversary Gifts</Link></li>
               <li><Link href="/custom" className="text-neutral-400 hover:text-rose-400 transition-colors">Custom Orders</Link></li>
-              <li><Link href="/categories" className="text-neutral-400 hover:text-rose-400 transition-colors">Categories</Link></li>
             </ul>
           </div>
 
           {/* Company */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+          <div className="col-span-1 md:col-span-1 lg:col-span-1">
             <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Company</h3>
             <ul className="space-y-2.5 text-xs">
               <li><Link href="/about" className="text-neutral-400 hover:text-rose-400 transition-colors">About Us</Link></li>
@@ -102,7 +113,7 @@ export function Footer() {
           </div>
 
           {/* Customer Care */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+          <div className="col-span-1 md:col-span-1 lg:col-span-1">
             <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Support</h3>
             <ul className="space-y-2.5 text-xs">
               <li><Link href="/contact" className="text-neutral-400 hover:text-rose-400 transition-colors">Help Center</Link></li>
@@ -114,14 +125,14 @@ export function Footer() {
           </div>
 
           {/* Legal */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+          <div className="col-span-1 md:col-span-1 lg:col-span-1">
             <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Legal</h3>
             <ul className="space-y-2.5 text-xs">
               <li><Link href="/policies/privacy-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/policies/terms-of-service" className="text-neutral-400 hover:text-rose-400 transition-colors">Terms of Service</Link></li>
-              <li><Link href="/policies/payment-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Payment Policy</Link></li>
-              <li><Link href="/policies/shipping-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Shipping Policy</Link></li>
-              <li><Link href="/policies/refunds-and-cancellations" className="text-neutral-400 hover:text-rose-400 transition-colors">Cancellation Policy</Link></li>
+              <li><Link href="/policies/terms-of-service" className="text-neutral-400 hover:text-rose-400 transition-colors">Terms</Link></li>
+              <li><Link href="/policies/payment-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Payments</Link></li>
+              <li><Link href="/policies/shipping-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Shipping</Link></li>
+              <li><Link href="/policies/refunds-and-cancellations" className="text-neutral-400 hover:text-rose-400 transition-colors">Refunds</Link></li>
             </ul>
           </div>
 

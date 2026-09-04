@@ -542,6 +542,45 @@ export default function HomeClient({
           </div>
         </section>
 
+        {/* Shop by Occasion / Budget */}
+        <section className="py-8 md:py-12 bg-[#FAFAFA]">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-xl md:text-2xl font-bold mb-2">Gift Ideas for Every Occasion</h2>
+              <p className="text-neutral-500 text-sm">Find the perfect handmade gift by occasion or budget.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <Link href="/gifts/birthday" className="bg-white border border-neutral-100 p-6 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-rose-200 transition-all group">
+                <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">🎂</span>
+                <h3 className="font-bold text-neutral-900 mb-1">Birthday</h3>
+                <p className="text-xs text-neutral-500">Fun & cute gifts</p>
+              </Link>
+              <Link href="/gifts/anniversary" className="bg-white border border-neutral-100 p-6 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-rose-200 transition-all group">
+                <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">💕</span>
+                <h3 className="font-bold text-neutral-900 mb-1">Anniversary</h3>
+                <p className="text-xs text-neutral-500">Celebrate love</p>
+              </Link>
+              <Link href="/gifts/valentines-day" className="bg-white border border-neutral-100 p-6 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-rose-200 transition-all group">
+                <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">❤️</span>
+                <h3 className="font-bold text-neutral-900 mb-1">Valentine&apos;s</h3>
+                <p className="text-xs text-neutral-500">Romantic picks</p>
+              </Link>
+              <Link href="/gifts/raksha-bandhan" className="bg-white border border-neutral-100 p-6 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-rose-200 transition-all group">
+                <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">🪢</span>
+                <h3 className="font-bold text-neutral-900 mb-1">Raksha Bandhan</h3>
+                <p className="text-xs text-neutral-500">For siblings</p>
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link href="/gifts/under-300" className="px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-sm font-medium hover:border-neutral-900 hover:text-neutral-900 transition-colors text-neutral-600">Gifts Under ₹300</Link>
+              <Link href="/gifts/under-500" className="px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-sm font-medium hover:border-neutral-900 hover:text-neutral-900 transition-colors text-neutral-600">Gifts Under ₹500</Link>
+              <Link href="/gifts/under-1000" className="px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-sm font-medium hover:border-neutral-900 hover:text-neutral-900 transition-colors text-neutral-600">Gifts Under ₹1000</Link>
+            </div>
+          </div>
+        </section>
+
 
         {/* Personalized Gifts Section */}
         <section className="py-4 md:py-10 bg-white">

@@ -76,6 +76,27 @@ export default async function CategoryPage({ params }: Props) {
     }
   });
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Handmade ${category.name}`,
+    description: category.description || `Browse our collection of ${category.name}`,
+    numberOfItems: products.length,
+    itemListElement: products.map((p: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `https://www.anukicrochet.in/products/${p.slug}`,
+      name: p.name,
+    })),
+  };
+
+  // Fetch all active categories for related links (excluding current)
+  const allCategories = await prisma.category.findMany({
+    where: { isActive: true, id: { not: category.id } },
+    select: { name: true, slug: true },
+    take: 4
+  });
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
       <BreadcrumbSchema 
@@ -85,6 +106,7 @@ export default async function CategoryPage({ params }: Props) {
           { name: category.name, item: `/categories/${category.slug}` }
         ]} 
       />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       
       {/* Category Hero / Answer-First Content */}
       <section className="bg-white border-b border-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -133,6 +155,25 @@ export default async function CategoryPage({ params }: Props) {
             <li>Do not machine wash. Spot clean with a damp cloth if necessary.</li>
           </ul>
         </article>
+      </section>
+
+      {/* Internal Links / Related Categories */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <h2 className="text-xl font-bold text-neutral-900 mb-6">Explore More Categories</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {allCategories.map(cat => (
+            <Link key={cat.slug} href={`/categories/${cat.slug}`} className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+              <p className="font-bold text-neutral-900">{cat.name}</p>
+              <p className="text-xs text-neutral-500">Shop now</p>
+            </Link>
+          ))}
+          {allCategories.length < 4 && (
+             <Link href="/gifts/under-500" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+               <p className="font-bold text-neutral-900">Gifts Under ₹500</p>
+               <p className="text-xs text-neutral-500">Best sellers</p>
+             </Link>
+          )}
+        </div>
       </section>
     </div>
   );

@@ -168,6 +168,61 @@ export default function CustomClient() {
         </div>
       </section>
 
+      {/* SEO & FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <div className="prose prose-rose max-w-none">
+          <h2>How Custom Orders Work</h2>
+          <p>
+            Ordering a custom crochet gift is easy! Whether you want a personalized amigurumi plushie, a custom flower bouquet for a wedding, or a unique keychain, our artisans are here to craft it.
+          </p>
+          <ol>
+            <li><strong>Design Consultation:</strong> Send us your ideas, reference photos, and color preferences.</li>
+            <li><strong>Quote & Timeline:</strong> We'll provide a price estimate and how long it will take (usually 7-14 days).</li>
+            <li><strong>Crafting:</strong> Our skilled artisans hand-crochet your item with premium yarn.</li>
+            <li><strong>Delivery:</strong> We safely package and ship your custom gift anywhere in India.</li>
+          </ol>
+
+          <h3>Frequently Asked Questions</h3>
+          <div className="space-y-4 not-prose mt-6">
+            <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+              <h4 className="font-bold text-neutral-900 mb-2">How long does a custom crochet order take?</h4>
+              <p className="text-neutral-600 text-sm">Depending on the complexity, custom orders usually take 7-14 days to craft and ship across India.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+              <h4 className="font-bold text-neutral-900 mb-2">Can you recreate a specific character or plushie?</h4>
+              <p className="text-neutral-600 text-sm">Yes! We can create amigurumi plushies of characters, pets, or any specific design you provide reference images for.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+              <h4 className="font-bold text-neutral-900 mb-2">Do you make custom bridal bouquets?</h4>
+              <p className="text-neutral-600 text-sm">Absolutely. We design custom crochet flower bouquets matching your wedding colors that will last forever as a keepsake.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Internal Links */}
+      <section className="max-w-6xl mx-auto px-4 pb-16">
+        <h2 className="text-xl font-bold text-neutral-900 mb-6 text-center">Looking for Ready-to-Ship Gifts?</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link href="/gifts/birthday" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+            <p className="font-bold text-neutral-900">Birthday Gifts</p>
+            <p className="text-xs text-neutral-500">For their special day</p>
+          </Link>
+          <Link href="/gifts/anniversary" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+            <p className="font-bold text-neutral-900">Anniversary Gifts</p>
+            <p className="text-xs text-neutral-500">Celebrate love</p>
+          </Link>
+          <Link href="/gifts/under-500" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+            <p className="font-bold text-neutral-900">Under ₹500</p>
+            <p className="text-xs text-neutral-500">Best sellers</p>
+          </Link>
+          <Link href="/categories/flower-bouquets" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
+            <p className="font-bold text-neutral-900">Flower Bouquets</p>
+            <p className="text-xs text-neutral-500">Forever flowers</p>
+          </Link>
+        </div>
+      </section>
+
       {/* Floating Sticky WhatsApp Button */}
       <button
         onClick={handleDirectWhatsApp}
