@@ -5,16 +5,26 @@ type Props = {
   params: Promise<{ slug: string }>
 };
 
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
+
 async function getPost(slug: string) {
-  // Mock fetching post from DB
+  const post = await prisma.post.findUnique({
+    where: { slug }
+  });
+  
+  if (!post) {
+    notFound();
+  }
+
   return {
-    title: "How to Care for Handmade Crochet",
-    slug: slug,
-    content: "When it comes to caring for crochet, the most important thing is to avoid hot water and heavy agitation. Always hand wash your delicate items using a mild detergent...",
-    excerpt: "Learn the best ways to wash, dry, and store your handmade crochet items.",
-    date: "Oct 25, 2024",
-    author: "Admin User",
-    imageUrl: "https://anukicrochet.in/crochet-care.jpg"
+    title: post.title,
+    slug: post.slug,
+    content: post.content,
+    excerpt: post.excerpt || '',
+    date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    author: "Anuki",
+    imageUrl: post.imageUrl || "https://anukicrochet.in/crochet-care.jpg"
   };
 }
 
@@ -106,16 +116,17 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Content */}
       <article className="max-w-3xl mx-auto px-6 py-12">
-        <div className="aspect-video bg-neutral-100 rounded-2xl mb-12 flex items-center justify-center text-neutral-400">
-          [Cover Image]
+        <div className="aspect-video bg-neutral-100 rounded-2xl mb-12 flex items-center justify-center text-neutral-400 overflow-hidden">
+          {post.imageUrl ? (
+            <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+          ) : (
+            <span>[Cover Image]</span>
+          )}
         </div>
         
-        {/* Prose (mocked markdown rendering) */}
         <div className="prose prose-lg prose-rose mx-auto">
           <p className="lead">{post.excerpt}</p>
-          <p>{post.content}</p>
-          <h2>Washing Instructions</h2>
-          <p>Always hand wash in lukewarm water. Never wring out the fabric, simply press the water out gently.</p>
+          <div className="whitespace-pre-wrap">{post.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>
         </div>
         
         {/* Share */}

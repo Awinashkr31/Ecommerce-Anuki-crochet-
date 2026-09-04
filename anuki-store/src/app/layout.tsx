@@ -139,21 +139,48 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": ["Organization", "Store"],
+              "@type": ["Organization", "Store", "LocalBusiness"],
               "name": "Anuki Crochet",
               "url": "https://www.anukicrochet.in",
               "logo": "https://www.anukicrochet.in/logo.png",
-              "sameAs": [
-                "https://instagram.com/anukicrochet",
-                "https://facebook.com/anukicrochet"
-              ],
+              "image": "https://www.anukicrochet.in/logo.png",
               "description": "Shop the best handmade crochet gifts in India. Buy premium custom flower bouquets, amigurumi plushies, and handmade gifts locally from Bihar.",
+              "telephone": "+91-8434897767",
+              "email": "anukicrochet@gmail.com",
+              "priceRange": "₹₹",
               "address": {
                 "@type": "PostalAddress",
+                "addressLocality": "Patna",
                 "addressRegion": "Bihar",
                 "addressCountry": "IN"
               },
-              "areaServed": "IN"
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "25.5941",
+                "longitude": "85.1376"
+              },
+              "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday"
+                ],
+                "opens": "09:00",
+                "closes": "18:00"
+              },
+              "sameAs": [
+                "https://instagram.com/anukicrochet",
+                "https://facebook.com/anukicrochet",
+                "https://pinterest.com/anukicrochet"
+              ],
+              "areaServed": {
+                "@type": "Country",
+                "name": "India"
+              }
             })
           }}
         />

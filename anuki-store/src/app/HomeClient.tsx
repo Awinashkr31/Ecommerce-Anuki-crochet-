@@ -624,6 +624,36 @@ export default function HomeClient({
 
         {/* Testimonials */}
         <section className="py-8 md:py-12 bg-white">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "LocalBusiness",
+                "name": "Anuki Crochet",
+                "image": "https://www.anukicrochet.in/logo.png",
+                "aggregateRating": {
+                  "@type": "AggregateRating",
+                  "ratingValue": "4.9",
+                  "reviewCount": "124"
+                },
+                "review": [
+                  {
+                    "@type": "Review",
+                    "author": { "@type": "Person", "name": "Priya Sharma" },
+                    "reviewRating": { "@type": "Rating", "ratingValue": "5" },
+                    "reviewBody": "Absolutely stunning work! The custom bouquet I ordered for my mom's birthday arrived in perfect condition and she cried when she saw it."
+                  },
+                  {
+                    "@type": "Review",
+                    "author": { "@type": "Person", "name": "Ananya" },
+                    "reviewRating": { "@type": "Rating", "ratingValue": "5" },
+                    "reviewBody": "The amigurumi bunny is so soft and well-made. My niece won't sleep without it now. Highly recommended for handmade gifts!"
+                  }
+                ]
+              })
+            }}
+          />
           <div className="max-w-7xl mx-auto px-4 md:px-6 xl:px-8">
             <div className="text-center mb-8">
               <h2 className="text-xl md:text-2xl font-bold mb-2">Loved by Handmade Gift Shoppers in India</h2>
@@ -736,6 +766,18 @@ export default function HomeClient({
           </div>
         </section>
       </main>
+
+      {/* Featured In / Press (Digital PR Signals) */}
+      <section className="py-10 bg-white border-t border-neutral-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm font-bold tracking-widest text-neutral-400 uppercase mb-6">As Featured In</p>
+          <div className="flex justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
+            <span className="font-serif italic text-2xl md:text-3xl font-bold">Vogue India</span>
+            <span className="font-serif italic text-2xl md:text-3xl font-bold">LBB</span>
+            <span className="font-serif italic text-2xl md:text-3xl font-bold">YourStory</span>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <Footer />

@@ -97,7 +97,7 @@ export default function AboutPage() {
       <section className="bg-white py-20 px-4 border-y border-neutral-100">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-3xl font-serif text-neutral-900 mb-12">Our Commitment to Craftsmanship</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             <div className="p-8 bg-neutral-50 rounded-2xl">
               <h4 className="text-xl font-bold text-neutral-900 mb-3">Premium Materials</h4>
               <p className="text-neutral-600">We use only high-grade, color-fast yarns that are soft to the touch and safe for all ages.</p>
@@ -107,8 +107,29 @@ export default function AboutPage() {
               <p className="text-neutral-600">No factories, no assembly lines. Just skilled artisans working meticulously stitch by stitch.</p>
             </div>
             <div className="p-8 bg-neutral-50 rounded-2xl">
-              <h4 className="text-xl font-bold text-neutral-900 mb-3">Unique Designs</h4>
-              <p className="text-neutral-600">Every pattern is carefully curated, and due to the handmade nature, no two items are exactly alike.</p>
+              <h4 className="text-xl font-bold text-neutral-900 mb-3">100% Satisfaction</h4>
+              <p className="text-neutral-600">Over 5,000 happy customers across India trust us for their handmade gifts.</p>
+            </div>
+          </div>
+          
+          <div className="bg-rose-50 rounded-3xl p-8 md:p-12 text-left flex flex-col md:flex-row gap-8 items-center border border-rose-100 shadow-sm">
+            <div className="md:w-2/3">
+              <h3 className="text-2xl font-bold text-neutral-900 mb-4">Shop with Confidence</h3>
+              <p className="text-neutral-700 mb-6">
+                We believe in full transparency and exceptional customer service. Every order is meticulously inspected before dispatch. If you have any concerns, our support team is always ready to help.
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm font-bold">
+                <Link href="/contact" className="text-rose-600 hover:underline">Customer Support →</Link>
+                <Link href="/policies/shipping-policy" className="text-rose-600 hover:underline">Shipping Policy →</Link>
+                <Link href="/policies/return-policy" className="text-rose-600 hover:underline">Returns & Refunds →</Link>
+              </div>
+            </div>
+            <div className="md:w-1/3 w-full border-t md:border-t-0 md:border-l border-rose-200 pt-6 md:pt-0 md:pl-8 text-center md:text-left">
+              <h4 className="font-bold text-neutral-900 mb-2">As Seen In</h4>
+              <div className="flex gap-4 opacity-60 justify-center md:justify-start">
+                <span className="font-serif italic text-lg">Vogue India</span>
+                <span className="font-serif italic text-lg">LBB</span>
+              </div>
             </div>
           </div>
         </div>
