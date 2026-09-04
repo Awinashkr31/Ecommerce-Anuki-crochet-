@@ -64,7 +64,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://anukicrochet.in'),
+  metadataBase: new URL('https://www.anukicrochet.in'),
   title: {
     template: '%s | Anuki Crochet',
     default: 'Handmade Crochet Gifts India | Unique Handcrafted Products | Anuki Crochet',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Handmade Crochet Gifts India | Unique Handcrafted Products | Anuki Crochet',
     description: 'Looking for the best handmade crochet gifts in India? Discover unique handcrafted birthday gifts, custom crochet anniversary gifts, and cute Valentine gifts online at Anuki Crochet. We offer beautiful handmade gifts delivered across India.',
-    url: 'https://anukicrochet.in',
+    url: 'https://www.anukicrochet.in',
     siteName: 'Anuki Crochet',
     locale: 'en_IN',
     type: 'website',
@@ -141,8 +141,12 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": ["Organization", "Store"],
               "name": "Anuki Crochet",
-              "url": "https://anukicrochet.in",
-              "logo": "https://anukicrochet.in/logo.png",
+              "url": "https://www.anukicrochet.in",
+              "logo": "https://www.anukicrochet.in/logo.png",
+              "sameAs": [
+                "https://instagram.com/anukicrochet",
+                "https://facebook.com/anukicrochet"
+              ],
               "description": "Shop the best handmade crochet gifts in India. Buy premium custom flower bouquets, amigurumi plushies, and handmade gifts locally from Bihar.",
               "address": {
                 "@type": "PostalAddress",

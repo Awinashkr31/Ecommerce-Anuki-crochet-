@@ -1,3 +1,13 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Payment Policy',
+  description: 'Read the Payment Policy for Anuki Crochet. Learn about accepted payment methods, payment security, and failed transaction handling.',
+  alternates: {
+    canonical: '/policies/payment-policy'
+  }
+};
+
 export default function PaymentPolicyPage() {
   return (
     <>

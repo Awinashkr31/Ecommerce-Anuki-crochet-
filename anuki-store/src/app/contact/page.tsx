@@ -13,8 +13,8 @@ export default function ContactPage() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Anuki Crochet',
-    url: 'https://anukicrochet.in',
-    logo: 'https://anukicrochet.in/logo.png',
+    url: 'https://www.anukicrochet.in',
+    logo: 'https://www.anukicrochet.in/logo.png',
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'support@anukicrochet.in',

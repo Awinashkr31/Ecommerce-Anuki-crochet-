@@ -1,4 +1,13 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "The Maker's Journal - Crochet Tips & Guides",
+  description: "Tips, patterns, and behind-the-scenes from our crochet studio. Learn how to care for handmade crochet, discover gift ideas, and more.",
+  alternates: {
+    canonical: '/blog',
+  },
+};
 
 export default function BlogIndexPage() {
   return (

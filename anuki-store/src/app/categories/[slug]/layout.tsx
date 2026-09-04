@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://anukicrochet.in/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://www.anukicrochet.in/api';
   
   try {
     const res = await fetch(`${apiUrl}/categories/slug/${slug}`, {
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         openGraph: {
           title: `${category.name} | Anuki Crochet`,
           description: category.description?.substring(0, 155) || `Browse ${category.name} handmade crochet gifts at Anuki Crochet.`,
-          url: `https://anukicrochet.in/categories/${category.slug}`,
+          url: `https://www.anukicrochet.in/categories/${category.slug}`,
           images: primaryImage ? [{ url: primaryImage }] : [],
           type: 'website',
         }
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryLayout({ children, params }: { children: React.ReactNode, params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://anukicrochet.in/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://www.anukicrochet.in/api';
   
   let structuredData = null;
   try {
@@ -54,7 +54,7 @@ export default async function CategoryLayout({ children, params }: { children: R
         "@type": "CollectionPage",
         "name": category.name,
         "description": category.description,
-        "url": `https://anukicrochet.in/categories/${category.slug}`,
+        "url": `https://www.anukicrochet.in/categories/${category.slug}`,
         "image": category.image || ""
       };
     }

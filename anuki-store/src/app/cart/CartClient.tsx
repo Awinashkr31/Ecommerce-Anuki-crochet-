@@ -96,7 +96,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center gap-4 bg-white p-4 sticky top-0 z-50 border-b border-neutral-100 shadow-sm">
         <button onClick={() => router.back()} className="text-neutral-900 active:scale-95 transition-transform"><ArrowLeft size={22} strokeWidth={1.5} /></button>
-        <h1 className="text-lg font-bold text-neutral-900">My Cart</h1>
+        <h2 className="text-lg font-bold text-neutral-900">My Cart</h2>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 mt-4 lg:mt-0 lg:px-0">

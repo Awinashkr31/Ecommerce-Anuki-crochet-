@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = product.seoTitle || `${product.name} - Buy Handmade Crochet Online`;
   const description = product.seoDesc || (product.shortDesc || product.fullDesc || '').substring(0, 160);
   const imageUrl = product.images?.length > 0 ? product.images[0].url : '/logo.png';
-  const productUrl = `https://anukicrochet.in/products/${product.slug}`;
+  const productUrl = `https://www.anukicrochet.in/products/${product.slug}`;
 
   return {
     title,
@@ -121,7 +121,7 @@ export default async function ProductDetailPage({ params }: Props) {
     "@context": "https://schema.org/",
     "@type": "Product",
     "name": product.name,
-    "image": product.images?.length > 0 ? product.images.map((img: any) => img.url) : ["https://anukicrochet.in/logo.png"],
+    "image": product.images?.length > 0 ? product.images.map((img: any) => img.url) : ["https://www.anukicrochet.in/logo.png"],
     "description": product.seoDesc || product.shortDesc || product.fullDesc || `Shop ${product.name} – handmade with love by Anuki Crochet. Premium quality, unique handcrafted crochet product. Order now at anukicrochet.in`,
     "sku": product.id,
     "brand": {
@@ -130,7 +130,7 @@ export default async function ProductDetailPage({ params }: Props) {
     },
     "offers": {
       "@type": "Offer",
-      "url": `https://anukicrochet.in/products/${product.slug}`,
+      "url": `https://www.anukicrochet.in/products/${product.slug}`,
       "priceCurrency": "INR",
       "price": product.salePrice || product.basePrice,
       "availability": product.stockStatus !== 'OUT_OF_STOCK' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",

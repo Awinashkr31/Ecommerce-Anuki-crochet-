@@ -265,6 +265,7 @@ export default function HomeClient({
                   alt="Handmade crochet gifts India"
                   fill
                   priority={index === 0}
+                  fetchPriority={index === 0 ? "high" : "auto"}
                   className="object-cover"
                   sizes="100vw"
                 />
@@ -282,9 +283,15 @@ export default function HomeClient({
                   key={index}
                   className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ${activeSlide === index ? 'opacity-100 translate-y-0 z-10' : 'opacity-0 translate-y-8 z-0 pointer-events-none'}`}
                 >
-                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-4 text-white leading-[1.1]">
-                    {banner.title}
-                  </h1>
+                  {index === 0 ? (
+                    <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-4 text-white leading-[1.1]">
+                      {banner.title}
+                    </h1>
+                  ) : (
+                    <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-4 text-white leading-[1.1]">
+                      {banner.title}
+                    </h2>
+                  )}
                   <p className="text-base lg:text-lg text-white/80 mb-8 max-w-md font-medium leading-relaxed">
                     {banner.subtitle}
                   </p>
@@ -327,9 +334,9 @@ export default function HomeClient({
               {/* Text Content */}
               <div className="w-full flex flex-col items-start">
 
-                <h1 className="text-[24px] font-[800] leading-[1.15] text-white w-[80%] mb-[6px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                <h2 className="text-[24px] font-[800] leading-[1.15] text-white w-[80%] mb-[6px] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].title}
-                </h1>
+                </h2>
 
                 <p className="text-[12px] font-[500] leading-[1.4] text-white/90 line-clamp-1 mb-[14px] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
                   {heroBanners[activeSlide].subtitle}

@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: post.title,
       description: post.excerpt,
       type: 'article',
-      url: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://anukicrochet.in'}/blog/${post.slug}`,
+      url: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.anukicrochet.in'}/blog/${post.slug}`,
       images: [
         {
           url: post.imageUrl,
@@ -66,7 +66,7 @@ export default async function BlogPostPage({ params }: Props) {
       '@type': 'Person',
       name: 'Anuki',
       description: 'Founder and lead artisan at Anuki Crochet with over 10 years of experience in crafting bespoke crochet items.',
-      url: 'https://anukicrochet.in/about',
+      url: 'https://www.anukicrochet.in/about',
       sameAs: [
         'https://instagram.com/anukicrochet',
         'https://pinterest.com/anukicrochet'
@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: Props) {
       name: 'Anuki Crochet',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://anukicrochet.in/logo.png'
+        url: 'https://www.anukicrochet.in/logo.png'
       }
     }
   };

@@ -2,8 +2,11 @@ import { Metadata } from 'next';
 import CategoriesClient from './CategoriesClient';
 
 export const metadata: Metadata = {
-  title: 'Categories | Anuki Store',
-  description: 'Browse all product categories at Anuki Store.',
+  title: 'Categories',
+  description: 'Browse all product categories at Anuki Crochet.',
+  alternates: {
+    canonical: '/categories',
+  },
 };
 
 export default function CategoriesPage() {

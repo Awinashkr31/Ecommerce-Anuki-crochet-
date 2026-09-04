@@ -13,7 +13,7 @@ export default function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] })
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": item.item.startsWith('http') ? item.item : `https://anukicrochet.in${item.item}`
+      "item": item.item.startsWith('http') ? item.item : `https://www.anukicrochet.in${item.item}`
     }))
   };
 

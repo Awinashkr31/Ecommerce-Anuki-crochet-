@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin', '/account', '/cart', '/checkout'],
     },
-    sitemap: 'https://anukicrochet.in/sitemap.xml',
+    sitemap: 'https://www.anukicrochet.in/sitemap.xml',
   };
 }
