@@ -107,7 +107,7 @@ export function Footer() {
             <ul className="space-y-2.5 text-xs">
               <li><Link href="/contact" className="text-neutral-400 hover:text-rose-400 transition-colors">Help Center</Link></li>
               <li><Link href="/policies/shipping-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Shipping Info</Link></li>
-              <li><Link href="/policies/refunds-and-cancellations" className="text-neutral-400 hover:text-rose-400 transition-colors">Returns & Refunds</Link></li>
+              <li><Link href="/policies/return-policy" className="text-neutral-400 hover:text-rose-400 transition-colors">Return Policy</Link></li>
               <li><Link href="/order-status" className="text-neutral-400 hover:text-rose-400 transition-colors">Track Order</Link></li>
               <li><Link href="/account" className="text-neutral-400 hover:text-rose-400 transition-colors">My Account</Link></li>
             </ul>
@@ -197,7 +197,7 @@ export function Footer() {
                 <li><Link href="/policies/terms-of-service" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Terms of Service</Link></li>
                 <li><Link href="/policies/shipping-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Shipping Policy</Link></li>
                 <li><Link href="/policies/payment-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Payment Policy</Link></li>
-                <li><Link href="/policies/refunds-and-cancellations" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Refunds & Cancellation</Link></li>
+                <li><Link href="/policies/return-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Return Policy</Link></li>
               </ul>
             </div>
 

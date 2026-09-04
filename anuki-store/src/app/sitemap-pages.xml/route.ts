@@ -14,7 +14,7 @@ export async function GET() {
     { loc: '/policies/privacy', freq: 'yearly', prio: '0.5' },
     { loc: '/policies/terms', freq: 'yearly', prio: '0.5' },
     { loc: '/policies/shipping', freq: 'yearly', prio: '0.5' },
-    { loc: '/policies/refunds', freq: 'yearly', prio: '0.5' },
+    { loc: '/policies/return-policy', freq: 'yearly', prio: '0.5' },
   ];
 
   const now = new Date().toISOString();

@@ -43,6 +43,11 @@ const nextConfig: NextConfig = {
         destination: 'https://www.anukicrochet.in/:path*',
         permanent: true,
       },
+      {
+        source: '/policies/returns-and-exchanges',
+        destination: '/policies/return-policy',
+        permanent: true,
+      },
     ];
   },
   async headers() {
