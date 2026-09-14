@@ -56,33 +56,39 @@ export default function VariantSelector({
   return (
     <div className="space-y-6 mb-6">
       {colors.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-bold text-neutral-900">Color:</span>
-            <span className="text-sm font-medium text-neutral-600">{colors.length > 0 ? currentVariant?.color : baseColor}</span>
+        <div className="border-t border-neutral-100 pt-5 mt-2">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[11px] font-bold text-neutral-900">
+              Color Palette: <span className="text-[#8c3a44]">{colors.length > 0 ? currentVariant?.color : baseColor}</span>
+            </div>
+            <div className="bg-emerald-50 text-emerald-700 text-[9px] font-bold tracking-wide px-2 py-0.5 rounded-sm">
+              In Stock
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5">
             {colors.map((c: any) => {
               const isSelected = currentVariant?.color === c;
-              const variantForColor = allVariants.find(v => v.color === c);
-              const imgUrl = variantForColor?.imageUrls?.[0] || variantForColor?.imageUrl || (variantForColor?.id === 'base' && baseProduct?.images?.[0]?.url);
               return (
                 <button
                   key={c}
                   onClick={() => handleSelect('color', c)}
-                  className={`relative p-1 pb-1.5 rounded-lg flex flex-col items-center gap-1 transition-all w-[60px] ${isSelected ? 'ring-2 ring-rose-500 ring-offset-2 bg-rose-50' : 'ring-1 ring-neutral-200 hover:ring-neutral-400 bg-white'}`}
+                  className={`relative px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${isSelected ? 'border border-rose-300 bg-rose-50' : 'border border-neutral-200 hover:border-neutral-300 bg-white'}`}
                   title={c}
                 >
-                  <span 
-                    className="w-[50px] h-[56px] rounded-md border border-black/10 overflow-hidden block shrink-0" 
-                    style={{ backgroundColor: colorMap[c] || c }}
-                  >
-                    {imgUrl && <img src={imgUrl} alt={c} className="w-full h-full object-cover" />}
-                  </span>
-                  <span className={`text-[10px] font-bold w-full text-center truncate px-0.5 leading-none ${isSelected ? 'text-rose-600' : 'text-neutral-700'}`}>{c}</span>
+                  <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: colorMap[c] || c }}></span>
+                  <span className={`text-[11px] font-bold ${isSelected ? 'text-[#8c3a44]' : 'text-neutral-600'}`}>{c}</span>
+                  {isSelected && (
+                    <span className="absolute -top-1 -left-1 bg-white rounded-full">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#8c3a44" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </span>
+                  )}
                 </button>
               );
             })}
+          </div>
+          <div className="flex items-start gap-1.5 mt-3 text-neutral-500">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8c3a44" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <p className="text-[10px] italic leading-tight">Each stitch is crocheted by hand, slight variations celebrate genuine craftsmanship.</p>
           </div>
         </div>
       )}

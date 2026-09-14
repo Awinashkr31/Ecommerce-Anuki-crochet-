@@ -92,35 +92,35 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
   const activeBadges = [];
   if (product.bestseller) {
     activeBadges.push(
-      <span key="bestseller" className="bg-orange-100 text-orange-600 text-[10px] font-bold capitalize tracking-wide px-2 py-1 rounded-br-[16px]">
+      <span key="bestseller" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
         Bestseller
       </span>
     );
   }
   if (product.isNew) {
     activeBadges.push(
-      <span key="new" className="bg-orange-100 text-orange-600 text-[10px] font-bold capitalize tracking-wide px-2 py-1 rounded-br-[16px]">
-        New
+      <span key="new" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
+        New In
       </span>
     );
   }
   if (product.isMadeToOrder) {
     activeBadges.push(
-      <span key="handmade" className="bg-white/90 backdrop-blur text-neutral-800 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
+      <span key="handmade" className="bg-white text-neutral-800 text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
         Handmade
       </span>
     );
   }
   if (discount) {
     activeBadges.push(
-      <span key="discount" className="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
-        -{discount}% Off
+      <span key="discount" className="bg-[#8c3a44] text-white text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
+        -{discount}% OFF
       </span>
     );
   }
   if (!inStock) {
     activeBadges.push(
-      <span key="stock" className="bg-neutral-900 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-br-[16px] shadow-sm">
+      <span key="stock" className="bg-neutral-900 text-white text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
         Out of Stock
       </span>
     );
@@ -155,10 +155,10 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="group flex flex-col gap-4 relative w-full"
     >
-      <div className="relative aspect-[4/5] bg-neutral-100 rounded-[20px] overflow-hidden block">
+      <div className="relative aspect-[4/5] bg-neutral-100 rounded-2xl overflow-hidden block">
         
         {/* Badges */}
-        <div className="absolute top-0 left-0 z-20">
+        <div className="absolute top-2 left-2 z-20 flex flex-col gap-1.5">
           <AnimatePresence mode="wait">
             {activeBadges.length > 0 && (
               <motion.div
@@ -203,79 +203,75 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
           )}
         </Link>
 
-        {/* Quick Add Overlay */}
-        <div className="absolute bottom-4 left-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 z-20 pointer-events-none lg:pointer-events-auto">
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
-              const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
-              
-              addItem({
-                id: variant ? variant.id || product.id : product.id,
-                productId: product.id,
-                variantId: variant ? variant.id || product.id : product.id,
-                name: product.name,
-                price: price,
-                quantity: 1,
-                image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
-                variantText: variant ? (variant.color || variant.name) : undefined
-              });
-              setIsOpen(true);
-            }}
-            className="w-full bg-white/95 backdrop-blur-md text-neutral-900 font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-transform active:scale-[0.98]"
-          >
-            <ShoppingBag size={16} />
-            Quick Add
-          </button>
-        </div>
+
       </div>
       
       {/* Product Details */}
-      <div className="flex flex-col gap-1 px-1">
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-neutral-500 font-medium">
-            {product.category?.name || "Premium Craft"}
+      <div className="flex flex-col px-0.5 pb-2">
+        <div className="flex items-center justify-between mb-1">
+          <div className="text-[9px] text-neutral-400 font-medium">
+            {product.category?.name || "Product"}
           </div>
           {reviews.length > 0 && (
             <div className="flex items-center gap-1 text-amber-400">
-              <Star size={12} fill="currentColor" />
-              <span className="text-xs font-bold text-neutral-900">{averageRating}</span>
+              <Star size={10} fill="currentColor" />
+              <span className="text-[10px] font-bold text-neutral-500">{averageRating}</span>
             </div>
           )}
         </div>
         
-        <Link href={`/products/${product.slug}`} prefetch={false} className="text-neutral-900 font-bold hover:text-rose-600 transition-colors line-clamp-1 text-base">
+        <Link href={`/products/${product.slug}`} prefetch={false} className="text-neutral-900 font-bold hover:text-[#8c3a44] transition-colors line-clamp-2 text-sm leading-tight mb-2">
           {product.name}
         </Link>
         
-        <div className="flex items-center justify-between mt-1">
-          <div className="flex items-center gap-2">
-            {originalPrice ? (
-              <>
-                <span className="text-base font-black text-rose-600">₹{displayPrice}</span>
-                <span className="text-sm font-semibold text-neutral-400 line-through">₹{originalPrice}</span>
-              </>
-            ) : (
-              <span className="text-base font-black text-neutral-900">₹{displayPrice}</span>
-            )}
+        {/* Color Swatches */}
+        {colors.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            {colors.map((c, i) => (
+              <div 
+                key={i} 
+                className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm shrink-0"
+                style={{ backgroundColor: colorMap[c as string] || '#e5e7eb' }}
+                title={c as string}
+              />
+            ))}
           </div>
+        )}
 
-          {/* Color Swatches */}
-          {colors.length > 0 && (
-            <div className="flex items-center gap-1 flex-wrap">
-              {colors.map((c, i) => (
-                <div 
-                  key={i} 
-                  className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm shrink-0"
-                  style={{ backgroundColor: colorMap[c as string] || '#e5e7eb' }}
-                  title={c as string}
-                />
-              ))}
-            </div>
+        <div className="flex items-center gap-2 mb-3">
+          {originalPrice ? (
+            <>
+              <span className="text-sm font-black text-[#8c3a44]">₹{displayPrice}</span>
+              <span className="text-[11px] font-bold text-neutral-400 line-through">₹{originalPrice}</span>
+            </>
+          ) : (
+            <span className="text-sm font-black text-[#8c3a44]">₹{displayPrice}</span>
           )}
         </div>
+
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
+            const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
+            
+            addItem({
+              id: variant ? variant.id || product.id : product.id,
+              productId: product.id,
+              variantId: variant ? variant.id || product.id : product.id,
+              name: product.name,
+              price: price,
+              quantity: 1,
+              image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
+              variantText: variant ? (variant.color || variant.name) : undefined
+            });
+            setIsOpen(true);
+          }}
+          className="w-full bg-[#8c3a44] text-white font-bold text-xs py-2 rounded-full flex items-center justify-center hover:bg-[#7a323b] transition-colors active:scale-[0.98] shadow-sm"
+        >
+          + Add to Bag
+        </button>
       </div>
     </motion.div>
   );

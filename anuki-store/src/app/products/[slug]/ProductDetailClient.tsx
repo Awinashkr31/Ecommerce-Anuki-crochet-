@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, ShieldCheck, Heart } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Heart, ArrowLeft, Share2 } from 'lucide-react';
 import { toast } from "sonner";
 
 import { useCartStore } from '../../../store/cartStore';
@@ -105,48 +105,34 @@ export default function ProductDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
+    <div className="min-h-screen bg-[#fcf8f7] font-sans pb-28 md:pb-32">
       
-      
-      {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-2 md:py-4">
-        <nav className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-          <Link href="/" className="hover:text-rose-600 transition-colors">Home</Link>
-          <ChevronRight size={14} />
-          <Link href="/products" className="hover:text-rose-600 transition-colors">Shop</Link>
-          <ChevronRight size={14} />
-          {product.category && (
-            <>
-              <Link href={`/products?category=${product.category.slug}`} className="hover:text-rose-600 transition-colors truncate max-w-[100px] sm:max-w-none">
-                {product.category.name}
-              </Link>
-              <ChevronRight size={14} />
-            </>
-          )}
-          <span className="text-neutral-900 truncate">{product.name}</span>
+      {/* Breadcrumbs & Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-[#fcf8f7] sticky top-0 z-40 w-full max-w-md mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+        <nav className="text-[11px] font-bold text-neutral-500 flex items-center gap-1.5 uppercase tracking-wider">
+          <Link href="/" className="hover:text-rose-600 transition-colors flex items-center gap-1 text-neutral-900">
+            <ArrowLeft size={16} strokeWidth={2.5} /> Home
+          </Link>
+          <span className="text-neutral-300">/</span>
+          <Link href="/products" className="hover:text-rose-600 transition-colors">
+            {product.category?.name || 'Shop'}
+          </Link>
+          <span className="text-neutral-300">/</span>
+          <span className="text-neutral-900 truncate max-w-[120px]">{product.name}</span>
         </nav>
       </div>
 
-      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 lg:pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+      <article className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+        <div className="flex flex-col">
           
-          {/* Left Column: Image Gallery */}
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-8">
-              <ImageGallery key={currentVariant?.id || 'base'} images={displayImages} altText={product.name} />
-            </div>
+          {/* Image Gallery */}
+          <div className="w-full">
+            <ImageGallery key={currentVariant?.id || 'base'} images={displayImages} altText={product.name} />
           </div>
 
-          {/* Right Column: Product Information */}
-          <div className="lg:col-span-7 relative">
-            <VariantSelector 
-              variants={product.variants || []}
-              selectedVariantId={selectedVariantId}
-              setSelectedVariantId={setSelectedVariantId}
-              baseColor={product.color}
-              baseProduct={product}
-            />
-
+          {/* Main Content Area */}
+          <div className="px-4 py-4 sm:px-6">
+            
             <ProductInfo 
               product={product} 
               displayPrice={displayPrice}
@@ -155,89 +141,56 @@ export default function ProductDetailClient({
               inStock={inStock}
             />
 
+            <VariantSelector 
+              variants={product.variants || []}
+              selectedVariantId={selectedVariantId}
+              setSelectedVariantId={setSelectedVariantId}
+              baseColor={product.color}
+              baseProduct={product}
+            />
+
             <ProductAccordions product={product} />
 
-            <StickyBuyBar 
-              product={product}
-              currentVariant={currentVariant}
-              displayPrice={displayPrice}
-              quantity={quantity}
-              setQuantity={setQuantity}
-              inStock={inStock}
-              handleAddToCart={handleAddToCart}
-              handleBuyNow={handleBuyNow}
-              isAddingToCart={isAddingToCart}
-            />
           </div>
         </div>
       </article>
 
+      {/* Complete the Gift Section */}
+      {completeTheGift.length > 0 && (
+        <section className="bg-[#fcf8f7] py-6">
+          <div className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-serif text-neutral-900 leading-none font-bold">Complete the Gift</h2>
+              <Link href="/products" className="text-[10px] font-bold text-rose-600 uppercase tracking-widest hover:underline">View All</Link>
+            </div>
+            <p className="text-[11px] text-neutral-500 mb-4 -mt-2">Pair your plushie with matching floral & handmade charms</p>
+            <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 snap-x">
+              {completeTheGift.map((p) => (
+                <div key={p.id} className="snap-start min-w-[140px] w-[140px] md:min-w-[180px] md:w-[180px]">
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Reviews Section */}
       <ProductReviews productId={product.id} />
 
-      {/* Complete the Gift Section */}
-      {completeTheGift.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-4 md:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-4">Complete the Gift</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-              {completeTheGift.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Sticky Buy Bar */}
+      <StickyBuyBar 
+        product={product}
+        currentVariant={currentVariant}
+        displayPrice={displayPrice}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        inStock={inStock}
+        handleAddToCart={handleAddToCart}
+        handleBuyNow={handleBuyNow}
+        isAddingToCart={isAddingToCart}
+      />
 
-      {/* You May Also Like Section */}
-      {youMayAlsoLike.length > 0 && (
-        <section className="bg-white border-t border-neutral-100 py-4 md:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-4">You May Also Like</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-              {youMayAlsoLike.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* EEAT & Trust Signals Section */}
-      <section className="bg-white border-y border-neutral-100 py-4 md:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl md:text-2xl font-serif text-neutral-900 mb-3">Why Choose Anuki Crochet?</h2>
-            <p className="text-neutral-500 max-w-2xl mx-auto text-sm">Every piece is carefully handcrafted with premium yarn, ensuring a lasting <Link href="/products" className="text-rose-600 hover:underline">handmade crochet gift</Link> that brings joy for years to come.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100">
-              <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
-                <ShieldCheck size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">Premium Quality</h3>
-              <p className="text-sm text-neutral-600">Hypoallergenic, color-fast yarn that never fades.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4">
-                <Heart size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">100% Handmade</h3>
-              <p className="text-sm text-neutral-600">Crafted with love by skilled artisans in India. Need something unique? Make a <Link href="/custom" className="text-rose-600 hover:underline">custom crochet order</Link>.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-emerald-50/50 rounded-2xl border border-emerald-100">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-              </div>
-              <h3 className="text-lg font-bold text-neutral-900 mb-2">Secure Payments</h3>
-              <p className="text-sm text-neutral-600">Encrypted and safe checkout via Razorpay.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Footer Spacing for Sticky Bar */}
-      <div className="h-24 md:h-0"></div>
     </div>
   );
 }

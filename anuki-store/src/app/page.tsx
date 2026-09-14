@@ -17,7 +17,7 @@ export default async function Page() {
   const [bestsellerProducts, latestProducts, categories, allProductsPool] = await Promise.all([
     prisma.product.findMany({
       where: { status: 'PUBLISHED', bestseller: true },
-      take: 4,
+      take: 8,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -45,7 +45,7 @@ export default async function Page() {
     }),
     prisma.product.findMany({
       where: { status: 'PUBLISHED' },
-      take: 4,
+      take: 8,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -110,9 +110,10 @@ export default async function Page() {
   ]);
 
   const filteredPool = allProductsPool.filter(p => !existingProductIds.has(p.id));
-  const shuffled = filteredPool.sort(() => 0.5 - Math.random());
+  
+  // Deterministic shuffle-like behavior for Server Component
+  const shuffled = [...filteredPool].sort((a, b) => a.id.localeCompare(b.id));
   const randomProducts = shuffled.slice(0, 4);
-  const randomProducts2 = shuffled.slice(4, 8);
 
   // Preload the LCP hero image so the browser starts downloading it immediately
   const heroImageUrl = bestsellerProducts[0]?.images?.[0]?.url
@@ -243,7 +244,6 @@ export default async function Page() {
         latestProducts={latestProducts.map(p => ({ ...p, isNew: true })) as any} 
         categories={categories as any} 
         randomProducts={randomProducts as any}
-        randomProducts2={randomProducts2 as any}
       />
     </>
   );

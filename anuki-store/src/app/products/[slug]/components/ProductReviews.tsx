@@ -72,32 +72,32 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
   return (
     <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-end mb-8 border-b border-neutral-100 pb-4">
+      <div className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-serif text-neutral-900">Customer Reviews</h2>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex text-amber-400">
+            <h2 className="text-xl font-bold font-serif text-[#333333]">Artisan Reviews</h2>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex text-[#8c3a44]">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} size={20} className={star <= (reviews.length > 0 ? reviews.reduce((a: any, c: any) => a + c.rating, 0) / reviews.length : 5) ? 'fill-amber-400' : 'text-neutral-200 fill-neutral-100'} />
+                  <Star key={star} size={14} className={star <= (reviews.length > 0 ? reviews.reduce((a: any, c: any) => a + c.rating, 0) / reviews.length : 5) ? 'fill-[#8c3a44]' : 'text-neutral-200 fill-neutral-100'} />
                 ))}
               </div>
-              <span className="text-sm text-neutral-500 font-medium">
-                {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+              <span className="text-[11px] text-neutral-500">
+                ({reviews.length})
               </span>
             </div>
           </div>
           <button 
             onClick={() => setShowForm(!showForm)}
-            className="text-sm font-bold text-rose-600 hover:text-rose-700 transition-colors bg-rose-50 px-4 py-2 rounded-lg"
+            className="text-[10px] font-bold text-[#8c3a44] uppercase tracking-widest hover:underline"
           >
-            {showForm ? 'Cancel' : 'Write a Review'}
+            {showForm ? 'Cancel' : 'Write Review'}
           </button>
         </div>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="mb-10 bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
-            <h3 className="font-bold text-neutral-900 mb-4">Leave your feedback</h3>
+          <form onSubmit={handleSubmit} className="mb-8 bg-[#fcf8f7] p-5 rounded-2xl border border-rose-100/50">
+            <h3 className="text-sm font-bold text-[#8c3a44] mb-3">Leave your feedback</h3>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-neutral-700 mb-2">Rating</label>

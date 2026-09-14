@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { apiPost, apiGet } from "../../lib/api";
+import { useAddressStore } from "../../store/addressStore";
 import { preload } from "swr";
 import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, RotateCcw, Ticket,
   FileText, BarChart3, Warehouse, ScrollText, Settings, Truck, Star, Palette, LogOut, Search
 } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fetcher = (url: string) => apiGet<any>(url);
 
 const routeToApiMap: Record<string, string> = {
@@ -70,6 +72,7 @@ export function AdminSidebar({ isOpen, onClose }: SidebarProps) {
     
     // Instant UI update
     clearAuthStore();
+    useAddressStore.getState().clearAddresses();
     router.push("/auth");
   };
 

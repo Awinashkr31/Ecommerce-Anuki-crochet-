@@ -3,6 +3,8 @@ import { ProductCard } from '@/components/ProductCard';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { StoreHeader } from '@/components/StoreHeader';
+import MoreGiftIdeas from '@/components/MoreGiftIdeas';
 
 export const revalidate = 60;
 
@@ -120,27 +122,7 @@ export default async function ValentinesDayGiftsPage() {
         </article>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <h2 className="text-xl font-bold text-neutral-900 mb-6">More Gift Ideas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/gifts/anniversary" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Anniversary</p>
-            <p className="text-xs text-neutral-500">For couples</p>
-          </Link>
-          <Link href="/gifts/birthday" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Birthday</p>
-            <p className="text-xs text-neutral-500">Fun gifts</p>
-          </Link>
-          <Link href="/gifts/under-300" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Under ₹300</p>
-            <p className="text-xs text-neutral-500">Budget picks</p>
-          </Link>
-          <Link href="/custom" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Custom Gifts</p>
-            <p className="text-xs text-neutral-500">Made to order</p>
-          </Link>
-        </div>
-      </section>
+      <MoreGiftIdeas currentPath="/gifts/valentines-day" />
     </div>
   );
 }

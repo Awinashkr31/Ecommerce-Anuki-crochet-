@@ -3,14 +3,14 @@ import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiPost, apiGet } from "@/lib/api";
+import { apiPost } from "@/lib/api";
 import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import AddressModal, { Address } from "@/components/AddressModal";
+import AddressModal from "@/components/AddressModal";
+import { useAddressStore } from "@/store/addressStore";
 import CartOffers from "@/app/cart/CartOffers";
 import { load } from "@cashfreepayments/cashfree-js";
-import useSWR from 'swr';
 
 export default function CheckoutClient({ settings }: { settings: Record<string, string> }) {
   const router = useRouter();
@@ -21,14 +21,19 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const { selectedAddress, setSelectedAddress, fetchAddressesOnce, addresses, hydrate } = useAddressStore();
   const processingRef = useRef(false); // Double-click protection
   const cashfreeRef = useRef<any>(null); // Cache preloaded SDK
   const [paymentStep, setPaymentStep] = useState<string | null>(null); // For animated overlay
 
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
   // If cart is empty or user is not logged in, redirect
   useEffect(() => {
-    if (isLoading) return; // Wait until auth state is loaded
+    if (isLoading) return;
 
     if (!profile) {
       router.replace('/auth?redirect=/checkout');
@@ -39,21 +44,22 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     }
   }, [items.length, router, isProcessing, profile, isLoading]);
 
-  const { data: addresses } = useSWR<Address[]>('/addresses', apiGet);
-
+  // Fetch addresses once (uses cached store, no duplicate API call)
   useEffect(() => {
-    if (addresses && addresses.length > 0 && !selectedAddress) {
-      if (urlAddressId) {
-        const found = addresses.find(a => a.id === urlAddressId);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (found) setSelectedAddress(found);
-        else setSelectedAddress(addresses.find(a => a.isDefault) || addresses[0]);
-      } else {
-        const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
-        if (defaultAddr) setSelectedAddress(defaultAddr);
+    if (profile) {
+      fetchAddressesOnce();
+    }
+  }, [profile, fetchAddressesOnce]);
+
+  // If URL has addressId param, select that address from the store
+  useEffect(() => {
+    if (addresses && addresses.length > 0 && urlAddressId) {
+      const found = addresses.find(a => a.id === urlAddressId);
+      if (found && found.id !== selectedAddress?.id) {
+        setSelectedAddress(found);
       }
     }
-  }, [addresses, urlAddressId, selectedAddress]);
+  }, [addresses, urlAddressId, selectedAddress?.id, setSelectedAddress]);
 
   // Browser beforeunload warning during payment
   useEffect(() => {

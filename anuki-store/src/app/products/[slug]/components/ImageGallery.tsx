@@ -25,7 +25,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
       {/* Main Image */}
       <div 
         ref={imageRef}
-        className="relative aspect-[4/5] sm:aspect-[4/5] lg:aspect-[4/5] w-full bg-neutral-100 rounded-[24px] overflow-hidden group"
+        className="relative aspect-square w-full bg-neutral-100 rounded-b-3xl sm:rounded-3xl overflow-hidden group shadow-sm"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -51,58 +51,60 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 alt={images[activeIndex]?.altText || altText}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-500"
                 priority
                 unoptimized
               />
           </motion.div>
         </AnimatePresence>
 
-        {/* Badges / Overlay UI */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-neutral-900 shadow-sm hover:bg-white transition-colors">
-            <Maximize2 size={18} />
-          </button>
+        {/* Badges - Top Left */}
+        <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
+          <div className="bg-teal-500 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm w-fit border border-teal-600 flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            35% OFF
+          </div>
+          <div className="bg-white text-rose-600 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm w-fit border border-rose-200 flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+            Bestseller
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm text-neutral-800 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm w-fit border border-white/50 flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            100% Handcrafted
+          </div>
         </div>
 
-        {/* Mobile Navigation Arrows (visible only on small screens or when hover on desktop if multiple images) */}
-        {images.length > 1 && (
-          <>
-            <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-neutral-900 shadow-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronLeft size={20} />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-neutral-900 shadow-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <ChevronRight size={20} />
-            </button>
-          </>
-        )}
+        {/* Wishlist Button - Top Right */}
+        <button className="absolute top-4 right-4 w-9 h-9 bg-white rounded-full flex items-center justify-center text-neutral-400 shadow-sm hover:text-rose-500 transition-colors z-10 border border-neutral-100">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
 
-        {/* Mobile Pagination Dots */}
-        {images.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 md:hidden z-10">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
-                className={`h-2 rounded-full transition-all shadow-sm ${activeIndex === idx ? 'bg-white w-5' : 'bg-white/70 w-2'}`}
-              />
-            ))}
-          </div>
-        )}
+        {/* Pinch to Inspect - Bottom Right */}
+        <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-neutral-600 text-[9px] font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 z-10 border border-neutral-100">
+          <Maximize2 size={10} strokeWidth={3} /> Pinch to inspect stitches
+        </div>
+
       </div>
 
-      {/* Thumbnail Gallery (Desktop Only) */}
+      {/* Thumbnail Gallery */}
       {images.length > 1 && (
-        <div className="hidden md:flex gap-3 overflow-x-auto pb-2 custom-scrollbar snap-x">
+        <div className="flex gap-2.5 overflow-x-auto pb-2 px-4 sm:px-0 hide-scrollbar snap-x">
           {images.map((img, idx) => (
             <button
               key={idx}
               onClick={() => setActiveIndex(idx)}
-              className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 snap-start transition-all ${
-                activeIndex === idx ? 'ring-2 ring-rose-500 ring-offset-2' : 'opacity-60 hover:opacity-100'
+              className={`relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 snap-start transition-all ${
+                activeIndex === idx ? "ring-2 ring-rose-500 ring-offset-1 border-transparent" : "border border-neutral-200 opacity-70 hover:opacity-100"
               }`}
             >
-              <Image src={img.url} alt={img.altText || altText} fill sizes="(max-width: 768px) 80px, 96px" className="object-cover" unoptimized />
+              <Image
+                src={img.url}
+                alt={img.altText || altText}
+                fill
+                sizes="64px"
+                className="object-cover"
+                unoptimized
+              />
             </button>
           ))}
         </div>

@@ -62,8 +62,8 @@ const epicDeals = [
   }
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EpicDeals({ products = [], categories = [] }: { products?: any[], categories?: any[] }) {
-  const fallbackImage = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -145,6 +145,7 @@ export function EpicDeals({ products = [], categories = [] }: { products?: any[]
           className="flex overflow-x-auto snap-x snap-mandatory gap-0 md:gap-2 pb-6 hide-scrollbar px-2 md:px-4"
         >
           {epicDeals.map((deal, index) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cat = categories.find((c: any) => c.slug === deal.slug);
             const productImg = cat?.bannerUrl || cat?.products?.[0]?.images?.[0]?.url || products[index % products.length]?.images?.[0]?.url;
             const finalImage = productImg || deal.image;

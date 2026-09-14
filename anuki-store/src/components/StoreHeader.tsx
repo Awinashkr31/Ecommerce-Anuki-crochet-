@@ -2,55 +2,41 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Dancing_Script } from 'next/font/google';
+
+const dancingScript = Dancing_Script({ subsets: ['latin'], weight: ['700'] });
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import { Search, User, ShoppingCart, ArrowLeft, Truck, Sparkles, ShoppingBag, X } from "lucide-react";
-import { useAuthStore } from "../store/authStore";
+import { useState, useEffect } from "react";
+import { Search, ShoppingCart } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
-import { apiGet } from "../lib/api";
-import useSWR from 'swr';
 import { InstallPWAButton } from "./InstallPWAButton";
 
 export function StoreHeader() {
-  const { profile } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(pathname !== "/");
-  const mobileInputRef = useRef<HTMLInputElement>(null);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
 
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
-    setIsMobileSearchExpanded(pathname !== "/");
+    setIsMobileSearchExpanded(false);
   }
 
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const activeCategories = categories.filter((c: any) => c.isActive && !c.parentId);
 
-  const { data: settings } = useSWR('/settings/public', (url: string) => apiGet<Record<string, string>>(url));
-  const freeDeliveryThreshold = settings?.['free_delivery_threshold'] ? Number(settings['free_delivery_threshold']) : 499;
-
-  const isLoggedIn = !!profile;
   const totalCartItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
 
   useEffect(() => {
     let ticking = false;
-
     const updateScrollDir = () => {
       const currentScrollY = window.scrollY;
-      
-      // If we scroll down past 60px, hide it. If we scroll up, show it.
       if (currentScrollY > lastScrollY && currentScrollY > 60) {
         setIsVisible(false);
       } else if (currentScrollY < lastScrollY) {
         setIsVisible(true);
       }
-      
       setLastScrollY(currentScrollY);
       ticking = false;
     };
@@ -66,203 +52,66 @@ export function StoreHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-
-
-  // Get user initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  if (pathname === '/checkout') {
-    return null;
-  }
+  if (pathname === '/checkout' || pathname === '/cart') return null;
 
   return (
-    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-neutral-100 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${pathname === '/cart' ? 'hidden md:block' : 'block'}`}>
-      
-      {/* Top Shipping Banner */}
-      <div className="bg-[#781f33] text-white py-2 px-4 flex items-center justify-center gap-2 text-[11px] sm:text-xs font-bold tracking-widest">
-        <Truck size={14} className="opacity-90" />
-        FREE SHIPPING ON ORDERS OVER ₹{freeDeliveryThreshold}!
-        <Sparkles size={14} className="absolute right-4 text-white/30 hidden sm:block" />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
-        
-        {/* --- MOBILE LAYOUT --- */}
-        <div className="flex md:hidden items-center justify-between w-full relative h-full">
-          <div className="flex w-full items-center gap-2">
-            <div className="flex items-center shrink-0">
-              {pathname !== "/" ? (
-                <button onClick={() => router.back()} className="p-1 -ml-1 mr-2 text-neutral-700 active:scale-95 transition-transform">
-                  <ArrowLeft size={24} strokeWidth={1.5} />
-                </button>
-              ) : (
-                <Link href="/" className="flex-shrink-0 mr-2 flex items-center group">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-rose-200 blur-md opacity-0 group-hover:opacity-50 transition-opacity rounded-full"></div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <Image src="/logo2.webp" alt="Anuki Logo" width={36} height={36} priority className={`relative h-9 w-9 object-contain rounded-xl border-[1.5px] border-rose-100 shadow-sm p-0.5 bg-white transition-transform group-hover:scale-105 ${isMobileSearchExpanded ? '' : 'mr-2.5'}`} />
-                  </div>
-                  <div className={`flex flex-col -gap-1 transition-all duration-300 overflow-hidden ${isMobileSearchExpanded ? 'w-0 opacity-0' : 'opacity-100'}`}>
-                    <span className="font-black text-[#781f33] tracking-tighter text-[17px] leading-none whitespace-nowrap">
-                      Anuki<span className="font-medium text-rose-400 tracking-tight ml-1.5">Crochet</span>
-                    </span>
-                  </div>
-                </Link>
-              )}
+    <>
+      <header className={`fixed top-0 w-full z-50 pt-safe bg-white backdrop-blur-xl shadow-sm transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="h-16 px-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 border-[1.5px] border-[#FCE4E8] rounded-[12px] flex items-center justify-center bg-[#FFF9FA] overflow-hidden p-1 shadow-sm shrink-0">
+              <Image alt="Logo" width={640} height={640} className="w-full h-full object-contain" src="/logo2.webp" />
             </div>
-
-            <div className="flex items-center justify-end transition-all duration-300 flex-1 min-w-0">
-              {isMobileSearchExpanded ? (
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const query = new FormData(e.currentTarget).get('q')?.toString().trim();
-                    if (query) {
-                      router.push(`/products?search=${encodeURIComponent(query)}`);
-                      setIsMobileSearchExpanded(false);
-                    }
-                  }}
-                  className="flex-1 flex items-center bg-white border-[1.5px] border-[#3b82f6] rounded-full px-2 py-1.5 shadow-sm w-full min-w-0"
-                >
-                  <Search size={18} className="text-neutral-500 mx-1 shrink-0" strokeWidth={1.5} />
-                  <input 
-                    ref={mobileInputRef}
-                    name="q"
-                    type="text" 
-                    placeholder="Search..." 
-                    className="w-full bg-transparent text-sm focus:outline-none placeholder:text-neutral-500 text-neutral-900 min-w-0"
-                  />
-                  {pathname === "/" && (
-                    <button type="button" onClick={() => setIsMobileSearchExpanded(false)} className="text-neutral-400 p-1 shrink-0 active:scale-95 transition-transform">
-                      <X size={16} strokeWidth={2} />
-                    </button>
-                  )}
-                </form>
-              ) : (
-                <button 
-                  onClick={() => {
-                    setIsMobileSearchExpanded(true);
-                    setTimeout(() => mobileInputRef.current?.focus(), 50);
-                  }} 
-                  className="p-2 mr-1 text-neutral-700 active:scale-95 transition-transform"
-                >
-                  <Search size={22} strokeWidth={1.5} />
-                </button>
-              )}
+            <div className="flex flex-col items-center sm:items-start justify-center leading-none mt-0.5">
+              <div className="flex items-center gap-1.5 tracking-tight relative z-10">
+                <span className={`${dancingScript.className} text-[#7A1D2E] text-[22px] md:text-[24px] drop-shadow-sm relative`}>
+                  Anuki
+                  <svg className="absolute -top-0.5 -right-2.5 w-[10px] h-[10px] text-[#ff8fa3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                </span>
+                <span className="text-[#FF6B8B] font-bold text-[18px] md:text-[20px] tracking-tight ml-2">Crochet</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[#7A1D2E] opacity-90 -mt-0.5 relative z-0">
+                <span className="w-5 sm:w-8 h-[1px] bg-[#7A1D2E]/40"></span>
+                <span className="text-[6.5px] md:text-[7.5px] tracking-[0.2em] uppercase font-bold flex items-center gap-1">
+                  HANDMADE <svg className="w-2 h-2 text-[#ff4d6d]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> WITH LOVE
+                </span>
+                <span className="w-5 sm:w-8 h-[1px] bg-[#7A1D2E]/40"></span>
+              </div>
             </div>
-
+          </Link>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsMobileSearchExpanded(!isMobileSearchExpanded)} 
+              aria-label="Search boutique" 
+              className="w-8 h-8 flex items-center justify-center text-neutral-700 hover:text-black transition-colors"
+            >
+              <Search size={22} strokeWidth={1.5} />
+            </button>
+            
             <InstallPWAButton />
 
-            <Link href="/cart" className="relative p-1 text-neutral-700 shrink-0">
-              <ShoppingCart size={24} strokeWidth={1.5} />
+            <Link href="/cart" aria-label="Shopping Cart" className="w-8 h-8 flex items-center justify-center text-neutral-700 hover:text-black relative transition-colors">
+              <ShoppingCart size={22} strokeWidth={1.5} />
               {totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#e11d48] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white">
-                  {totalCartItems}
-                </span>
+                <span className="absolute -top-1 -right-1 bg-[#E71644] text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm border border-white">{totalCartItems}</span>
               )}
             </Link>
           </div>
         </div>
-
-        {/* --- DESKTOP LAYOUT --- */}
-        <div className="hidden md:flex items-center w-full justify-between">
-          
-          <div className="flex items-center gap-3 relative z-10">
-            <Link href="/" className="flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <Image src="/logo.png" alt="Anuki Logo" width={150} height={48} priority className="h-12 w-auto object-contain" />
-            </Link>
+        {isMobileSearchExpanded && (
+          <div className="px-4 pb-3 animate-fade-in">
+             <form onSubmit={(e) => {
+               e.preventDefault();
+               const query = new FormData(e.currentTarget).get('q')?.toString().trim();
+               if (query) router.push(`/products?search=${encodeURIComponent(query)}`);
+             }} className="flex items-center w-full bg-neutral-100 rounded-full shadow-sm overflow-hidden px-3">
+               <Search size={18} className="text-neutral-500 shrink-0" />
+               <input type="text" name="q" placeholder="Search bouquets, keychains, plushies..." className="flex-1 h-10 bg-transparent px-2 focus:outline-none text-sm text-neutral-900 placeholder:text-neutral-400" autoFocus />
+             </form>
           </div>
-
-          <nav className="flex items-center gap-8 font-bold text-sm text-neutral-600">
-            <div className="group relative py-8">
-              <Link href="/products" className="hover:text-rose-600 transition-colors">Shop All</Link>
-            </div>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {activeCategories.slice(0, 4).map((category: any) => (
-              <div key={category.id} className="group relative py-8">
-                <Link href={`/products?category=${category.slug}`} className="hover:text-rose-600 transition-colors">
-                  {category.name}
-                </Link>
-              </div>
-            ))}
-            <div className="group relative py-8">
-              <Link href="/custom" className="hover:text-rose-600 transition-colors whitespace-nowrap text-[#991b1b]">
-                Custom Design
-              </Link>
-            </div>
-          </nav>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const query = new FormData(e.currentTarget).get('q')?.toString().trim();
-                if (query) {
-                  router.push(`/products?search=${encodeURIComponent(query)}`);
-                }
-              }}
-              className="flex items-center bg-neutral-100 hover:bg-neutral-200 transition-colors rounded-full px-3 py-1.5 mr-2"
-            >
-              <button type="submit" className="text-neutral-500 mr-2 hover:text-neutral-800 transition-colors flex items-center justify-center p-0.5" aria-label="Search">
-                <Search size={18} />
-              </button>
-              <input
-                type="text"
-                name="q"
-                placeholder="Search store..."
-                className="bg-transparent border-none outline-none text-sm w-48 focus:w-64 md:focus:w-80 transition-all duration-300 text-neutral-800 placeholder:text-neutral-500"
-              />
-            </form>
-
-            {isLoggedIn ? (
-              <Link
-                href="/account"
-                className="flex items-center gap-2 p-1.5 hover:bg-neutral-100 rounded-full transition-colors"
-              >
-                {profile.avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <Image
-                    src={profile.avatarUrl}
-                    alt={profile.fullName}
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full object-cover border-2 border-neutral-200"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center border-2 border-rose-200">
-                    {getInitials(profile.fullName)}
-                  </div>
-                )}
-              </Link>
-            ) : (
-              <Link href="/auth" className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-sm font-bold hover:bg-neutral-800 transition-colors">
-                <User size={16} />
-                Log in
-              </Link>
-            )}
-            
-            <Link 
-              href="/cart"
-              className="relative p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
-            >
-              <ShoppingBag size={24} />
-              {totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#e11d48] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white">
-                  {totalCartItems}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>
-      </div>
-    </header>
+        )}
+      </header>
+      <div className={`w-full transition-all duration-300 ${isMobileSearchExpanded ? 'h-[116px]' : 'h-[64px]'}`} aria-hidden="true" />
+    </>
   );
 }

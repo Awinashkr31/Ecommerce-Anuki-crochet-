@@ -19,7 +19,7 @@ export const compressImageToWebP = (file: File, maxSizeKB: number = 200, maxWidt
         if (!ctx) return reject(new Error('No canvas context'));
         ctx.drawImage(img, 0, 0, width, height);
 
-        let quality = 0.9;
+        const quality = 0.9;
         const tryCompress = (q: number) => {
           canvas.toBlob((blob) => {
             if (!blob) return reject(new Error('Blob conversion failed'));

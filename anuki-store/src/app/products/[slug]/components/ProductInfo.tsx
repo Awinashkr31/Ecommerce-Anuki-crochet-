@@ -1,9 +1,7 @@
 "use client";
-import { Star, ShieldCheck, Heart } from "lucide-react";
-import { motion } from "framer-motion";
+import { Star, Share2 } from "lucide-react";
 import useSWR from "swr";
 import { apiGet } from "@/lib/api";
-import Link from "next/link";
 
 export default function ProductInfo({ 
   product, 
@@ -25,84 +23,72 @@ export default function ProductInfo({
     : 0;
 
   return (
-    <div className="space-y-4">
-      {/* Badges removed to keep layout clean */}
+    <div className="space-y-4 mb-6">
+      
+      {/* Reviews & Hot Badge */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[#8c3a44]">
+          <div className="flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star key={i} size={10} className={i <= Math.round(Number(averageRating)) ? "fill-[#8c3a44]" : "text-neutral-200 fill-neutral-100"} />
+            ))}
+          </div>
+          {reviews.length > 0 ? (
+            <span className="text-[10px] font-bold text-neutral-500 ml-1">{averageRating} <span className="font-normal text-neutral-400">({reviews.length} reviews)</span></span>
+          ) : (
+            <span className="text-[10px] text-neutral-500 font-medium ml-1">No reviews</span>
+          )}
+        </div>
+      </div>
 
-      <div>
-        <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-tight">
+      {/* Title & Share */}
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-black font-serif text-[#333333] tracking-tight leading-tight">
           {product.name}
         </h1>
-        <div className="flex items-center gap-4 mt-3">
-          <div className="flex items-center gap-1 text-amber-400">
-            {[1, 2, 3, 4, 5].map(i => (
-              <Star key={i} size={16} className={i <= Math.round(Number(averageRating)) ? "fill-amber-400" : "text-neutral-200 fill-neutral-100"} />
-            ))}
-            {reviews.length > 0 ? (
-              <>
-                <span className="text-sm font-bold text-neutral-900 ml-1">{averageRating}</span>
-                <span className="text-sm text-neutral-500 font-medium ml-1">({reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'})</span>
-              </>
-            ) : (
-              <span className="text-sm text-neutral-500 font-medium ml-1">No reviews</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-end gap-3">
-        <motion.span 
-          key={displayPrice}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-black text-rose-600"
+        <button 
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: product.name,
+                text: `Check out this handmade ${product.name}!`,
+                url: window.location.href
+              }).catch(console.error);
+            }
+          }}
+          className="w-10 h-10 shrink-0 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 transition-colors mt-1"
         >
-          ₹{displayPrice}
-        </motion.span>
-        {originalPrice && (
-          <span className="text-lg font-bold text-neutral-400 line-through mb-1">
-            ₹{originalPrice}
-          </span>
-        )}
-        {discount && (
-          <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1.5 ml-2">
-            {discount}% OFF
-          </span>
-        )}
+          <Share2 size={18} strokeWidth={2.5} />
+        </button>
       </div>
 
-      <p className="text-sm text-neutral-600 leading-relaxed max-w-xl">
-        {product.shortDesc}
-      </p>
-
-      <Link href="/custom" title="Request custom and personalized crochet gifts" className="block w-full max-w-xl bg-rose-50 border border-rose-100 rounded-xl p-3 mt-4 text-rose-700 font-bold text-center hover:bg-rose-100 transition-colors text-sm">
-        Request custom crochet gifts
-      </Link>
-
-      {/* Stock Status */}
-      <div className="flex items-center gap-2">
-        <div className={`w-2.5 h-2.5 rounded-full ${inStock ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-        <span className={`text-sm font-bold ${inStock ? 'text-emerald-700' : 'text-red-600'}`}>
-          {inStock ? 'In Stock & Ready to Ship' : 'Out of Stock'}
-        </span>
-      </div>
-
-      {/* Benefits */}
-      <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100 mt-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="text-emerald-500" size={24} />
-          <div className="text-sm">
-            <p className="font-bold text-neutral-900">Secure Payment</p>
-            <p className="text-neutral-500">256-bit SSL</p>
-          </div>
+      {/* Pricing */}
+      <div className="space-y-1">
+        <div className="flex items-end gap-2">
+          <span className="text-3xl font-black text-[#8c3a44]">
+            ₹{displayPrice}
+          </span>
+          {originalPrice && (
+            <span className="text-sm font-semibold text-neutral-400 line-through mb-1.5">
+              ₹{originalPrice}
+            </span>
+          )}
+          {originalPrice && (
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-sm mb-2 ml-1">
+              Save ₹{originalPrice - displayPrice}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <Heart className="text-rose-500" size={24} />
-          <div className="text-sm">
-            <p className="font-bold text-neutral-900">Made with Love</p>
-            <p className="text-neutral-500">100% Quality</p>
-          </div>
+        <div className="flex items-center gap-1.5 text-[10px] text-neutral-500">
+          <span>Inclusive of all taxes</span>
+          <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
+          <span className="flex items-center gap-1 text-emerald-600 font-medium">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
+            Free Express Delivery
+          </span>
         </div>
       </div>
+
     </div>
   );
 }

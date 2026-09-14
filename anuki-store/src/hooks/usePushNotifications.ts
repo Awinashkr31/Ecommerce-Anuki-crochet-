@@ -22,13 +22,6 @@ export function usePushNotifications() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true);
-      checkSubscription();
-    }
-  }, []);
-
   const checkSubscription = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -38,6 +31,13 @@ export function usePushNotifications() {
       console.error('Error checking push subscription:', err);
     }
   };
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      setIsSupported(true);
+      checkSubscription();
+    }
+  }, []);
 
   const subscribe = async () => {
     if (!isSupported) return;

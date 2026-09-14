@@ -5,9 +5,10 @@ import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, Sparkles, ArrowLeft } from "lucide-react";
+import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
-import AddressModal, { Address } from "@/components/AddressModal";
+import AddressModal from "@/components/AddressModal";
+import { useAddressStore } from "@/store/addressStore";
 import CartRecommendations from "./CartRecommendations";
 import { apiGet } from "@/lib/api";
 import CartOffers from "./CartOffers";
@@ -17,13 +18,25 @@ import useSWR from 'swr';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartClient({ crossSellProducts = [] }: { crossSellProducts?: any[] }) {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, appliedCoupon, addItem } = useCartStore();
+  const { items, removeItem, updateQuantity, appliedCoupon } = useCartStore();
   const [isGiftPacked, setIsGiftPacked] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isLoginSheetOpen, setIsLoginSheetOpen] = useState(false);
 
   const { profile } = useAuthStore();
+  const { selectedAddress, setSelectedAddress, fetchAddressesOnce, hydrate } = useAddressStore();
+
+  // Hydrate address from localStorage on mount
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  // Fetch addresses once when user is logged in
+  useEffect(() => {
+    if (profile) {
+      fetchAddressesOnce();
+    }
+  }, [profile, fetchAddressesOnce]);
 
   useEffect(() => {
     if (isLoginSheetOpen && profile) {
@@ -38,27 +51,6 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
       return () => clearTimeout(timer);
     }
   }, [profile, isLoginSheetOpen, router, selectedAddress]);
-
-  useEffect(() => {
-    // Fetch default address on load only if logged in
-    const fetchDefaultAddress = async () => {
-      if (!profile) return;
-      try {
-        const addresses = await apiGet<Address[]>('/addresses');
-        if (addresses && addresses.length > 0) {
-          const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
-          if (defaultAddr) setSelectedAddress(defaultAddr);
-        }
-      } catch (err) {
-        const error = err as Error & { message?: string };
-        // Suppress 401 Unauthorized errors in the console overlay since it just means session is invalid/expired
-        if (!error.message?.includes('401')) {
-          console.error(error);
-        }
-      }
-    };
-    fetchDefaultAddress();
-  }, [profile]);
 
   const handlePlaceOrder = () => {
     if (!profile) {
@@ -91,12 +83,32 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   const totalAmount = Math.max(0, subtotal + giftCharge + deliveryCharge - appliedDiscount);
 
   return (
-    <div className="min-h-screen bg-[#F2EBE5] lg:bg-[#FDFDFD] pb-24 lg:pb-6 pt-0 lg:pt-6 px-0 lg:px-4">
+    <div className="min-h-screen bg-[#fff8f7] pb-28 lg:pb-8 pt-0 lg:pt-6 px-0 lg:px-4">
       
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center gap-4 bg-white p-4 sticky top-0 z-50 border-b border-neutral-100 shadow-sm">
-        <button onClick={() => router.back()} className="text-neutral-900 active:scale-95 transition-transform"><ArrowLeft size={22} strokeWidth={1.5} /></button>
-        <h2 className="text-lg font-bold text-neutral-900">My Cart</h2>
+      <div className="lg:hidden flex flex-col sticky top-0 z-50 bg-[#fff8f7]/90 backdrop-blur-xl shadow-[0_2px_12px_rgba(92,54,48,0.04)] pb-3">
+        <div className="bg-[#F6ECE8] text-[#be4b5c] text-center py-1.5 flex items-center justify-center gap-1.5">
+          <Truck size={14} />
+          <span className="text-[11px] font-semibold tracking-wider uppercase">FREE SHIPPING ON ORDERS OVER ₹{freeDeliveryThreshold} 🧶</span>
+        </div>
+        <div className="flex items-center justify-between px-4 mt-3">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-[#faeaea] flex items-center justify-center text-[#221a1a] hover:bg-[#efdfde] transition-colors">
+              <ArrowLeft size={20} strokeWidth={2} />
+            </button>
+            <div>
+              <h2 className="text-xl font-bold font-serif text-[#221a1a] leading-tight">Your Shopping Bag</h2>
+              <p className="text-xs text-[#564243] flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-full bg-[#6c8a74]"></span>
+                {items.length} Handcrafted {items.length === 1 ? 'item' : 'items'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 bg-[#F6ECE8] px-3 py-1.5 rounded-full text-[#be4b5c]">
+            <ShieldCheck size={16} />
+            <span className="text-[11px] font-semibold tracking-wide uppercase">100% Safe</span>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 mt-4 lg:mt-0 lg:px-0">
@@ -161,58 +173,57 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
               {items.map((item) => {
                 const originalPrice = Math.round(item.price * 1.5);
                 return (
-                  <div key={item.id} className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 relative">
+                  <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-[#EFE5DE] p-3.5 relative">
                     <button 
                       onClick={() => removeItem(item.id)}
-                      className="absolute top-3 right-3 text-neutral-300 hover:text-red-500 transition-colors"
+                      className="absolute top-3 right-3 text-[#897173] hover:text-[#ba1a1a] transition-colors p-1"
                     >
-                      <X size={16} strokeWidth={2.5} />
+                      <X size={18} strokeWidth={2.5} />
                     </button>
                     
                     <div className="flex gap-3">
                       {/* Image */}
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-neutral-100 rounded-xl overflow-hidden relative shrink-0">
+                      <div className="w-24 h-28 bg-[#FBF8F5] rounded-xl overflow-hidden relative shrink-0">
                         {item.image ? (
                           <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
                         ) : (
-                          <div className="w-full h-full bg-neutral-200" />
+                          <div className="w-full h-full bg-[#efdfde]" />
                         )}
+                        <span className="absolute bottom-1 left-1 bg-white/90 text-[#be4b5c] text-[10px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm shadow-sm">Handstitched</span>
                       </div>
 
                       {/* Details */}
-                      <div className="flex-1 flex flex-col justify-between">
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div>
-                          <h3 className="text-sm text-neutral-800 font-medium pr-6 line-clamp-2">{item.name}</h3>
-                          <div className="flex items-center gap-1.5 text-[#E77F38] text-[10px] font-semibold mt-0.5">
-                            <Sparkles size={10} fill="currentColor" />
-                            Handmade on order
-                          </div>
-                          <div className="text-xs text-neutral-500 mt-1">
-                            {item.variantText ? item.variantText : 'Color: Original'}
+                          <h3 className="text-sm font-semibold text-[#221a1a] pr-6 line-clamp-2 leading-snug">{item.name}</h3>
+                          <div className="text-xs text-[#564243] mt-0.5">
+                            Color: <span className="text-[#221a1a] font-medium">{item.variantText ? item.variantText : 'Original'}</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-1 flex-wrap">
-                            <span className="text-sm font-bold text-neutral-900">₹{item.price}</span>
-                            <span className="text-[10px] text-neutral-400 line-through">₹{originalPrice}</span>
-                            <span className="bg-rose-100 text-rose-600 px-1 py-0.5 rounded-full text-[9px] font-black tracking-wide ml-1">33% OFF</span>
+                        <div className="flex items-end justify-between mt-2 pt-2">
+                          <div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-lg font-bold text-[#221a1a] leading-none">₹{item.price}</span>
+                              <span className="text-[12px] text-[#897173] line-through">₹{originalPrice}</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-[#486551]">33% OFF</span>
                           </div>
 
-                          {/* Quantity Selector */}
-                          <div className="flex items-center gap-2 bg-neutral-100/80 rounded-full px-1.5 py-0.5 border border-neutral-200/50">
+                          {/* Stepper */}
+                          <div className="flex items-center bg-[#FBF8F5] rounded-full px-1 py-0.5 shadow-sm border border-[#EFE5DE]">
                             <button 
                               onClick={() => item.quantity > 1 ? updateQuantity(item.id, item.quantity - 1) : removeItem(item.id)}
-                              className="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-[#564243] hover:text-[#221a1a]"
                             >
-                              <Minus size={12} strokeWidth={2.5} />
+                              <Minus size={14} strokeWidth={2.5} />
                             </button>
-                            <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                            <span className="text-sm font-bold w-6 text-center text-[#221a1a]">{item.quantity}</span>
                             <button 
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-6 h-6 flex items-center justify-center text-neutral-600 hover:text-neutral-900"
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-[#564243] hover:text-[#221a1a]"
                             >
-                              <Plus size={12} strokeWidth={2.5} />
+                              <Plus size={14} strokeWidth={2.5} />
                             </button>
                           </div>
                         </div>
@@ -253,64 +264,65 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
             {/* Right Column (Sticky) */}
             <div className="lg:col-span-4 sticky top-24 flex flex-col gap-4">
               
-              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4">
-                <h3 className="text-base font-serif text-neutral-900 mb-4">Price Details</h3>
+              <div className="bg-white rounded-2xl shadow-[0_4px_16px_-2px_rgba(92,54,48,0.05)] border border-[#EFE5DE] p-4.5 lg:p-6">
+                <h3 className="text-xl font-serif text-[#221a1a] mb-4 font-semibold">Order Summary</h3>
                 
-                <div className="space-y-3 text-xs text-neutral-600">
-                  <div className="flex justify-between pb-4 border-b border-neutral-100 border-dashed">
-                    <span>MRP (incl. of all taxes)</span>
-                    <span className="font-medium text-neutral-900">₹{Math.round(totalMRP)}</span>
+                <div className="space-y-3.5 text-sm text-[#564243]">
+                  <div className="flex justify-between pb-3.5 border-b border-[#EFE5DE] border-dashed">
+                    <span>Bag Subtotal</span>
+                    <span className="font-medium text-[#221a1a]">₹{Math.round(totalMRP)}</span>
                   </div>
                   
-                  <div className="flex justify-between pb-2">
-                    <span>Delivery Charges</span>
-                    <span className={deliveryCharge === 0 ? "text-[#059669] font-medium" : "text-neutral-900 font-medium"}>
-                      {deliveryCharge === 0 ? <><span className="text-neutral-400 line-through mr-1 font-normal">₹50</span> FREE</> : `₹${deliveryCharge}`}
+                  <div className="flex justify-between">
+                    <span>Express Delivery</span>
+                    <span className={deliveryCharge === 0 ? "text-[#486551] font-medium" : "text-[#221a1a] font-medium"}>
+                      {deliveryCharge === 0 ? <><span className="text-[#897173] line-through mr-1 font-normal">₹{deliveryChargeSetting}</span> FREE</> : `₹${deliveryCharge}`}
                     </span>
                   </div>
                   {deliveryCharge > 0 ? (
-                    <p className="text-xs text-[#059669] font-medium pb-2 border-b border-neutral-100 border-dashed">
-                      Add ₹{amountToFreeDelivery} to FREE delivery
+                    <p className="text-xs text-[#486551] font-medium pb-3.5 border-b border-[#EFE5DE] border-dashed">
+                      Add ₹{amountToFreeDelivery} more to unlock free delivery!
                     </p>
                   ) : (
-                    <p className="text-xs text-[#059669] font-medium pb-2 border-b border-neutral-100 border-dashed">Free delivery unlocked!</p>
+                    <p className="text-xs text-[#486551] font-medium pb-3.5 border-b border-[#EFE5DE] border-dashed">Qualified for complimentary PAN-India delivery</p>
                   )}
 
-                  <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed">
-                    <span className="flex items-center gap-1">Discounts <ChevronDownIcon /></span>
-                    <span className="text-[#059669] font-medium">- ₹{Math.round(discounts)}</span>
+                  <div className="flex justify-between py-1">
+                    <span>Store Discounts</span>
+                    <span className="text-[#486551] font-medium">- ₹{Math.round(discounts)}</span>
                   </div>
                   
                   {isGiftPacked && (
-                    <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed">
-                      <span>Gift Packaging</span>
-                      <span className="font-medium text-neutral-900">+ ₹29</span>
+                    <div className="flex justify-between py-1">
+                      <span>Artisanal Gift Packaging</span>
+                      <span className="font-medium text-[#221a1a]">+ ₹29</span>
                     </div>
                   )}
 
                   {appliedDiscount > 0 && (
-                    <div className="flex justify-between py-2 border-b border-neutral-100 border-dashed text-emerald-600">
-                      <span>Coupon Discount</span>
+                    <div className="flex justify-between py-1 text-[#be4b5c]">
+                      <span>Coupon ({appliedCoupon?.code})</span>
                       <span className="font-medium">- ₹{appliedDiscount}</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between py-2 text-sm font-bold text-neutral-900">
-                    <span>Total Amount</span>
+                  <div className="flex justify-between pt-3.5 mt-2 border-t border-[#EFE5DE] border-dashed text-lg font-bold text-[#221a1a]">
+                    <span>Grand Total</span>
                     <span>₹{totalAmount}</span>
                   </div>
                 </div>
 
-                <div className="mt-3 bg-[#ECFDF5] text-[#059669] text-xs font-semibold p-2.5 rounded-lg flex items-center justify-center gap-1.5 border border-[#D1FAE5]">
+                <div className="mt-4 bg-[#F6ECE8] text-[#be4b5c] text-xs font-semibold p-3 rounded-xl flex items-center justify-center gap-1.5 border border-[#ddc0c1]">
                   <Tag size={14} fill="currentColor" />
-                  You&apos;ll save ₹{Math.round(discounts)} on this order!
+                  You&apos;re saving ₹{Math.round(discounts + appliedDiscount)} on this lovely order!
                 </div>
 
                 <button 
                   onClick={handlePlaceOrder}
-                  className="hidden lg:block w-full mt-4 bg-[#FFC107] text-black font-black text-base py-3 rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] active:scale-[0.98] transition-all"
+                  className="hidden lg:flex w-full mt-5 bg-[#be4b5c] text-white font-bold text-base py-3.5 rounded-full shadow-[0_8px_20px_-4px_rgba(190,75,92,0.3)] active:scale-[0.98] transition-all items-center justify-center gap-2 hover:bg-[#9e3345]"
                 >
-                  PLACE ORDER
+                  <ShieldCheck size={18} />
+                  Proceed to Checkout
                 </button>
               </div>
 
@@ -343,22 +355,22 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
       {/* Mobile Sticky Checkout Bar */}
       {items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 py-3 px-4 pb-safe flex items-center justify-between z-50 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#EFE5DE] py-3.5 px-4 pb-safe flex items-center justify-between z-50 shadow-[0_-6px_20px_-2px_rgba(45,26,23,0.08)]">
           <div>
-            <div className="flex items-center gap-1 text-xs text-neutral-400 font-medium">
-              <span className="line-through">₹{Math.round(totalMRP)}</span>
-            </div>
             <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-xl font-black text-neutral-900 tracking-tight">₹{totalAmount}</span>
-              <div className="w-4 h-4 rounded-full border border-neutral-400 text-neutral-400 flex items-center justify-center text-[10px] font-bold ml-1">i</div>
+              <span className="text-xl font-bold text-[#221a1a] tracking-tight">₹{totalAmount}</span>
+            </div>
+            <div className="text-[10px] font-bold text-[#486551] bg-[#EAF0EA] px-2 py-0.5 rounded-full mt-1 inline-block">
+              {deliveryCharge === 0 ? 'Free Shipping' : '+ Delivery'}
             </div>
           </div>
           
           <button 
             onClick={handlePlaceOrder}
-            className="bg-[#FFC107] text-black font-black text-sm px-8 py-2.5 rounded-lg active:scale-95 transition-transform shadow-sm"
+            className="bg-[#be4b5c] text-white font-bold text-sm px-6 py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_12px_rgba(190,75,92,0.3)] flex items-center gap-2 hover:bg-[#9e3345]"
           >
-            PLACE ORDER
+            Checkout
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </div>
       )}
@@ -380,14 +392,5 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
         onClose={() => setIsLoginSheetOpen(false)} 
       />
     </div>
-  );
-}
-
-
-function ChevronDownIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400">
-      <path d="m6 9 6 6 6-6"/>
-    </svg>
   );
 }

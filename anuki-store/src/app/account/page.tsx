@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, User, MapPin, LogOut, Heart, Star, CreditCard, Wallet, Ticket, RotateCcw, Plus, Shield, Loader2 } from "lucide-react";
+import { Package, User, MapPin, LogOut, Star, Ticket, Plus, Shield, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "../../store/authStore";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { apiPost, apiGet } from "../../lib/api";
 import useSWR from "swr";
-import { toast } from "sonner";
 import CustomerOrders from "../../components/orders/CustomerOrders";
-import AddressModal from "../../components/AddressModal";
+import AddressModal, { Address } from "../../components/AddressModal";
+import { useAddressStore } from "../../store/addressStore";
 
 const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "CATALOG_MANAGER", "ORDER_FULFILLMENT", "CUSTOMER_SUPPORT", "MARKETING", "FINANCE"];
 
@@ -21,17 +22,12 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("orders");
   const { profile, isLoading, logout: clearAuthStore } = useAuthStore();
   const router = useRouter();
-  const { data: walletData, isLoading: isWalletLoading } = useSWR(
-    activeTab === "wallet" && profile ? "/wallet" : null,
-    fetcher
-  );
   
-  const { data: addresses, mutate: mutateAddresses } = useSWR(
+  const { data: addresses, mutate: mutateAddresses } = useSWR<Address[]>(
     activeTab === "addresses" && profile ? "/addresses" : null,
     fetcher
   );
 
-  const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   useEffect(() => {
@@ -47,6 +43,7 @@ export default function AccountPage() {
     
     // Instant UI update
     clearAuthStore();
+    useAddressStore.getState().clearAddresses();
     router.push("/auth");
   };
 
@@ -67,19 +64,12 @@ export default function AccountPage() {
     { id: 1, product: "Custom Name Keychain", rating: 5, date: "2026-05-20", comment: "Absolutely loved it! Perfect for gifting." }
   ];
 
-  const mockCards = [
-    { id: 1, type: "Visa", last4: "4242", expiry: "12/28" },
-    { id: 2, type: "Mastercard", last4: "8888", expiry: "08/27" }
-  ];
 
   const mockCoupons = [
     { code: "WELCOME10", desc: "10% off your next order", validUntil: "2026-12-31" },
     { code: "FESTIVE20", desc: "20% off on orders above ₹2000", validUntil: "2026-10-31" }
   ];
 
-  const mockReturns = [
-    { id: "RET-1029", orderId: "ORD-71023", item: "Custom Name Keychain", status: "Approved", refundMethod: "Wallet" }
-  ];
 
   const navItems = [
     { id: "orders", label: "Order History", icon: Package },
@@ -102,7 +92,7 @@ export default function AccountPage() {
           <div className="lg:col-span-1 space-y-2">
             <div className="bg-white rounded-3xl p-4 border border-neutral-200 mb-6 flex items-center gap-4">
               {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={profile.fullName} className="w-12 h-12 rounded-full object-cover border-2 border-neutral-200" />
+                <Image src={profile.avatarUrl} alt={profile.fullName} width={48} height={48} className="w-12 h-12 rounded-full object-cover border-2 border-neutral-200" unoptimized />
               ) : (
                 <div className="w-12 h-12 bg-rose-100 text-rose-700 font-bold rounded-full flex items-center justify-center text-lg">
                   {getInitials(profile.fullName)}
@@ -200,18 +190,18 @@ export default function AccountPage() {
 
                 {!addresses ? (
                    <div className="flex justify-center py-12"><Loader2 className="animate-spin text-neutral-400" size={32} /></div>
-                ) : (addresses as any[]).length === 0 ? (
+                ) : addresses.length === 0 ? (
                   <div className="text-center py-16">
                     <MapPin className="mx-auto text-neutral-300 mb-6" size={64} />
                     <h2 className="text-xl font-bold mb-2">No saved addresses</h2>
-                    <p className="text-neutral-500 mb-8">You haven't saved any addresses yet.</p>
+                    <p className="text-neutral-500 mb-8">You haven&apos;t saved any addresses yet.</p>
                     <button onClick={() => setIsAddressModalOpen(true)} className="border-2 border-neutral-200 text-neutral-900 px-8 py-3 rounded-xl font-bold hover:border-neutral-900 transition-colors">
                       Add New Address
                     </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {(addresses as any[]).map((addr: any) => (
+                    {addresses.map((addr: Address) => (
                       <div key={addr.id} className="p-6 rounded-2xl border-2 border-neutral-100 hover:border-neutral-200 transition-colors relative group bg-neutral-50">
                         <div className="flex justify-between items-start mb-2">
                           <h4 className="font-bold text-neutral-900">{addr.fullName}</h4>
@@ -281,7 +271,7 @@ export default function AccountPage() {
                         {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} className={i >= review.rating ? "text-neutral-300" : ""} />)}
                       </div>
                     </div>
-                    <p className="text-sm text-neutral-700 bg-neutral-50 p-4 rounded-2xl italic">"{review.comment}"</p>
+                    <p className="text-sm text-neutral-700 bg-neutral-50 p-4 rounded-2xl italic">&ldquo;{review.comment}&rdquo;</p>
                   </div>
                 ))}
               </div>
