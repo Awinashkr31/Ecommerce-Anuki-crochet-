@@ -113,7 +113,7 @@ export default async function Page() {
   
   // Deterministic shuffle-like behavior for Server Component
   const shuffled = [...filteredPool].sort((a, b) => a.id.localeCompare(b.id));
-  const randomProducts = shuffled.slice(0, 4);
+  const randomProducts = shuffled.slice(0, 12);
 
   // Preload the LCP hero image so the browser starts downloading it immediately
   const heroImageUrl = bestsellerProducts[0]?.images?.[0]?.url
@@ -145,7 +145,10 @@ export default async function Page() {
         "description": "Anuki Crochet is a top-rated handmade crochet brand in Bihar, India specializing in custom crochet gifts, including crochet flowers, crochet bouquets, amigurumi toys, and keychains.",
         "address": {
           "@type": "PostalAddress",
+          "streetAddress": "Ashok Rajpath Rd, near Gandhi Maidan, Lalbagh",
+          "addressLocality": "Patna",
           "addressRegion": "Bihar",
+          "postalCode": "800001",
           "addressCountry": "IN"
         },
         "areaServed": "IN",

@@ -19,18 +19,20 @@ export async function GET() {
   let products: any[] = [];
   try {
     products = await prisma.product.findMany({
-      where: { status: { not: 'ARCHIVED' } },
+      where: { status: 'PUBLISHED' },
       select: { slug: true, name: true, images: { take: 1, select: { url: true } }, updatedAt: true }
     });
   } catch (error) {
     console.error('Failed to fetch products for sitemap:', error);
   }
 
+  const escapeUrl = (slug: string) => encodeURI(slug).replace(/&/g, '&amp;');
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   ${products.length > 0 ? products.map((p) => `
     <url>
-      <loc>${baseUrl}/products/${escapeXml(p.slug)}</loc>
+      <loc>${baseUrl}/products/${escapeUrl(p.slug)}</loc>
       <lastmod>${p.updatedAt.toISOString()}</lastmod>
       <changefreq>daily</changefreq>
       <priority>0.8</priority>
@@ -55,6 +57,7 @@ export async function GET() {
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     },
   });
 }

@@ -270,7 +270,7 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
           }}
           className="w-full bg-[#8c3a44] text-white font-bold text-xs py-2 rounded-full flex items-center justify-center hover:bg-[#7a323b] transition-colors active:scale-[0.98] shadow-sm"
         >
-          + Add to Bag
+          <ShoppingBag size={14} strokeWidth={2.5} className="mr-1.5 mb-0.5" /> Add to Bag
         </button>
       </div>
     </motion.div>

@@ -108,7 +108,7 @@ export default function ProductDetailClient({
     <div className="min-h-screen bg-[#fcf8f7] font-sans pb-28 md:pb-32">
       
       {/* Breadcrumbs & Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#fcf8f7] sticky top-0 z-40 w-full max-w-md mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#fcf8f7] sticky top-0 z-40 w-full max-w-7xl mx-auto">
         <nav className="text-[11px] font-bold text-neutral-500 flex items-center gap-1.5 uppercase tracking-wider">
           <Link href="/" className="hover:text-rose-600 transition-colors flex items-center gap-1 text-neutral-900">
             <ArrowLeft size={16} strokeWidth={2.5} /> Home
@@ -122,16 +122,16 @@ export default function ProductDetailClient({
         </nav>
       </div>
 
-      <article className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
-        <div className="flex flex-col">
+      <article className="max-w-7xl mx-auto bg-white min-h-screen lg:rounded-3xl lg:my-6 lg:shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12 lg:p-8">
           
           {/* Image Gallery */}
-          <div className="w-full">
+          <div className="w-full lg:w-[40%] lg:sticky lg:top-24">
             <ImageGallery key={currentVariant?.id || 'base'} images={displayImages} altText={product.name} />
           </div>
 
           {/* Main Content Area */}
-          <div className="px-4 py-4 sm:px-6">
+          <div className="px-4 py-4 sm:px-6 w-full lg:w-[60%] lg:px-0">
             
             <ProductInfo 
               product={product} 
@@ -149,7 +149,22 @@ export default function ProductDetailClient({
               baseProduct={product}
             />
 
-            <ProductAccordions product={product} />
+            <StickyBuyBar 
+              product={product}
+              currentVariant={currentVariant}
+              displayPrice={displayPrice}
+              quantity={quantity}
+              setQuantity={setQuantity}
+              inStock={inStock}
+              handleAddToCart={handleAddToCart}
+              handleBuyNow={handleBuyNow}
+              isAddingToCart={isAddingToCart}
+              isInline={true}
+            />
+
+            <div className="mt-8 lg:mt-12">
+              <ProductAccordions product={product} />
+            </div>
 
           </div>
         </div>
@@ -158,7 +173,7 @@ export default function ProductDetailClient({
       {/* Complete the Gift Section */}
       {completeTheGift.length > 0 && (
         <section className="bg-[#fcf8f7] py-6">
-          <div className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-serif text-neutral-900 leading-none font-bold">Complete the Gift</h2>
               <Link href="/products" className="text-[10px] font-bold text-rose-600 uppercase tracking-widest hover:underline">View All</Link>

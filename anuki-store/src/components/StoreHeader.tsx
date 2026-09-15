@@ -7,11 +7,13 @@ import { Dancing_Script } from 'next/font/google';
 const dancingScript = Dancing_Script({ subsets: ['latin'], weight: ['700'] });
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart, User } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { InstallPWAButton } from "./InstallPWAButton";
+import { useAuthStore } from "../store/authStore";
 
 export function StoreHeader() {
+  const { profile } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
@@ -57,7 +59,7 @@ export function StoreHeader() {
   return (
     <>
       <header className={`fixed top-0 w-full z-50 pt-safe bg-white backdrop-blur-xl shadow-sm transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
-        <div className="h-16 px-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto w-full h-16 px-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 border-[1.5px] border-[#FCE4E8] rounded-[12px] flex items-center justify-center bg-[#FFF9FA] overflow-hidden p-1 shadow-sm shrink-0">
               <Image alt="Logo" width={640} height={640} className="w-full h-full object-contain" src="/logo2.webp" />
@@ -94,6 +96,16 @@ export function StoreHeader() {
               <ShoppingCart size={22} strokeWidth={1.5} />
               {totalCartItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#E71644] text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm border border-white">{totalCartItems}</span>
+              )}
+            </Link>
+
+            <Link href="/account" aria-label="User Profile" className="hidden sm:flex w-8 h-8 items-center justify-center text-neutral-700 hover:text-black transition-colors">
+              {profile?.avatarUrl ? (
+                <div className="w-7 h-7 rounded-full overflow-hidden border border-neutral-200 shadow-sm relative shrink-0">
+                  <Image src={profile.avatarUrl} alt={profile.fullName || "User"} fill sizes="28px" className="object-cover" />
+                </div>
+              ) : (
+                <User size={22} strokeWidth={1.5} />
               )}
             </Link>
           </div>

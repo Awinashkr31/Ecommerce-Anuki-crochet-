@@ -150,8 +150,10 @@ export default async function RootLayout({
               "priceRange": "₹₹",
               "address": {
                 "@type": "PostalAddress",
+                "streetAddress": "Ashok Rajpath Rd, near Gandhi Maidan, Lalbagh",
                 "addressLocality": "Patna",
                 "addressRegion": "Bihar",
+                "postalCode": "800001",
                 "addressCountry": "IN"
               },
               "geo": {

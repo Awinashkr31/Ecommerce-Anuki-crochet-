@@ -22,6 +22,7 @@ export default function VariantSelector({
       size: baseProduct.size,
       style: baseProduct.style,
       material: baseProduct.material,
+      imageUrls: baseProduct.images?.length > 0 ? baseProduct.images.map((img: any) => img.url) : [],
     } : null;
 
     return base && (base.color || base.size || base.style) ? [base, ...variants] : variants;
@@ -68,18 +69,28 @@ export default function VariantSelector({
           <div className="flex flex-wrap gap-2.5">
             {colors.map((c: any) => {
               const isSelected = currentVariant?.color === c;
+              const variantForColor = allVariants.find(v => v.color === c);
+              const thumbUrl = variantForColor?.imageUrls?.[0];
+
               return (
                 <button
                   key={c}
                   onClick={() => handleSelect('color', c)}
-                  className={`relative px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${isSelected ? 'border border-rose-300 bg-rose-50' : 'border border-neutral-200 hover:border-neutral-300 bg-white'}`}
+                  className="relative flex flex-col items-center gap-1.5 transition-all group w-[52px]"
                   title={c}
                 >
-                  <span className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: colorMap[c] || c }}></span>
-                  <span className={`text-[11px] font-bold ${isSelected ? 'text-[#8c3a44]' : 'text-neutral-600'}`}>{c}</span>
+                  <div className={`p-0.5 rounded-[14px] border-2 transition-all ${isSelected ? 'border-rose-400' : 'border-transparent group-hover:border-neutral-200'}`}>
+                    {thumbUrl ? (
+                      <span className="block w-11 h-11 rounded-xl border border-black/5 shrink-0 bg-cover bg-center shadow-sm" style={{ backgroundImage: `url(${thumbUrl})` }}></span>
+                    ) : (
+                      <span className="block w-11 h-11 rounded-xl border border-black/5 shrink-0 shadow-sm" style={{ backgroundColor: colorMap[c] || c }}></span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] font-bold tracking-tight text-center leading-tight ${isSelected ? 'text-[#8c3a44]' : 'text-neutral-500 group-hover:text-neutral-700'}`}>{c}</span>
+                  
                   {isSelected && (
-                    <span className="absolute -top-1 -left-1 bg-white rounded-full">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#8c3a44" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow-sm z-10">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#8c3a44" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </span>
                   )}
                 </button>

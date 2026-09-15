@@ -57,7 +57,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
         imageUrls = uploadRes.data.urls;
       }
 
-      await apiPost('/reviews', { productId, rating, comment, imageUrls });
+      await apiPost('/reviews', { productId, rating, comment, imageUrls, userId: profile.id });
       toast.success('Review submitted! It will appear after approval.');
       setRating(5);
       setComment('');
@@ -72,7 +72,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
   return (
     <section className="bg-white border-t border-neutral-100 py-2 md:py-16">
-      <div className="max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-xl font-bold font-serif text-[#333333]">Artisan Reviews</h2>

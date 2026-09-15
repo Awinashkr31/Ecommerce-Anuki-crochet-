@@ -50,9 +50,9 @@ export function Footer() {
               Handcrafted crochet gifts made with love in India. Premium quality, personalized designs for every occasion.
             </p>
             <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2 text-neutral-400">
-                <MapPin size={12} className="text-neutral-500 shrink-0" />
-                <span>India</span>
+              <div className="flex items-start gap-2 text-neutral-400">
+                <MapPin size={12} className="text-neutral-500 shrink-0 mt-0.5" />
+                <span className="leading-snug">Ashok Rajpath Rd, near Gandhi Maidan, Lalbagh, Patna, Bihar 800001</span>
               </div>
               <div className="flex items-center gap-2 text-neutral-400">
                 <Mail size={12} className="text-neutral-500 shrink-0" />
@@ -138,98 +138,7 @@ export function Footer() {
 
         </div>
 
-        {/* Detailed Sitemap Section */}
-        <div className="mt-8 pt-6 border-t border-neutral-800">
-          <div className="flex items-center gap-2 mb-5">
-            <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-            <h4 className="text-[11px] uppercase tracking-widest text-neutral-500 font-bold">Complete Sitemap</h4>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-            {/* Main Pages */}
-            <div>
-              <h5 className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold mb-2.5 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-rose-500"></span>
-                Pages
-              </h5>
-              <ul className="space-y-1.5">
-                <li><Link href="/" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Home</Link></li>
-                <li><Link href="/products" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">All Products</Link></li>
-                <li><Link href="/categories" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Categories</Link></li>
-                <li><Link href="/custom" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Custom Orders</Link></li>
-                <li><Link href="/about" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">About Us</Link></li>
-                <li><Link href="/blog" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Blog & Journal</Link></li>
-                <li><Link href="/contact" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Contact Us</Link></li>
-                <li><Link href="/faq" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">FAQs</Link></li>
-              </ul>
-            </div>
 
-            {/* Shop by Category */}
-            <div>
-              <h5 className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold mb-2.5 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-amber-500"></span>
-                Shop by Category
-              </h5>
-              <ul className="space-y-1.5">
-                {activeCategories.map((category: Category) => (
-                  <li key={category.id}>
-                    <Link href={`/products?category=${category.slug}`} className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Account & Orders */}
-            <div>
-              <h5 className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold mb-2.5 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
-                My Account
-              </h5>
-              <ul className="space-y-1.5">
-                <li><Link href="/account" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">My Profile</Link></li>
-                <li><Link href="/account" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Order History</Link></li>
-                <li><Link href="/order-status" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Track Order</Link></li>
-                <li><Link href="/cart" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Shopping Cart</Link></li>
-                <li><Link href="/checkout" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Checkout</Link></li>
-                <li><Link href="/auth" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Login / Register</Link></li>
-              </ul>
-            </div>
-
-            {/* Policies & Legal */}
-            <div>
-              <h5 className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold mb-2.5 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
-                Policies
-              </h5>
-              <ul className="space-y-1.5">
-                <li><Link href="/policies/privacy-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/policies/terms-of-service" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Terms of Service</Link></li>
-                <li><Link href="/policies/shipping-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Shipping Policy</Link></li>
-                <li><Link href="/policies/payment-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Payment Policy</Link></li>
-                <li><Link href="/policies/return-policy" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Return Policy</Link></li>
-              </ul>
-            </div>
-
-            {/* Resources & SEO */}
-            <div>
-              <h5 className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold mb-2.5 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-cyan-500"></span>
-                Resources
-              </h5>
-              <ul className="space-y-1.5">
-                <li><Link href="/sitemap.xml" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">XML Sitemap</Link></li>
-                <li><Link href="/sitemap-products.xml" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Products Sitemap</Link></li>
-                <li><Link href="/sitemap-categories.xml" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Categories Sitemap</Link></li>
-                <li><Link href="/sitemap-blog.xml" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Blog Sitemap</Link></li>
-                <li><Link href="/sitemap-pages.xml" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Pages Sitemap</Link></li>
-                <li><a href="https://www.instagram.com/anuki_crochet/" target="_blank" rel="noopener noreferrer" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Instagram ↗</a></li>
-                <li><a href="https://pinterest.com/anukicrochet" target="_blank" rel="noopener noreferrer" className="text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors">Pinterest ↗</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
         {/* Bottom Bar */}
         <div className="mt-6 pt-5 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-3">
