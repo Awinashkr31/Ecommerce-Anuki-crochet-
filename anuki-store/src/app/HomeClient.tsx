@@ -118,36 +118,48 @@ export default function HomeClient({
  {
  id: 1,
  image: "/hero-banner-1.webp",
+ desktopImage: "/hero-banner-1.webp",
  badge: "NEW COLLECTION",
  title: "Up to 20% Off",
+ desktopTitle: "Up to 20% Off",
  description: "Premium bouquets & plushies.",
+ desktopDescription: "Premium bouquets & plushies.",
  link: "/products",
  btnText: "Shop Sale"
  },
  {
  id: 2,
  image: plushToysImg,
+ desktopImage: "/hero-banner-2.webp",
  badge: "CUTE & CUDDLY",
  title: "Amigurumi Plushies",
+ desktopTitle: "New Arrivals",
  description: "Custom companions starting at ₹300.",
+ desktopDescription: "Discover our latest collection.",
  link: "/products?category=toys",
  btnText: "Explore Toys"
  },
  {
  id: 3,
  image: flowerBouquetsImg,
+ desktopImage: "/hero-banner-3.webp",
  badge: "ELEGANT GIFTS",
  title: "Flower Bouquets",
+ desktopTitle: "Perfect Gifts",
  description: "Handcrafted beauties for loved ones.",
+ desktopDescription: "Handcrafted with love for every occasion.",
  link: "/products?category=flower-bouquets",
  btnText: "Shop Bouquets"
  },
  {
  id: 4,
  image: flowerPotsImg,
+ desktopImage: "/promo-banner.png",
  badge: "EVERLASTING",
  title: "Flower Pots",
+ desktopTitle: "Special Promo",
  description: "Flowers that never fade.",
+ desktopDescription: "Grab our special deals today.",
  link: "/products?category=flower-pots",
  btnText: "Shop Decor"
  }
@@ -176,28 +188,43 @@ export default function HomeClient({
  <div 
  key={slide.id}
  className={`absolute inset-0 transition-opacity duration-1000 ${index === currentHeroSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
- >
- <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} sizes="100vw" />
+ > 
+ <Image src={slide.image} alt={slide.title} fill className="object-cover md:hidden" priority={index === 0} sizes="100vw" />
+ <Image src={slide.desktopImage || slide.image} alt={slide.title} fill className="object-cover hidden md:block object-center" priority={index === 0} sizes="100vw" />
+
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
- <div className="absolute inset-0 p-6 flex flex-col justify-end max-w-xl">
+ <div className="absolute inset-0 p-6 flex flex-col justify-end max-w-xl z-20">
  <div className={`transition-all duration-700 transform ${index === currentHeroSlide ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-4 opacity-0'}`}>
  <div className="bg-rose-600/95 text-white text-[9px] sm:text-[10px] font-bold px-3 py-1.5 rounded-full w-fit mb-4 border border-rose-400 tracking-wider uppercase">
  {slide.badge}
  </div>
- <h1 className="text-3xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
+ 
+ <div className="md:hidden">
+ <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
  {slide.title}
  </h1>
- <p className="text-white/90 text-xs mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
+ <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
  {slide.description}
  </p>
+ </div>
+ 
+ <div className="hidden md:block">
+ <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
+ {slide.desktopTitle || slide.title}
+ </h1>
+ <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
+ {slide.desktopDescription || slide.description}
+ </p>
+ </div>
+ 
  <div className="flex gap-3 flex-wrap">
  <Link href={slide.link} className="bg-[#a43b46] hover:bg-[#8b2d37] text-white px-6 py-3.5 rounded-full text-sm font-bold flex items-center gap-2 transition-colors shadow-lg">
  {slide.btnText} <ArrowRight size={16} />
  </Link>
  {index === 0 && (
-   <Link href="/custom" className="bg-white/95 hover:bg-white text-neutral-900 px-6 py-3.5 rounded-full text-sm font-bold transition-colors shadow-md">
-   Custom Orders
-   </Link>
+ <Link href="/custom" className="bg-white/95 hover:bg-white text-neutral-900 px-6 py-3.5 rounded-full text-sm font-bold transition-colors shadow-md">
+ Custom Orders
+ </Link>
  )}
  </div>
  </div>
@@ -219,44 +246,44 @@ export default function HomeClient({
  </div>
  </section>
 
- {/* Announcement Card */}
+  {/* Announcement Card */}
  <section className="px-4 mt-6 mb-2 max-w-4xl mx-auto">
- <Link href="/products" className="group relative w-full rounded-2xl bg-gradient-to-r from-rose-50 to-[#fff0f3] overflow-hidden shadow-sm hover:shadow-md transition-shadow flex items-center justify-between p-3 px-4 border border-rose-100">
+ <Link href="/products" className="group relative w-full rounded-2xl bg-gradient-to-r from-rose-50 to-[#fff0f3] overflow-hidden shadow-sm hover:shadow-md transition-shadow flex items-center justify-between p-3 px-4 md:p-5 md:px-8 border border-rose-100">
  {/* Sparkles */}
- <div className="absolute top-2 right-1/3 text-yellow-400 animate-pulse text-xs">✨</div>
- <div className="absolute bottom-1 right-1/4 text-yellow-400 animate-pulse delay-150 text-[10px]">✨</div>
+ <div className="absolute top-2 right-1/3 text-yellow-400 animate-pulse text-xs md:text-sm">✨</div>
+ <div className="absolute bottom-1 right-1/4 text-yellow-400 animate-pulse delay-150 text-[10px] md:text-xs">✨</div>
  
- <div className="flex items-center gap-3 z-10">
+ <div className="flex items-center gap-3 md:gap-5 z-10">
  {/* Truck Graphic */}
  <div className="relative shrink-0 flex items-center">
- <div className="text-2xl drop-shadow-md group-hover:scale-110 transition-transform animate-[bounce_3s_infinite]">
+ <div className="text-2xl md:text-4xl drop-shadow-md group-hover:scale-110 transition-transform animate-[bounce_3s_infinite]">
  🚚
  </div>
  {/* Speed lines */}
- <div className="absolute top-1/2 -left-3 w-4 h-[2px] bg-rose-300 rounded-full animate-[pulse_1s_infinite]"></div>
- <div className="absolute top-[60%] -left-5 w-5 h-[2px] bg-rose-300 rounded-full animate-[pulse_1s_infinite] delay-100"></div>
+ <div className="absolute top-1/2 -left-3 md:-left-4 w-4 md:w-6 h-[2px] bg-rose-300 rounded-full animate-[pulse_1s_infinite]"></div>
+ <div className="absolute top-[60%] -left-5 md:-left-6 w-5 md:w-7 h-[2px] bg-rose-300 rounded-full animate-[pulse_1s_infinite] delay-100"></div>
  </div>
 
  {/* Content */}
  <div className="flex flex-col justify-center">
- <div className="flex items-center gap-2">
- <span className="text-[#e11d48] font-bold text-[8px] tracking-wider uppercase bg-white px-2 py-0.5 rounded-full border border-rose-100 hidden sm:block">
+ <div className="flex items-center gap-2 md:gap-3">
+ <span className="text-[#e11d48] font-bold text-[8px] md:text-[10px] tracking-wider uppercase bg-white px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-rose-100 hidden sm:block">
  Special Offer
  </span>
- <h3 className="font-serif text-base font-black text-[#1a1a1a] tracking-tight leading-none">
+ <h3 className="font-serif text-base md:text-2xl font-black text-[#1a1a1a] tracking-tight leading-none">
  Free Shipping
  </h3>
  </div>
- <p className="text-[#4a4a4a] text-[11px] font-medium leading-tight mt-0.5">
- on orders over <span className="text-[#e11d48] font-bold text-[13px] ">₹{freeDeliveryThreshold}</span>
+ <p className="text-[#4a4a4a] text-[11px] md:text-sm font-medium leading-tight mt-0.5 md:mt-1">
+ on orders over <span className="text-[#e11d48] font-bold text-[13px] md:text-base ">₹{freeDeliveryThreshold}</span>
  </p>
  </div>
  </div>
 
  {/* Button */}
  <div className="z-10 shrink-0 ml-2">
- <div className="bg-gradient-to-r from-[#fc4a71] to-[#ff2a5f] text-white font-bold text-[11px] px-4 py-2 rounded-full shadow-sm flex items-center gap-1.5 group-hover:shadow-md transition-shadow">
- Shop Now <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+ <div className="bg-gradient-to-r from-[#fc4a71] to-[#ff2a5f] text-white font-bold text-[11px] md:text-sm px-4 py-2 md:px-6 md:py-3 rounded-full shadow-sm flex items-center gap-1.5 md:gap-2 group-hover:shadow-md transition-shadow">
+ Shop Now <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform md:w-5 md:h-5" />
  </div>
  </div>
  </Link>
@@ -270,18 +297,18 @@ export default function HomeClient({
  </h2>
  <Link href="/products" className="text-xs font-bold text-[#a43b46] hover:underline">View all</Link>
  </div>
- <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x px-4 -mx-4 max-w-2xl mx-auto">
+ <div className="flex gap-4 md:gap-8 overflow-x-auto hide-scrollbar snap-x px-4 -mx-4 pb-4 md:[justify-content:safe_center]">
  {[...categories].sort((a, b) => a.slug === 'flower-pots' ? 1 : b.slug === 'flower-pots' ? -1 : 0).map((cat) => (
- <Link href={`/products?category=${cat.slug}`} key={cat.id} className="snap-start flex flex-col items-center gap-2 min-w-[72px] group">
- <div className="w-16 h-16 rounded-full overflow-hidden relative border border-[#f0e8e6] shadow-sm group-hover:shadow-md transition-shadow">
- <Image src={cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="96px" />
+ <Link href={`/products?category=${cat.slug}`} key={cat.id} className="snap-start flex flex-col items-center gap-2 md:gap-3 min-w-[72px] md:min-w-[144px] group">
+ <div className="w-16 h-16 md:w-36 md:h-36 shrink-0 rounded-full overflow-hidden relative border border-[#f0e8e6] shadow-sm group-hover:shadow-md transition-shadow">
+ <Image src={cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 64px, 144px" />
  </div>
  <span className="text-[11px] font-bold text-neutral-700 text-center group-hover:text-[#a43b46] transition-colors">{cat.name}</span>
  </Link>
  ))}
- <Link href="/products" className="snap-start flex flex-col items-center gap-2 min-w-[72px] group">
-   <div className="w-16 h-16 rounded-full relative border border-[#f0e8e6] shadow-sm group-hover:shadow-md transition-all bg-[#FFF9FA] flex items-center justify-center text-[#a43b46]">
-     <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+ <Link href="/products" className="snap-start flex flex-col items-center gap-2 md:gap-3 min-w-[72px] md:min-w-[144px] group">
+   <div className="w-16 h-16 md:w-36 md:h-36 shrink-0 rounded-full relative border border-rose-200 shadow-sm group-hover:shadow-md transition-all bg-rose-50 flex items-center justify-center text-[#a43b46]">
+     <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform md:w-12 md:h-12" />
    </div>
    <span className="text-[11px] font-bold text-neutral-700 text-center group-hover:text-[#a43b46] transition-colors">All</span>
  </Link>
@@ -360,37 +387,42 @@ export default function HomeClient({
 
  {/* CO-CREATE WITH US */}
  <section className="py-10 px-4 bg-[#fcf8f7]">
- <div className="max-w-4xl mx-auto bg-white border border-[#f0e8e6] rounded-[2rem] p-6 relative overflow-hidden shadow-sm">
- <p className="text-[10px] font-bold tracking-widest text-[#a43b46] mb-3 uppercase">CO-CREATE WITH US</p>
- <div className="flex flex-col gap-6 mb-6">
- <div className="w-full ">
- <h2 className="text-2xl font-serif font-bold text-[#3d2b2c] mb-3 leading-[1.15]">Make Your Handmade Gift Yours.</h2>
- <p className="text-[13px] text-neutral-600 mb-5 leading-relaxed max-w-sm">
- Anuki isn&apos;t just a store; it&apos;s a celebration of artistry. Every product is lovingly handmade by artisans who pour their heart and soul into their craft, ensuring you get something truly unique.
- </p>
- </div>
- <div className="w-full relative h-[180px] rounded-2xl overflow-hidden shadow-inner">
- <Image src="/crochet-flower-bouquet.png" alt="Custom Handmade Crochet Gift Bouquet" fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
- </div>
- </div>
+ <div className="max-w-4xl mx-auto bg-white border border-[#f0e8e6] rounded-[2rem] p-6 md:p-10 relative overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
  
- <div className="grid grid-cols-3 gap-3 mb-6">
- <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-sm">
- <span className="text-[#a43b46] mb-1.5 text-xl">🎨</span>
- <span className="text-[10px] font-bold text-[#3d2b2c] leading-tight">Custom Colors</span>
- </div>
- <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-sm">
- <span className="text-[#a43b46] mb-1.5 text-xl">✨</span>
- <span className="text-[10px] font-bold text-[#3d2b2c] leading-tight">Add Initials</span>
- </div>
- <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-sm">
- <span className="text-[#a43b46] mb-1.5 text-xl">🧵</span>
- <span className="text-[10px] font-bold text-[#3d2b2c] leading-tight">Handcrafted for You</span>
- </div>
- </div>
- <Link href="/custom" className="w-full bg-[#8c3a44] text-white py-4 rounded-full text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#722e36] transition-colors shadow-lg active:scale-95">
- <span className="text-lg">✨</span> Design Custom Bouquet
- </Link>
+  {/* Text Content */}
+  <div className="flex flex-col">
+  <p className="text-[10px] font-bold tracking-widest text-[#a43b46] mb-3 uppercase">CO-CREATE WITH US</p>
+  <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#3d2b2c] mb-3 leading-[1.15]">Make Your Handmade Gift Yours.</h2>
+  <p className="text-[13px] md:text-sm text-neutral-600 leading-relaxed max-w-sm">
+  Anuki isn&apos;t just a store; it&apos;s a celebration of artistry. Every product is lovingly handmade by artisans who pour their heart and soul into their craft, ensuring you get something truly unique.
+  </p>
+  </div>
+ 
+  {/* Image (Middle on mobile, Right side on desktop) */}
+  <div className="w-full relative h-[180px] md:h-full min-h-[300px] rounded-2xl overflow-hidden shadow-inner md:col-start-2 md:row-span-2 md:row-start-1">
+  <Image src="/crochet-flower-bouquet.png" alt="Custom Handmade Crochet Gift Bouquet" fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+  </div>
+
+  {/* Features & CTA */}
+  <div className="flex flex-col w-full md:col-start-1 md:row-start-2">
+  <div className="grid grid-cols-3 gap-2 md:gap-3 mb-5 md:mb-6">
+  <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-2 md:p-3 flex flex-col items-center justify-center text-center shadow-sm">
+  <span className="text-[#a43b46] mb-1.5 text-lg md:text-xl">🎨</span>
+  <span className="text-[9px] md:text-[10px] font-bold text-[#3d2b2c] leading-tight">Custom Colors</span>
+  </div>
+  <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-2 md:p-3 flex flex-col items-center justify-center text-center shadow-sm">
+  <span className="text-[#a43b46] mb-1.5 text-lg md:text-xl">✨</span>
+  <span className="text-[9px] md:text-[10px] font-bold text-[#3d2b2c] leading-tight">Add Initials</span>
+  </div>
+  <div className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-xl p-2 md:p-3 flex flex-col items-center justify-center text-center shadow-sm">
+  <span className="text-[#a43b46] mb-1.5 text-lg md:text-xl">🧵</span>
+  <span className="text-[9px] md:text-[10px] font-bold text-[#3d2b2c] leading-tight">Handcrafted for You</span>
+  </div>
+  </div>
+  <Link href="/custom" className="w-full bg-[#8c3a44] text-white py-3.5 md:py-4 rounded-full text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#722e36] transition-colors shadow-lg active:scale-95">
+  <span className="text-lg">✨</span> Design Custom Bouquet
+  </Link>
+  </div>
  </div>
  </section>
 
