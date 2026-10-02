@@ -48,6 +48,25 @@ const nextConfig: NextConfig = {
         destination: '/policies/return-policy',
         permanent: true,
       },
+      // Old Blog Posts Redirects
+      { source: '/blog/amigurumi-vs-regular-plushies', destination: '/blog/what-is-amigurumi', permanent: true },
+      { source: '/blog/crochet-flower-bouquets-vs-real-flowers-comparison', destination: '/blog/crochet-flowers-vs-real-flowers', permanent: true },
+      { source: '/blog/crochet-gifts-for-every-occasion', destination: '/handmade-crochet-gifts', permanent: true },
+      { source: '/blog/crochet-gifts-in-:city', destination: '/handmade-gifts-india', permanent: true },
+      { source: '/blog/handmade-crochet-gifts-bihar', destination: '/handmade-gifts-india', permanent: true },
+      { source: '/blog/perfect-crochet-amigurumi-india', destination: '/amigurumi', permanent: true },
+      { source: '/blog/raksha-bandhan-gift-ideas-under-500', destination: '/gifts/raksha-bandhan', permanent: true },
+      { source: '/blog/top-5-custom-crochet-gifts-for-birthdays', destination: '/gifts/birthday', permanent: true },
+      { source: '/blog/ultimate-guide-crochet-flower-bouquets', destination: '/blog/how-to-choose-crochet-bouquet', permanent: true },
+      // Old Gift Pages Redirects
+      { source: '/gifts/under-1000', destination: '/gifts/under-999', permanent: true },
+      { source: '/gifts/under-300', destination: '/gifts/under-299', permanent: true },
+      { source: '/gifts/under-500', destination: '/gifts/under-499', permanent: true },
+      { source: '/categories/flower-bouquets', destination: '/crochet-flower-bouquets', permanent: true },
+      { source: '/categories/flower-pots', destination: '/crochet-flower-pots', permanent: true },
+      { source: '/categories/hair-accessories', destination: '/crochet-hair-accessories', permanent: true },
+      { source: '/categories/keychains', destination: '/crochet-keychains', permanent: true },
+      { source: '/categories/toys', destination: '/amigurumi', permanent: true }
     ];
   },
   async headers() {
