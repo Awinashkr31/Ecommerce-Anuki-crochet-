@@ -70,12 +70,12 @@ export function StoreHeader() {
                   Anuki
                   <svg className="absolute -top-0.5 -right-2.5 w-[10px] h-[10px] text-[#ff8fa3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                 </span>
-                <span className="text-[#FF6B8B] font-bold text-[18px] md:text-[20px] tracking-tight ml-2">Crochet</span>
+                <span className="text-[#C9365A] font-bold text-[18px] md:text-[20px] tracking-tight ml-2">Crochet</span>
               </div>
               <div className="flex items-center gap-1.5 text-[#7A1D2E] opacity-90 -mt-0.5 relative z-0">
                 <span className="w-5 sm:w-8 h-[1px] bg-[#7A1D2E]/40"></span>
-                <span className="text-[6.5px] md:text-[7.5px] tracking-[0.2em] uppercase font-bold flex items-center gap-1">
-                  HANDMADE <svg className="w-2 h-2 text-[#ff4d6d]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> WITH LOVE
+                <span className="text-[6.5px] md:text-[7.5px] tracking-[0.2em] font-bold flex items-center gap-1">
+                  Handmade <svg className="w-2 h-2 text-[#ff4d6d]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> with love
                 </span>
                 <span className="w-5 sm:w-8 h-[1px] bg-[#7A1D2E]/40"></span>
               </div>

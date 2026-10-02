@@ -1,11 +1,7 @@
 import Link from 'next/link';
-import { getGiftPageBySlug } from '@/lib/gift-pages';
+import { getSeoPageBySlug } from '@/lib/seo-pages';
 
-/**
- * Displays related gift page links at the bottom of each gift page.
- * Now driven by the central gift-pages config instead of a hardcoded list.
- */
-export default function MoreGiftIdeas({
+export default function MoreSeoIdeas({
   currentSlug,
   relatedSlugs,
 }: {
@@ -17,10 +13,10 @@ export default function MoreGiftIdeas({
     .filter((s) => s !== currentSlug)
     .slice(0, 4)
     .map((slug) => {
-      const page = getGiftPageBySlug(slug);
+      const page = getSeoPageBySlug(slug);
       if (!page) return null;
       return {
-        href: `/gifts/${page.slug}`,
+        href: `/${page.slug}`,
         title: page.breadcrumbLabel,
         badge: page.hero.badge.split(' ')[0], // extract emoji
         desc: page.hero.heading,
@@ -31,16 +27,16 @@ export default function MoreGiftIdeas({
   // If we have fewer than 4 links, pad with custom page
   if (linksToShow.length < 4) {
     linksToShow.push({
-      href: '/custom',
-      title: 'Custom Gifts',
+      href: '/custom-crochet-bouquet',
+      title: 'Custom Bouquets',
       badge: '🎨',
-      desc: 'Made to Order',
+      desc: 'Bespoke Handmade Flowers',
     });
   }
 
   return (
     <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      <h2 className="text-xl font-bold text-neutral-900 mb-6">More Gift Ideas</h2>
+      <h2 className="text-xl font-bold text-neutral-900 mb-6">Explore More</h2>
       <div className="grid grid-cols-2 gap-4">
         {linksToShow.slice(0, 4).map((link) => (
           <Link

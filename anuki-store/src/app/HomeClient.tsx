@@ -195,23 +195,35 @@ export default function HomeClient({
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
  <div className="absolute inset-0 p-6 flex flex-col justify-end max-w-xl z-20">
  <div className={`transition-all duration-700 transform ${index === currentHeroSlide ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-4 opacity-0'}`}>
- <div className="bg-rose-600/95 text-white text-[9px] sm:text-[10px] font-bold px-3 py-1.5 rounded-full w-fit mb-4 border border-rose-400 tracking-wider uppercase">
+ <div className="bg-rose-600/95 text-white text-[9px] sm:text-[10px] font-bold px-3 py-1.5 rounded-full w-fit mb-4 border border-rose-400 tracking-wider uppercase drop-shadow-md">
  {slide.badge}
  </div>
  
  <div className="md:hidden">
+ {index === 0 ? (
  <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
  {slide.title}
  </h1>
+ ) : (
+ <h2 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
+ {slide.title}
+ </h2>
+ )}
  <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
  {slide.description}
  </p>
  </div>
  
  <div className="hidden md:block">
+ {index === 0 ? (
  <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
  {slide.desktopTitle || slide.title}
  </h1>
+ ) : (
+ <h2 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
+ {slide.desktopTitle || slide.title}
+ </h2>
+ )}
  <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
  {slide.desktopDescription || slide.description}
  </p>
@@ -238,9 +250,11 @@ export default function HomeClient({
  <button 
  key={idx}
  onClick={() => setCurrentHeroSlide(idx)}
- className={`h-2 rounded-full transition-all duration-300 ${idx === currentHeroSlide ? 'w-6 bg-rose-500' : 'w-2 bg-white/50 hover:bg-white/80'}`}
+ className="min-w-[24px] min-h-[24px] flex items-center justify-center rounded-full transition-all duration-300"
  aria-label={`Go to slide ${idx + 1}`}
- />
+ >
+ <span className={`block rounded-full transition-all duration-300 ${idx === currentHeroSlide ? 'w-6 h-2 bg-rose-500' : 'w-2 h-2 bg-white/50 hover:bg-white/80'}`} />
+ </button>
  ))}
  </div>
  </div>
@@ -270,9 +284,9 @@ export default function HomeClient({
  <span className="text-[#e11d48] font-bold text-[8px] md:text-[10px] tracking-wider uppercase bg-white px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-rose-100 hidden sm:block">
  Special Offer
  </span>
- <h3 className="font-serif text-base md:text-2xl font-black text-[#1a1a1a] tracking-tight leading-none">
+ <p className="font-serif text-base md:text-2xl font-black text-[#1a1a1a] tracking-tight leading-none">
  Free Shipping
- </h3>
+ </p>
  </div>
  <p className="text-[#4a4a4a] text-[11px] md:text-sm font-medium leading-tight mt-0.5 md:mt-1">
  on orders over <span className="text-[#e11d48] font-bold text-[13px] md:text-base ">₹{freeDeliveryThreshold}</span>
@@ -297,11 +311,11 @@ export default function HomeClient({
  </h2>
  <Link href="/products" className="text-xs font-bold text-[#a43b46] hover:underline">View all</Link>
  </div>
- <div className="flex gap-4 md:gap-8 overflow-x-auto hide-scrollbar snap-x px-4 -mx-4 pb-4 md:[justify-content:safe_center]">
+ <div className="flex gap-4 md:gap-8 overflow-x-auto hide-scrollbar snap-x px-4 -mx-4 pb-4 md:[justify-content:safe_center]" role="region" aria-label="Product categories" tabIndex={0}>
  {[...categories].sort((a, b) => a.slug === 'flower-pots' ? 1 : b.slug === 'flower-pots' ? -1 : 0).map((cat) => (
  <Link href={`/products?category=${cat.slug}`} key={cat.id} className="snap-start flex flex-col items-center gap-2 md:gap-3 min-w-[72px] md:min-w-[144px] group">
  <div className="w-16 h-16 md:w-36 md:h-36 shrink-0 rounded-full overflow-hidden relative border border-[#f0e8e6] shadow-sm group-hover:shadow-md transition-shadow">
- <Image src={cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 64px, 144px" />
+ <Image src={cat.bannerUrl || cat.products?.[0]?.images?.[0]?.url || fallbackImage1} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 768px) 64px, 144px" />
  </div>
  <span className="text-[11px] font-bold text-neutral-700 text-center group-hover:text-[#a43b46] transition-colors">{cat.name}</span>
  </Link>
@@ -315,6 +329,60 @@ export default function HomeClient({
  </div>
  </section>
 
+  {/* GIFT FINDER - SEO Internal Linking Hub */}
+  <section className="py-8 md:py-12 px-4 bg-rose-50/50 border-y border-[#f0e8e6]">
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl md:text-4xl font-serif font-bold text-neutral-900 mb-3">
+          Gift Finder
+        </h2>
+        <p className="text-sm md:text-base text-neutral-600 max-w-lg mx-auto">Find the perfect handmade crochet gift by recipient, occasion, or budget.</p>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {/* WHO */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col gap-3">
+          <h3 className="font-bold text-xs text-[#a43b46] uppercase tracking-widest border-b border-rose-100 pb-2 mb-1">Who?</h3>
+          <Link href="/gifts/for-girlfriend" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Girlfriend <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/for-boyfriend" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Boyfriend <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/for-wife" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Wife <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/for-mom" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Mom <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/for-best-friend" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Friend <ArrowRight size={14} className="opacity-50" /></Link>
+        </div>
+
+        {/* OCCASION */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col gap-3">
+          <h3 className="font-bold text-xs text-[#a43b46] uppercase tracking-widest border-b border-rose-100 pb-2 mb-1">Occasion</h3>
+          <Link href="/gifts/birthday" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Birthday <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/anniversary" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Anniversary <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/valentines-day" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Valentine's Day <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/wedding-return-gifts" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Wedding <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/raksha-bandhan" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Rakhi <ArrowRight size={14} className="opacity-50" /></Link>
+        </div>
+
+        {/* BUDGET */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col gap-3">
+          <h3 className="font-bold text-xs text-[#a43b46] uppercase tracking-widest border-b border-rose-100 pb-2 mb-1">Budget</h3>
+          <Link href="/gifts/under-199" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Under ₹199 <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/under-299" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Under ₹299 <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/under-499" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Under ₹499 <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/under-999" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Under ₹999 <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/gifts/under-1499" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Under ₹1499 <ArrowRight size={14} className="opacity-50" /></Link>
+        </div>
+
+        {/* TYPE */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col gap-3">
+          <h3 className="font-bold text-xs text-[#a43b46] uppercase tracking-widest border-b border-rose-100 pb-2 mb-1">Type</h3>
+          <Link href="/crochet-flower-bouquets" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Bouquets <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/amigurumi" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Plushies <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/crochet-keychains" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Keychains <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/crochet-hair-accessories" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Hair Clips <ArrowRight size={14} className="opacity-50" /></Link>
+          <Link href="/custom-crochet" className="text-sm font-medium text-neutral-700 hover:text-[#a43b46] transition-colors flex items-center justify-between">Custom Orders <ArrowRight size={14} className="opacity-50" /></Link>
+        </div>
+      </div>
+    </div>
+  </section>
+
 
   {/* Trending Now */}
   <section className="py-6 px-4 bg-white border-t border-[#f0e8e6]">
@@ -324,10 +392,10 @@ export default function HomeClient({
   </h2>
   <Link href="/products?sort=trending" className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest hover:text-[#a43b46] transition-colors">View All</Link>
   </div>
-  <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 snap-x">
+  <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 snap-x" role="region" aria-label="Trending products" tabIndex={0}>
   {randomProducts.slice(0, 12).map((product) => (
   <div key={product.id} className="snap-start min-w-[150px] w-[150px] ">
-  <ProductCard product={product} />
+  <ProductCard product={product} hideAddToCart={true} />
   </div>
   ))}
   </div>
@@ -344,7 +412,7 @@ export default function HomeClient({
  <section className="py-6 px-4 bg-white border-t border-[#f0e8e6]">
  <SectionHeader title="Bestselling Gifts" icon="🤍" linkText="See All" linkUrl="/products?sort=bestselling" />
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6">
- {expandProductsByColor(featuredProducts).slice(0,8).map(product => <ProductCard key={product.id} product={product} />)}
+ {expandProductsByColor(featuredProducts).slice(0,8).map(product => <ProductCard key={product.id} product={product} hideAddToCart={true} />)}
  </div>
  </section>
 
@@ -352,8 +420,8 @@ export default function HomeClient({
  <section className="py-6 px-4 bg-white border-t border-[#f0e8e6]">
  <div className="flex justify-between items-end mb-6">
  <div>
- <p className="text-[10px] font-bold tracking-widest text-[#8c3a44] uppercase mb-1 flex items-center gap-0.5">
- <ChevronLeft size={12} strokeWidth={3} /> FRESH OFF THE HOOK
+ <p className="text-[10px] font-bold tracking-widest text-[#8c3a44] mb-1 flex items-center gap-0.5">
+ <ChevronLeft size={12} strokeWidth={3} /> Fresh Off The Hook
  </p>
  <h2 className="text-3xl font-serif font-bold text-neutral-900 leading-none tracking-tight">Latest Arrivals</h2>
  </div>
@@ -362,7 +430,7 @@ export default function HomeClient({
  </Link>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6">
- {expandProductsByColor(latestProducts).slice(0,8).map(product => <ProductCard key={product.id} product={product} />)}
+ {expandProductsByColor(latestProducts).slice(0,8).map(product => <ProductCard key={product.id} product={product} hideAddToCart={true} />)}
  </div>
  </section>
 
@@ -373,9 +441,9 @@ export default function HomeClient({
  <Play fill="white" className="w-6 h-6 ml-1 text-white" />
  </div>
  <div className="z-10 text-white flex-1">
- <p className="text-[9px] font-bold tracking-widest text-neutral-400 mb-1 uppercase">BEHIND THE HOOK & YARN</p>
+ <p className="text-xs font-bold tracking-widest text-neutral-400 mb-1">Behind the hook & yarn</p>
  <h3 className="text-sm font-bold mb-1 leading-tight text-[#fcfaf9]">How We Craft Anuki Plushies</h3>
- <p className="text-[10px] text-neutral-400 font-medium">Tap to watch the handmade process</p>
+ <p className="text-xs text-neutral-400 font-medium">Tap to watch the handmade process</p>
  </div>
  <div className="absolute right-0 top-0 bottom-0 w-32 z-0 opacity-20 pointer-events-none flex items-center justify-end pr-4">
  <div className="w-24 h-24 border-4 border-white rounded-full translate-x-8"></div>
@@ -391,7 +459,7 @@ export default function HomeClient({
  
   {/* Text Content */}
   <div className="flex flex-col">
-  <p className="text-[10px] font-bold tracking-widest text-[#a43b46] mb-3 uppercase">CO-CREATE WITH US</p>
+  <p className="text-[10px] font-bold tracking-widest text-[#a43b46] mb-3">Co-Create With Us</p>
   <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#3d2b2c] mb-3 leading-[1.15]">Make Your Handmade Gift Yours.</h2>
   <p className="text-[13px] md:text-sm text-neutral-600 leading-relaxed max-w-sm">
   Anuki isn&apos;t just a store; it&apos;s a celebration of artistry. Every product is lovingly handmade by artisans who pour their heart and soul into their craft, ensuring you get something truly unique.
@@ -428,7 +496,7 @@ export default function HomeClient({
 
  {/* Why Shop Anuki Crochet? */}
  <section className="py-10 px-4 bg-white max-w-4xl mx-auto">
- <h2 className="text-[10px] font-bold tracking-widest text-neutral-400 text-center uppercase mb-2">Anuki Guarantee</h2>
+ <h2 className="text-[10px] font-bold tracking-widest text-neutral-500 text-center uppercase mb-2">Anuki Guarantee</h2>
  <h3 className="text-2xl font-serif font-bold text-center mb-8 text-neutral-900">Why Shop Anuki Crochet?</h3>
  <div className="space-y-4">
  <div className="bg-[#fdfaf9] rounded-[1.5rem] p-5 flex gap-4 items-start border border-[#f0e8e6] shadow-sm">
@@ -463,7 +531,7 @@ export default function HomeClient({
 
  {/* Shop By Occasion */}
  <section className="py-10 px-4 bg-white border-t border-[#f0e8e6] max-w-4xl mx-auto">
- <h2 className="text-[10px] font-bold tracking-widest text-[#a43b46] uppercase mb-2 text-center">Find Perfect Gifts</h2>
+ <h2 className="text-[10px] font-bold tracking-widest text-[#a43b46] mb-2 text-center">Find Perfect Gifts</h2>
  <h3 className="text-2xl font-serif font-bold mb-8 text-neutral-900 text-center">Shop By Occasion</h3>
  <div className="grid grid-cols-2 gap-4">
  <Link href="/gifts/birthday" className="border border-[#f0e8e6] rounded-[1.25rem] p-3 flex gap-3 items-center hover:bg-rose-50 transition-colors shadow-sm group bg-[#fdfaf9]">
@@ -516,7 +584,7 @@ export default function HomeClient({
  4.9/5 <span className="text-sm">⭐</span>
  </div>
  </div>
- <div className="flex overflow-x-auto hide-scrollbar gap-4 px-4 pb-4 snap-x max-w-7xl mx-auto">
+ <div className="flex overflow-x-auto hide-scrollbar gap-4 px-4 pb-4 snap-x max-w-7xl mx-auto" role="region" aria-label="Customer reviews" tabIndex={0}>
  {[
  { name: "Priya Sharma", init: "P", text: "The custom bouquet I ordered for my mom's 50th birthday arrived in perfect packaging. She literally teared up seeing the forever crochet sunflowers! 🌻" },
  { name: "Ananya", init: "A", text: "The amigurumi toy I ordered was incredibly detailed. You can see the love put into it!" },
@@ -525,7 +593,7 @@ export default function HomeClient({
  ].map((r, i) => (
  <div key={i} className="snap-center min-w-[280px] w-[280px] bg-white rounded-3xl p-6 border border-[#f0e8e6] shadow-sm flex flex-col justify-between">
  <div>
- <div className="text-rose-500 text-sm mb-4 tracking-widest">★★★★★</div>
+ <div className="text-rose-500 text-sm mb-4 tracking-widest" aria-label="5 out of 5 stars" role="img">★★★★★</div>
  <p className="text-[13px] text-neutral-700 italic leading-relaxed mb-6 font-medium">"{r.text}"</p>
  </div>
  <div className="flex gap-3 items-center pt-4 border-t border-neutral-100">
@@ -542,7 +610,7 @@ export default function HomeClient({
 
  {/* FAQ */}
  <section className="py-10 px-4 bg-white max-w-3xl mx-auto">
- <h2 className="text-[10px] font-bold tracking-widest text-neutral-400 text-center uppercase mb-2">Got Questions?</h2>
+ <h2 className="text-[10px] font-bold tracking-widest text-neutral-500 text-center uppercase mb-2">Got Questions?</h2>
  <h3 className="text-2xl font-serif font-bold text-center mb-8 text-neutral-900">Frequently Asked Questions</h3>
  <div className="space-y-3">
  {[
@@ -580,18 +648,18 @@ export default function HomeClient({
  <Image src={flowerPotsImg} alt="Shop Crochet Flower Pots" fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
  <div className="absolute bottom-5 left-5 text-white">
- <p className="text-[9px] font-bold tracking-widest uppercase mb-1.5 text-white/90">MOST LOVED</p>
- <h3 className="text-2xl font-serif font-bold mb-1.5">Flower Pots</h3>
- <span className="text-xs font-medium underline underline-offset-4 decoration-white/50 group-hover:decoration-white transition-colors">Shop Online</span>
+ <p className="text-[9px] font-bold tracking-widest uppercase mb-1.5 text-white/90 drop-shadow-sm">MOST LOVED</p>
+ <h3 className="text-2xl font-serif font-bold mb-1.5 drop-shadow-md">Flower Pots</h3>
+ <span className="text-xs font-medium underline underline-offset-4 decoration-white/50 group-hover:decoration-white transition-colors drop-shadow-sm">Shop Online</span>
  </div>
  </Link>
  <Link href="/products?category=toys" className="snap-start min-w-[280px] w-[280px] h-[180px] relative rounded-3xl overflow-hidden group shadow-sm">
  <Image src={plushToysImg} alt="Shop Amigurumi Plush Toys" fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
  <div className="absolute bottom-5 left-5 text-white">
- <p className="text-[9px] font-bold tracking-widest uppercase mb-1.5 text-white/90">CUDDLY FRIENDS</p>
- <h3 className="text-2xl font-serif font-bold mb-1.5">Plush Toys</h3>
- <span className="text-xs font-medium underline underline-offset-4 decoration-white/50 group-hover:decoration-white transition-colors">Shop Online</span>
+ <p className="text-[9px] font-bold tracking-widest uppercase mb-1.5 text-white/90 drop-shadow-sm">CUDDLY FRIENDS</p>
+ <h3 className="text-2xl font-serif font-bold mb-1.5 drop-shadow-md">Plush Toys</h3>
+ <span className="text-xs font-medium underline underline-offset-4 decoration-white/50 group-hover:decoration-white transition-colors drop-shadow-sm">Shop Online</span>
  </div>
  </Link>
  </div>

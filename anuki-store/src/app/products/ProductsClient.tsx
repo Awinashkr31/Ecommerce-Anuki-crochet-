@@ -79,10 +79,11 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Banner */}
+      {/* H1 always in DOM for accessibility; visually hidden on mobile */}
+      <h1 className="sr-only md:not-sr-only md:text-3xl md:text-4xl md:font-black md:text-neutral-900 md:mb-2 md:tracking-tight md:text-center">Shop Collection</h1>
+      {/* Header Banner - visual only on desktop */}
       <div className="hidden md:block bg-neutral-50 border-b border-neutral-100 py-6 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-black text-neutral-900 mb-2 tracking-tight">Shop Collection</h1>
           <p className="text-neutral-500 text-sm max-w-2xl mx-auto">
             Discover beautifully handcrafted crochet creations made with love, perfect for gifting or bringing warmth to your home.
           </p>
@@ -97,7 +98,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-sm font-bold"
+                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-[#8c3a44] text-white rounded-full text-sm font-bold"
               >
                 <SlidersHorizontal size={14} /> Filters
               </button>
@@ -158,7 +159,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                   </div>
                   <button 
                     onClick={handleResetFilters}
-                    className="bg-white text-orange-800 font-bold px-5 py-2.5 rounded-xl text-sm border border-orange-200 hover:bg-orange-100 transition-colors whitespace-nowrap shadow-sm"
+                    className="border border-neutral-200 text-neutral-900 font-bold px-5 py-2.5 rounded-full text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap shadow-sm bg-white"
                   >
                     Clear All Filters
                   </button>

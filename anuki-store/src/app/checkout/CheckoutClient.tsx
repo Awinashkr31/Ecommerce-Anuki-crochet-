@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost } from "@/lib/api";
-import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2, Loader2, User } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import AddressModal from "@/components/AddressModal";
@@ -18,6 +18,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const urlAddressId = searchParams?.get('addressId');
   const { items, clearCart, appliedCoupon } = useCartStore();
   const { profile, isLoading } = useAuthStore();
+  const isGuest = !profile;
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -26,23 +27,48 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const cashfreeRef = useRef<any>(null); // Cache preloaded SDK
   const [paymentStep, setPaymentStep] = useState<string | null>(null); // For animated overlay
 
+  // Guest checkout fields
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [guestStreet, setGuestStreet] = useState('');
+  const [guestCity, setGuestCity] = useState('');
+  const [guestState, setGuestState] = useState('');
+  const [guestPincode, setGuestPincode] = useState('');
+  const [guestLandmark, setGuestLandmark] = useState('');
+
   // Hydrate from localStorage on mount
   useEffect(() => {
     hydrate();
   }, [hydrate]);
 
-  // If cart is empty or user is not logged in, redirect
+  // If cart is empty, redirect to cart
   useEffect(() => {
     if (isLoading) return;
-
-    if (!profile) {
-      router.replace('/auth?redirect=/checkout');
-      return;
-    }
     if (items.length === 0 && !isProcessing) {
       router.replace('/cart');
     }
-  }, [items.length, router, isProcessing, profile, isLoading]);
+  }, [items.length, router, isProcessing, isLoading]);
+
+  // Auto-fill city/state from pincode for guest users
+  useEffect(() => {
+    const fetchPincodeDetails = async () => {
+      if (guestPincode.length === 6 && /^\d+$/.test(guestPincode)) {
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${guestPincode}`);
+          const data = await res.json();
+          if (data && data[0] && data[0].Status === 'Success') {
+            const postOffice = data[0].PostOffice[0];
+            setGuestCity(postOffice.District || postOffice.Region);
+            setGuestState(postOffice.State);
+          }
+        } catch (error) {
+          console.error('Failed to fetch pincode details:', error);
+        }
+      }
+    };
+    fetchPincodeDetails();
+  }, [guestPincode]);
 
   // Fetch addresses once (uses cached store, no duplicate API call)
   useEffect(() => {
@@ -98,10 +124,47 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const discount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalAmount = Math.max(0, subtotal + giftCharge + shippingCost + codCharge - discount);
 
+  // Build address object from guest form or saved address
+  const getAddress = () => {
+    if (isGuest) {
+      if (!guestName || !guestPhone || !guestStreet || !guestCity || !guestState || !guestPincode) {
+        return null;
+      }
+      return {
+        fullName: guestName,
+        firstName: guestName.split(' ')[0],
+        lastName: guestName.split(' ').slice(1).join(' ') || '',
+        street: guestStreet,
+        city: guestCity,
+        state: guestState,
+        pincode: guestPincode,
+        phone: guestPhone,
+      };
+    }
+    if (!selectedAddress) return null;
+    return {
+      fullName: selectedAddress.fullName,
+      firstName: selectedAddress.fullName.split(' ')[0],
+      lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '',
+      street: selectedAddress.street,
+      city: selectedAddress.city,
+      state: selectedAddress.state,
+      pincode: selectedAddress.zipCode,
+      phone: selectedAddress.phone,
+    };
+  };
+
   const handlePay = async () => {
     // Double-click protection
     if (processingRef.current || isProcessing) return;
     processingRef.current = true;
+
+    // Validate guest fields
+    if (isGuest) {
+      if (!guestName.trim()) { toast.error('Please enter your full name'); processingRef.current = false; return; }
+      if (!guestPhone.trim() || guestPhone.length !== 10) { toast.error('Please enter a valid 10-digit phone number'); processingRef.current = false; return; }
+      if (!guestStreet.trim() || !guestCity.trim() || !guestState.trim() || !guestPincode.trim()) { toast.error('Please fill in your complete delivery address'); processingRef.current = false; return; }
+    }
 
     if (paymentMethod === 'upi' || paymentMethod === 'cards') {
       await processOnlinePayment();
@@ -112,33 +175,32 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
   const processCodOrder = async () => {
     setIsProcessing(true);
-    if (!selectedAddress) {
-      toast.error("Please select a delivery address");
+    const address = getAddress();
+    if (!address) {
+      toast.error(isGuest ? "Please fill in your delivery address" : "Please select a delivery address");
       setIsProcessing(false);
+      processingRef.current = false;
       return;
     }
     
     try {
-      const address = { 
-        firstName: selectedAddress.fullName.split(' ')[0], 
-        lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '', 
-        street: selectedAddress.street, 
-        city: selectedAddress.city, 
-        state: selectedAddress.state, 
-        pincode: selectedAddress.zipCode,
-        phone: selectedAddress.phone
-      };
-      const payload = {
-        userId: profile?.id,
+      const payload: any = {
         items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization, name: i.name })),
         address, totalAmount, paymentMethod: 'cod',
         couponCode: appliedCoupon?.code,
         discountAmount: discount
       };
-      await apiPost('/orders', payload);
+      if (profile) {
+        payload.userId = profile.id;
+      } else {
+        payload.guestName = guestName;
+        payload.guestEmail = guestEmail;
+        payload.guestPhone = guestPhone;
+      }
+      const dbOrder = await apiPost('/orders', payload);
       clearCart();
       toast.success("Order Placed Successfully!", { duration: 3000 });
-      router.push('/account');
+      router.push(profile ? '/account' : `/order-status/${dbOrder.id}`);
     } catch (err: unknown) {
       const error = err as { message?: string };
       toast.error(error.message || "Failed to place order.");
@@ -149,8 +211,9 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
   const processOnlinePayment = async () => {
     setIsProcessing(true);
-    if (!selectedAddress) {
-      toast.error("Please select a delivery address");
+    const address = getAddress();
+    if (!address) {
+      toast.error(isGuest ? "Please fill in your delivery address" : "Please select a delivery address");
       setIsProcessing(false);
       processingRef.current = false;
       return;
@@ -159,23 +222,19 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     setPaymentStep('creating');
     
     try {
-      const address = { 
-        firstName: selectedAddress.fullName.split(' ')[0], 
-        lastName: selectedAddress.fullName.split(' ').slice(1).join(' ') || '', 
-        street: selectedAddress.street, 
-        city: selectedAddress.city, 
-        state: selectedAddress.state, 
-        pincode: selectedAddress.zipCode,
-        phone: selectedAddress.phone
-      };
-      
-      const orderPayload = {
-        userId: profile?.id,
+      const orderPayload: any = {
         items: items.map(i => ({ variantId: i.variantId || i.id, quantity: i.quantity, price: i.price, customization: i.customization, name: i.name })),
         address, totalAmount, paymentMethod: 'online',
         couponCode: appliedCoupon?.code,
         discountAmount: discount
       };
+      if (profile) {
+        orderPayload.userId = profile.id;
+      } else {
+        orderPayload.guestName = guestName;
+        orderPayload.guestEmail = guestEmail;
+        orderPayload.guestPhone = guestPhone;
+      }
       
       const dbOrder = await apiPost('/orders', orderPayload);
       
@@ -321,35 +380,94 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
             )}
             
             {/* Delivery Address */}
-            <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 relative overflow-hidden flex items-start justify-between gap-3">
-              {selectedAddress ? (
-                <>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="w-6 h-6 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
-                        <MapPin size={12} />
-                      </div>
-                      <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">{selectedAddress.fullName}, {selectedAddress.zipCode}</span></p>
-                    </div>
-                    <p className="text-sm text-neutral-500 mt-0.5 ml-8">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5 ml-8">Phone: {selectedAddress.phone}</p>
+            {isGuest ? (
+              /* Guest Address & Contact Form */
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-7 h-7 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                    <User size={14} />
                   </div>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-3 py-1 border border-indigo-200 text-indigo-600 font-medium text-xs rounded-lg hover:bg-indigo-50 transition-colors bg-white shrink-0 mt-1">
-                    Change
-                  </button>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-3 w-full py-2">
-                  <div className="w-10 h-10 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
-                    <MapPin size={20} />
-                  </div>
-                  <p className="text-sm text-neutral-500">No delivery address selected</p>
-                  <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
-                    Add New Address
-                  </button>
+                  <h3 className="font-serif text-base text-neutral-900">Contact & Delivery Details</h3>
                 </div>
-              )}
-            </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-neutral-500 font-medium mb-1 block">Full Name *</label>
+                    <input type="text" value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Your full name" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-500 font-medium mb-1 block">Phone Number *</label>
+                    <input type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value.replace(/\D/g, ''))} maxLength={10} placeholder="10-digit mobile" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-neutral-500 font-medium mb-1 block">Email (Optional)</label>
+                  <input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} placeholder="For order updates" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                </div>
+
+                <hr className="border-neutral-100" />
+
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-7 h-7 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                    <MapPin size={14} />
+                  </div>
+                  <h3 className="font-serif text-base text-neutral-900">Shipping Address</h3>
+                </div>
+                <div>
+                  <label className="text-xs text-neutral-500 font-medium mb-1 block">Address (House / Flat / Area) *</label>
+                  <textarea value={guestStreet} onChange={e => setGuestStreet(e.target.value)} rows={2} placeholder="House no., building, street, area" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none" />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-neutral-500 font-medium mb-1 block">Pincode *</label>
+                    <input type="text" value={guestPincode} onChange={e => setGuestPincode(e.target.value.replace(/\D/g, ''))} maxLength={6} placeholder="6-digit" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-500 font-medium mb-1 block">City *</label>
+                    <input type="text" value={guestCity} onChange={e => setGuestCity(e.target.value)} placeholder="City" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-500 font-medium mb-1 block">State *</label>
+                    <input type="text" value={guestState} onChange={e => setGuestState(e.target.value)} placeholder="State" className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-neutral-500 font-medium mb-1 block">Landmark (Optional)</label>
+                  <input type="text" value={guestLandmark} onChange={e => setGuestLandmark(e.target.value)} placeholder="Near temple, school, etc." className="w-full px-3 py-2.5 text-sm bg-neutral-50 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent" />
+                </div>
+              </div>
+            ) : (
+              /* Logged-in user Delivery Address */
+              <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-3 relative overflow-hidden flex items-start justify-between gap-3">
+                {selectedAddress ? (
+                  <>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-6 h-6 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                          <MapPin size={12} />
+                        </div>
+                        <p className="text-sm text-neutral-900 font-medium">Deliver to: <span className="font-bold">{selectedAddress.fullName}, {selectedAddress.zipCode}</span></p>
+                      </div>
+                      <p className="text-sm text-neutral-500 mt-0.5 ml-8">{selectedAddress.street}, {selectedAddress.city}, {selectedAddress.state}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5 ml-8">Phone: {selectedAddress.phone}</p>
+                    </div>
+                    <button onClick={() => setIsAddressModalOpen(true)} className="px-3 py-1 border border-indigo-200 text-indigo-600 font-medium text-xs rounded-lg hover:bg-indigo-50 transition-colors bg-white shrink-0 mt-1">
+                      Change
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-3 w-full py-2">
+                    <div className="w-10 h-10 rounded-full bg-[#FFF4F6] flex items-center justify-center text-[#E11D48]">
+                      <MapPin size={20} />
+                    </div>
+                    <p className="text-sm text-neutral-500">No delivery address selected</p>
+                    <button onClick={() => setIsAddressModalOpen(true)} className="px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+                      Add New Address
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
 
             {/* Payment Method */}

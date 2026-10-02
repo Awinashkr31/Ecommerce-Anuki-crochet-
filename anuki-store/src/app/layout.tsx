@@ -191,9 +191,9 @@ export default async function RootLayout({
           <SWRProvider fallback={fallback}>
             <AuthProvider>
               <StoreHeader />
-              <main className="flex-grow pb-16 md:pb-0">
+              <div className="flex-grow pb-16 md:pb-0">
                 {children}
-              </main>
+              </div>
               <BottomNav />
             </AuthProvider>
           </SWRProvider>

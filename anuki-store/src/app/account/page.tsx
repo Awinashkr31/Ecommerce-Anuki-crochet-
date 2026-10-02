@@ -110,7 +110,7 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <nav className="space-y-1 bg-white p-2 rounded-3xl border border-neutral-200">
+            <nav aria-label="Account menu" className="space-y-1 bg-white p-2 rounded-3xl border border-neutral-200">
               {isAdmin && (
                 <>
                   <Link

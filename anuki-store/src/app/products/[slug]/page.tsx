@@ -8,6 +8,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 
 export const revalidate = 60; // ISR revalidation
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const products = await prisma.product.findMany({

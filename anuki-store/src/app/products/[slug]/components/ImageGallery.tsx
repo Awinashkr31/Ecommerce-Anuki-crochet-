@@ -60,7 +60,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
 
         {/* Badges - Top Left */}
         <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
-          <div className="bg-teal-500 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm w-fit border border-teal-600 flex items-center gap-1">
+          <div className="bg-teal-700 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shadow-sm w-fit border border-teal-800 flex items-center gap-1">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
             35% OFF
           </div>
@@ -75,7 +75,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
         </div>
 
         {/* Wishlist Button - Top Right */}
-        <button className="absolute top-4 right-4 w-9 h-9 bg-white rounded-full flex items-center justify-center text-neutral-400 shadow-sm hover:text-rose-500 transition-colors z-10 border border-neutral-100">
+        <button aria-label="Add to wishlist" className="absolute top-4 right-4 w-9 h-9 bg-white rounded-full flex items-center justify-center text-neutral-400 shadow-sm hover:text-rose-500 transition-colors z-10 border border-neutral-100">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
 

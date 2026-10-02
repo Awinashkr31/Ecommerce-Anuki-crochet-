@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { z } from 'zod';
-import { verifyToken, requireRoles } from '../middleware/auth';
+import { verifyToken, optionalAuth, requireRoles } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 const router = Router();
 import { prisma } from '../lib/prisma';
@@ -33,7 +33,10 @@ const addressSchema = z.object({
 });
 
 const createOrderSchema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
+  guestName: z.string().max(100).optional(),
+  guestEmail: z.string().email().optional(),
+  guestPhone: z.string().min(10).max(15).optional(),
   items: z.array(orderItemSchema).min(1).max(50),
   address: addressSchema,
   totalAmount: z.number().positive(),
@@ -70,19 +73,29 @@ async function awardLoyaltyPoints(orderId: string, tx: any = prisma) {
   }
 }
 
-// POST new order (Checkout)
-router.post('/', verifyToken, validate(createOrderSchema), async (req: import('express').Request | any, res: import('express').Response | any) => {
+// POST new order (Checkout — supports both logged-in and guest users)
+router.post('/', optionalAuth, validate(createOrderSchema), async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const body = req.body;
-    const { items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0 } = body;
+    const { items, address, totalAmount, paymentMethod, couponCode, discountAmount = 0, redeemPoints = 0, guestName, guestEmail, guestPhone } = body;
     
+    // Determine userId: logged-in user takes priority, otherwise null (guest)
+    const userId = req.user?.userId || null;
+    const isGuest = !userId;
+
     // In a real scenario, we'd calculate totalAmount securely here by fetching variant prices from DB
     // rather than trusting the client's totalAmount.
 
     // Fetch user in parallel with the order transaction to save time
-    const userPromise = paymentMethod === 'online'
-      ? prisma.user.findUnique({ where: { id: req.user.userId } })
+    const userPromise = (paymentMethod === 'online' && userId)
+      ? prisma.user.findUnique({ where: { id: userId } })
       : Promise.resolve(null);
+
+    // Build internal notes with guest info if applicable
+    const guestInfo = isGuest 
+      ? `Guest Order | Name: ${guestName || address.fullName || `${address.firstName || ''} ${address.lastName || ''}`.trim()}, Email: ${guestEmail || 'N/A'}, Phone: ${guestPhone || address.phone || 'N/A'}\n` 
+      : '';
+    const addressNote = address ? `Shipping Address: ${address.fullName || `${address.firstName || ''} ${address.lastName || ''}`.trim()}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}, Phone: ${address.phone || 'N/A'}` : '';
 
     // Using Prisma Transaction for safety
     const [result, userRecord] = await Promise.all([
@@ -152,10 +165,10 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
         // 2. Create the Order
         const order = await tx.order.create({
           data: {
-            userId: req.user.userId,
+            userId: userId,
             totalAmount,
             status: paymentMethod === 'cod' ? 'PENDING' : 'AWAITING_PAYMENT',
-            internalNotes: address ? `Shipping Address: ${address.firstName} ${address.lastName}, ${address.street}, ${address.city}, ${address.state} - ${address.pincode}, Phone: ${address.phone || 'N/A'}` : null,
+            internalNotes: `${guestInfo}${addressNote}` || null,
             items: {
               create: items.map((item: any) => ({
                 variantId: item.variantId,
@@ -168,11 +181,11 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
           include: { items: true, payment: true }
         });
         
-        // 3. Create CouponUsage if applicable
-        if (appliedCouponId) {
+        // 3. Create CouponUsage if applicable (only for logged-in users)
+        if (appliedCouponId && userId) {
           await tx.couponUsage.create({
             data: {
-              userId: req.user.userId,
+              userId: userId,
               orderId: order.id,
               couponId: appliedCouponId,
               discountAmount: discountAmount,
@@ -182,19 +195,19 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
           });
         }
 
-        // 4. Redeem Points if any
-        if (redeemPoints > 0) {
-          const user = await tx.user.findUnique({ where: { id: req.user.userId } });
+        // 4. Redeem Points if any (only for logged-in users)
+        if (redeemPoints > 0 && userId) {
+          const user = await tx.user.findUnique({ where: { id: userId } });
           if (!user || user.pointsBalance < redeemPoints) {
             throw new Error('Insufficient points balance');
           }
           await tx.user.update({
-            where: { id: req.user.userId },
+            where: { id: userId },
             data: { pointsBalance: { decrement: redeemPoints } }
           });
           await tx.rewardTransaction.create({
             data: {
-              userId: req.user.userId,
+              userId: userId,
               orderId: order.id,
               points: redeemPoints,
               type: 'REDEEMED',
@@ -232,9 +245,9 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
         totalAmount,
         {
           id: result.userId || 'guest',
-          email: userRecord?.email || '',
-          phone: address.phone,
-          name: `${address.firstName || ''} ${address.lastName || ''}`.trim(),
+          email: userRecord?.email || guestEmail || '',
+          phone: guestPhone || address.phone,
+          name: guestName || `${address.firstName || ''} ${address.lastName || ''}`.trim(),
         },
         {
           ipAddress: req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown',
@@ -267,8 +280,8 @@ router.post('/', verifyToken, validate(createOrderSchema), async (req: import('e
         }).catch(console.error);
       }
       NotificationService.sendAdminAlert({
-        title: 'New Order Received',
-        message: `A new order of ₹${totalAmount} has been placed.`,
+        title: `New ${isGuest ? 'Guest ' : ''}Order Received`,
+        message: `A new ${isGuest ? 'guest ' : ''}order of ₹${totalAmount} has been placed.${isGuest ? ` Guest: ${guestName || 'N/A'}, Phone: ${guestPhone || address.phone || 'N/A'}` : ''}`,
         category: 'orders',
         priority: 'high',
         actionUrl: `/admin/orders/${result.id}`
@@ -489,8 +502,8 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
   }
 });
 
-// GET order by id (Admin/Customer)
-router.get('/:id', verifyToken, async (req: import('express').Request | any, res: import('express').Response | any) => {
+// GET order by id (Admin/Customer/Guest)
+router.get('/:id', optionalAuth, async (req: import('express').Request | any, res: import('express').Response | any) => {
   try {
     const { id } = req.params;
     
@@ -518,11 +531,19 @@ router.get('/:id', verifyToken, async (req: import('express').Request | any, res
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const userRole = req.user.role;
-    if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN' && userRole !== 'ORDER_FULFILLMENT' && userRole !== 'CUSTOMER_SUPPORT') {
-      if (order.userId !== req.user.userId) {
-        return res.status(403).json({ error: 'Forbidden' });
+    // Access control: 
+    // - Guest orders (userId=null) are accessible by anyone with the order ID (UUID is unguessable)
+    // - Logged-in user orders are restricted to the owner or admin roles
+    const userRole = req.user?.role;
+    if (order.userId && req.user) {
+      if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN' && userRole !== 'ORDER_FULFILLMENT' && userRole !== 'CUSTOMER_SUPPORT') {
+        if (order.userId !== req.user.userId) {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
       }
+    } else if (order.userId && !req.user) {
+      // Someone without auth trying to access a logged-in user's order
+      return res.status(401).json({ error: 'Access denied' });
     }
 
     // Customer aggregate stats
@@ -539,9 +560,9 @@ router.get('/:id', verifyToken, async (req: import('express').Request | any, res
       totalOrdersCount = stats._count.id || 0;
     }
 
-    // Filter timeline for customer
+    // Filter timeline for customer/guest
     let filteredTimeline = order.timeline;
-    if (userRole === 'CUSTOMER') {
+    if (!userRole || userRole === 'CUSTOMER') {
       filteredTimeline = order.timeline.filter((t: any) => !t.isInternal);
     }
 

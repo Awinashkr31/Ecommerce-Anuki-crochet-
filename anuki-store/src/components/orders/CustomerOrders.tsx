@@ -72,6 +72,7 @@ export default function CustomerOrders() {
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label="Filter by order status"
               className="px-4 py-2 border border-neutral-200 rounded-xl text-sm bg-white focus:outline-none focus:border-rose-500"
             >
               <option value="ALL">All Orders</option>
@@ -83,6 +84,7 @@ export default function CustomerOrders() {
             <select 
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
+              aria-label="Filter by time range"
               className="px-4 py-2 border border-neutral-200 rounded-xl text-sm bg-white focus:outline-none focus:border-rose-500"
             >
               <option value="ALL">All Time</option>

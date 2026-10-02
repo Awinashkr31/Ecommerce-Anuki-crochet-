@@ -46,7 +46,7 @@ export function Footer() {
             <Link href="/" className="mb-4 inline-block">
               <Image src="/logo.png" alt="Anuki Crochet" width={160} height={48} className="h-10 w-auto object-contain brightness-0 invert" unoptimized />
             </Link>
-            <p className="text-neutral-500 text-xs leading-relaxed mb-4 max-w-xs">
+            <p className="text-neutral-400 text-xs leading-relaxed mb-4 max-w-xs">
               Handcrafted crochet gifts made with love in India. Premium quality, personalized designs for every occasion.
             </p>
             <div className="space-y-2 text-xs">
@@ -142,10 +142,10 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-6 pt-5 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-3">
-          <p className="text-[10px] text-neutral-600 font-medium">
+          <p className="text-xs text-neutral-400 font-medium">
             © {new Date().getFullYear()} Anuki Crochet Pvt. Ltd. All rights reserved. Made with ♥ in India.
           </p>
-          <div className="flex items-center gap-4 text-[10px] text-neutral-600">
+          <div className="flex items-center gap-4 text-xs text-neutral-400">
             <Link href="/policies/privacy-policy" className="hover:text-neutral-400 transition-colors">Privacy</Link>
             <Link href="/policies/terms-of-service" className="hover:text-neutral-400 transition-colors">Terms</Link>
             <Link href="/sitemap.xml" className="hover:text-neutral-400 transition-colors">Sitemap</Link>

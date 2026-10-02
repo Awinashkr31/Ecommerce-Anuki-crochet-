@@ -28,7 +28,7 @@ export interface Product {
   originalId?: string;
 }
 
-const ProductCardComponent = ({ product }: { product: Product }) => {
+const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Product, hideAddToCart?: boolean }) => {
   const { profile } = useAuthStore();
   const isB2B = profile?.role === 'B2B_CUSTOMER';
   const addItem = useCartStore((state) => state.addItem);
@@ -92,14 +92,14 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
   const activeBadges = [];
   if (product.bestseller) {
     activeBadges.push(
-      <span key="bestseller" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
+      <span key="bestseller" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm border border-[#8c3a44]/20">
         Bestseller
       </span>
     );
   }
   if (product.isNew) {
     activeBadges.push(
-      <span key="new" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
+      <span key="new" className="bg-white text-[#8c3a44] text-[9px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm border border-[#8c3a44]/20">
         New In
       </span>
     );
@@ -209,7 +209,7 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
       {/* Product Details */}
       <div className="flex flex-col px-0.5 pb-2">
         <div className="flex items-center justify-between mb-1">
-          <div className="text-[9px] text-neutral-400 font-medium">
+          <div className="text-[9px] text-neutral-500 font-medium">
             {product.category?.name || "Product"}
           </div>
           {reviews.length > 0 && (
@@ -242,36 +242,38 @@ const ProductCardComponent = ({ product }: { product: Product }) => {
           {originalPrice ? (
             <>
               <span className="text-sm font-black text-[#8c3a44]">₹{displayPrice}</span>
-              <span className="text-[11px] font-bold text-neutral-400 line-through">₹{originalPrice}</span>
+              <span className="text-[11px] font-bold text-neutral-500 line-through">₹{originalPrice}</span>
             </>
           ) : (
             <span className="text-sm font-black text-[#8c3a44]">₹{displayPrice}</span>
           )}
         </div>
 
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
-            const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
-            
-            addItem({
-              id: variant ? variant.id || product.id : product.id,
-              productId: product.id,
-              variantId: variant ? variant.id || product.id : product.id,
-              name: product.name,
-              price: price,
-              quantity: 1,
-              image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
-              variantText: variant ? (variant.color || variant.name) : undefined
-            });
-            setIsOpen(true);
-          }}
-          className="w-full bg-[#8c3a44] text-white font-bold text-xs py-2 rounded-full flex items-center justify-center hover:bg-[#7a323b] transition-colors active:scale-[0.98] shadow-sm"
-        >
-          <ShoppingBag size={14} strokeWidth={2.5} className="mr-1.5 mb-0.5" /> Add to Bag
-        </button>
+        {!hideAddToCart && (
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
+              const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
+              
+              addItem({
+                id: variant ? variant.id || product.id : product.id,
+                productId: product.id,
+                variantId: variant ? variant.id || product.id : product.id,
+                name: product.name,
+                price: price,
+                quantity: 1,
+                image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
+                variantText: variant ? (variant.color || variant.name) : undefined
+              });
+              setIsOpen(true);
+            }}
+            className="w-full bg-[#8c3a44] text-white font-bold text-xs py-2 rounded-full flex items-center justify-center hover:bg-[#7a323b] transition-colors active:scale-[0.98] shadow-sm"
+          >
+            <ShoppingBag size={14} strokeWidth={2.5} className="mr-1.5 mb-0.5" /> Add to Bag
+          </button>
+        )}
       </div>
     </motion.div>
   );

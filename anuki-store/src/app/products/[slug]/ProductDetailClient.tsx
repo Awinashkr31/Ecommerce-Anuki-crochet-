@@ -109,7 +109,7 @@ export default function ProductDetailClient({
       
       {/* Breadcrumbs & Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-[#fcf8f7] sticky top-0 z-40 w-full max-w-7xl mx-auto">
-        <nav className="text-[11px] font-bold text-neutral-500 flex items-center gap-1.5 uppercase tracking-wider">
+        <nav className="text-xs font-bold text-neutral-600 flex items-center gap-1.5">
           <Link href="/" className="hover:text-rose-600 transition-colors flex items-center gap-1 text-neutral-900">
             <ArrowLeft size={16} strokeWidth={2.5} /> Home
           </Link>
@@ -118,7 +118,7 @@ export default function ProductDetailClient({
             {product.category?.name || 'Shop'}
           </Link>
           <span className="text-neutral-300">/</span>
-          <span className="text-neutral-900 truncate max-w-[120px]">{product.name}</span>
+          <span className="text-neutral-900 truncate max-w-[200px]">{product.name}</span>
         </nav>
       </div>
 
@@ -176,9 +176,9 @@ export default function ProductDetailClient({
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-serif text-neutral-900 leading-none font-bold">Complete the Gift</h2>
-              <Link href="/products" className="text-[10px] font-bold text-rose-600 uppercase tracking-widest hover:underline">View All</Link>
+              <Link href="/products" className="text-[10px] font-bold text-rose-700 uppercase tracking-widest hover:underline">View All</Link>
             </div>
-            <p className="text-[11px] text-neutral-500 mb-4 -mt-2">Pair your plushie with matching floral & handmade charms</p>
+            <p className="text-xs text-neutral-600 mb-4 -mt-2">Pair your plushie with matching floral & handmade charms</p>
             <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 snap-x">
               {completeTheGift.map((p) => (
                 <div key={p.id} className="snap-start min-w-[140px] w-[140px] md:min-w-[180px] md:w-[180px]">
@@ -192,6 +192,25 @@ export default function ProductDetailClient({
 
       {/* Reviews Section */}
       <ProductReviews productId={product.id} />
+
+      {/* You May Also Like Section */}
+      {youMayAlsoLike.length > 0 && (
+        <section className="bg-white py-8 border-t border-neutral-100 mb-20 lg:mb-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-serif text-neutral-900 leading-none font-bold">You May Also Like</h2>
+              <Link href="/products" className="text-[10px] font-bold text-rose-700 uppercase tracking-widest hover:underline">View All</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 snap-x">
+              {youMayAlsoLike.map((p) => (
+                <div key={p.id} className="snap-start min-w-[140px] w-[140px] md:min-w-[180px] md:w-[180px]">
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Sticky Buy Bar */}
       <StickyBuyBar 

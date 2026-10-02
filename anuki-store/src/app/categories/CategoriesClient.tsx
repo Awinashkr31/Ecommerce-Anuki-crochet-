@@ -81,14 +81,14 @@ export default function CategoriesClient() {
         <section className="px-4 pt-3 pb-3">
           <div className="flex items-baseline justify-between mb-1">
             <h1 className="font-serif text-3xl font-bold tracking-tight text-[#9f3647]">Categories</h1>
-            <span className="text-[11px] font-semibold text-[#be4b5c]/90 bg-[#fff0f0] px-2.5 py-1 rounded-full border border-[#eddcd9]/70">
+            <span className="text-[11px] font-semibold text-[#9f3647] bg-[#fff0f0] px-2.5 py-1 rounded-full border border-[#eddcd9]/70">
               {activeCategories.length} Collections
             </span>
           </div>
           <p className="text-xs text-[#5b4a4d] leading-relaxed max-w-[95%]">
             Explore our handcrafted world made loop by loop with love & organic milk cotton yarn.
           </p>
-          <div className="mt-2.5 flex items-center gap-2 text-[11px] text-[#5b4a4d]/70 font-medium">
+          <div className="mt-2.5 flex items-center gap-2 text-[11px] text-[#5b4a4d] font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-[#be4b5c] inline-block"></span>
             <span>40+ unique creations in stock & custom-crafted</span>
           </div>
@@ -96,7 +96,7 @@ export default function CategoriesClient() {
 
         {/* Category Quick Filters */}
         <section className="px-4 py-2">
-          <nav className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
+          <nav aria-label="Category filters" className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
             <button className="shrink-0 px-3.5 py-1.5 bg-[#be4b5c] text-white text-xs font-semibold rounded-full shadow-sm shadow-[#be4b5c]/20 transition-transform active:scale-95">
               All ({activeCategories.length})
             </button>
@@ -175,9 +175,9 @@ export default function CategoriesClient() {
               <span className="inline-block uppercase tracking-wider text-[10px] font-bold bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full mb-2">
                 Artisanal Studio
               </span>
-              <h3 className="font-serif text-xl font-bold leading-tight mb-1.5">
+              <h2 className="font-serif text-xl font-bold leading-tight mb-1.5">
                 Co-Create Your Custom Amigurumi or Bouquet
-              </h3>
+              </h2>
               <p className="text-xs text-[#fff0f0]/90 leading-relaxed mb-4 max-w-[90%]">
                 Choose your favorite yarn shades, personalized tags, and custom details crafted exclusively for your loved ones.
               </p>
@@ -193,7 +193,7 @@ export default function CategoriesClient() {
         <section className="px-4 py-3 mt-2">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-serif text-lg font-bold text-[#9f3647]">Shop by Occasion</h2>
-            <Link href="/products" className="text-xs font-semibold text-[#be4b5c] hover:underline">View All</Link>
+            <Link href="/products" className="text-xs font-semibold text-[#9f3647] hover:underline">View All</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-4">
             <Link href="/products?category=toys" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
@@ -202,7 +202,7 @@ export default function CategoriesClient() {
               </div>
               <div>
                 <span className="block text-xs font-semibold text-[#2d2426]">Birthday Keepsakes</span>
-                <span className="block text-[10px] text-[#5b4a4d]/70">Plush & Cards</span>
+                <span className="block text-[10px] text-[#5b4a4d]">Plush & Cards</span>
               </div>
             </Link>
             <Link href="/products?category=flower-pots" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
@@ -211,7 +211,7 @@ export default function CategoriesClient() {
               </div>
               <div>
                 <span className="block text-xs font-semibold text-[#2d2426]">Anniversary Flowers</span>
-                <span className="block text-[10px] text-[#5b4a4d]/70">Never-Wilting Roses</span>
+                <span className="block text-[10px] text-[#5b4a4d]">Never-Wilting Roses</span>
               </div>
             </Link>
             <Link href="/products?category=toys" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
@@ -220,7 +220,7 @@ export default function CategoriesClient() {
               </div>
               <div>
                 <span className="block text-xs font-semibold text-[#2d2426]">Baby & Nursery</span>
-                <span className="block text-[10px] text-[#5b4a4d]/70">Safe Milk Cotton</span>
+                <span className="block text-[10px] text-[#5b4a4d]">Safe Milk Cotton</span>
               </div>
             </Link>
             <Link href="/products?category=keychains" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
@@ -229,7 +229,7 @@ export default function CategoriesClient() {
               </div>
               <div>
                 <span className="block text-xs font-semibold text-[#2d2426]">Budget Treats</span>
-                <span className="block text-[10px] text-[#5b4a4d]/70">Gifts Under ₹300</span>
+                <span className="block text-[10px] text-[#5b4a4d]">Gifts Under ₹300</span>
               </div>
             </Link>
           </div>
@@ -243,7 +243,7 @@ export default function CategoriesClient() {
                 <CheckCircle className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-[#2d2426]">100% Handcrafted with Milk Cotton</h4>
+                <h3 className="text-xs font-bold text-[#2d2426]">100% Handcrafted with Milk Cotton</h3>
                 <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Soft, allergy-safe, and carefully hand-stitched one stitch at a time.</p>
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function CategoriesClient() {
                 <Package className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-[#2d2426]">Plastic-Free Eco Packaging</h4>
+                <h3 className="text-xs font-bold text-[#2d2426]">Plastic-Free Eco Packaging</h3>
                 <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Wrapped in biodegradable tissue, ribbons, and hand-written notes.</p>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function CategoriesClient() {
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-[#2d2426]">PAN-India Express Delivery</h4>
+                <h3 className="text-xs font-bold text-[#2d2426]">PAN-India Express Delivery</h3>
                 <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Safely boxed and tracked from our boutique workshop to your door.</p>
               </div>
             </div>

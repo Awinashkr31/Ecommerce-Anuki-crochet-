@@ -94,7 +94,7 @@ export default function CustomClient() {
               <div className="absolute top-4 left-4 md:top-10 md:left-10 w-5 h-5 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-[10px] font-bold text-neutral-500 shadow-sm">
                 {step.id}
               </div>
-              <h3 className="font-bold text-neutral-900 mb-1">{step.title}</h3>
+              <h2 className="font-bold text-neutral-900 mb-1">{step.title}</h2>
               <p className="text-xs text-neutral-500 font-medium">{step.desc}</p>
             </div>
           ))}
@@ -103,7 +103,7 @@ export default function CustomClient() {
 
       {/* Portfolio Section */}
       <section className="max-w-4xl mx-auto px-4 pb-12 pt-4 md:py-12 text-center">
-        <h4 className="text-xs font-bold text-[#991b1b] uppercase tracking-widest mb-3">Our Portfolio</h4>
+        <p className="text-xs font-bold text-[#991b1b] uppercase tracking-widest mb-3">Our Portfolio</p>
         <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900 mb-4">Custom Crochet Masterpieces</h2>
         <p className="text-neutral-500 max-w-lg mx-auto mb-10 text-sm md:text-base">
           A glimpse into personalized crochet gifts and custom orders we've hand-crafted for clients.
@@ -132,12 +132,12 @@ export default function CustomClient() {
           <button 
             type="button" 
             onClick={handleDirectWhatsApp}
-            className="w-full sm:w-auto px-10 bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#20bd5a] transition-transform hover:scale-105 shadow-md shadow-[#25D366]/20 flex items-center justify-center gap-3 text-base tracking-wide mx-auto"
+            className="w-full sm:w-auto px-10 bg-[#0d7a6e] text-white font-bold py-4 rounded-xl hover:bg-[#0a6359] transition-transform hover:scale-105 shadow-md shadow-[#0d7a6e]/20 flex items-center justify-center gap-3 text-base tracking-wide mx-auto"
           >
             <MessageCircle size={20} /> CHAT ON WHATSAPP
           </button>
           
-          <p className="text-xs text-neutral-400 font-medium mt-6">
+          <p className="text-xs text-neutral-500 font-medium mt-6">
             Average response time: &lt; 1 hour
           </p>
         </div>

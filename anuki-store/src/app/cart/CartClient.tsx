@@ -54,7 +54,8 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
   const handlePlaceOrder = () => {
     if (!profile) {
-      setIsLoginSheetOpen(true);
+      // Guest user — go straight to checkout without login
+      router.push('/checkout');
     } else if (!selectedAddress) {
       setIsAddressModalOpen(true);
     } else {

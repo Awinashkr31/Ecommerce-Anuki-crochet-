@@ -57,6 +57,7 @@ export default function ProductInfo({
             }
           }}
           className="w-10 h-10 shrink-0 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 transition-colors mt-1"
+          aria-label="Share this product"
         >
           <Share2 size={18} strokeWidth={2.5} />
         </button>
@@ -69,7 +70,7 @@ export default function ProductInfo({
             ₹{displayPrice}
           </span>
           {originalPrice && (
-            <span className="text-sm font-semibold text-neutral-400 line-through mb-1.5">
+            <span className="text-sm font-semibold text-neutral-500 line-through mb-1.5">
               ₹{originalPrice}
             </span>
           )}
@@ -79,10 +80,10 @@ export default function ProductInfo({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-neutral-500">
+        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
           <span>Inclusive of all taxes</span>
           <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
-          <span className="flex items-center gap-1 text-emerald-600 font-medium">
+          <span className="flex items-center gap-1 text-emerald-700 font-medium">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
             Free Express Delivery
           </span>

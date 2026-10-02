@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { verifyToken, requireRoles } from '../middleware/auth';
+import { verifyToken, optionalAuth, requireRoles } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { PaymentService, PaymentMeta } from '../services/paymentService';
 
@@ -52,7 +52,7 @@ function extractMeta(req: any): PaymentMeta {
 // POST /cashfree/create-order
 // Creates a Cashfree payment session (idempotent)
 // ──────────────────────────────────────────────────
-router.post('/cashfree/create-order', verifyToken, validate(createPaymentSchema), async (req: any, res: any) => {
+router.post('/cashfree/create-order', optionalAuth, validate(createPaymentSchema), async (req: any, res: any) => {
   try {
     const { amount, internalOrderId, user } = req.body;
     const meta = extractMeta(req);
@@ -99,7 +99,7 @@ router.post('/cashfree/create-order', verifyToken, validate(createPaymentSchema)
 // POST /cashfree/verify
 // Verifies payment status from gateway (idempotent)
 // ──────────────────────────────────────────────────
-router.post('/cashfree/verify', verifyToken, validate(verifyPaymentSchema), async (req: any, res: any) => {
+router.post('/cashfree/verify', optionalAuth, validate(verifyPaymentSchema), async (req: any, res: any) => {
   try {
     const { order_id, internalOrderId } = req.body;
     const meta = extractMeta(req);
@@ -129,7 +129,7 @@ router.post('/cashfree/verify', verifyToken, validate(verifyPaymentSchema), asyn
 // POST /retry
 // Retry a failed/dropped/cancelled payment
 // ──────────────────────────────────────────────────
-router.post('/retry', verifyToken, validate(retryPaymentSchema), async (req: any, res: any) => {
+router.post('/retry', optionalAuth, validate(retryPaymentSchema), async (req: any, res: any) => {
   try {
     const { orderId } = req.body;
     const meta = extractMeta(req);
