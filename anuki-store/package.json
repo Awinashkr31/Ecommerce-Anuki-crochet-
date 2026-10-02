@@ -13,6 +13,7 @@
     "@cashfreepayments/cashfree-js": "^1.0.7",
     "@hookform/resolvers": "^5.4.0",
     "@next/bundle-analyzer": "^16.2.12",
+    "@next/third-parties": "^15.0.0",
     "@prisma/client": "^5.22.0",
     "@serwist/next": "^9.5.12",
     "@supabase/ssr": "^0.12.3",

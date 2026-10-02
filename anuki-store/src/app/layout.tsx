@@ -11,6 +11,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from 'sonner';
 import { prisma } from '@/lib/prisma';
 import { unstable_cache } from 'next/cache';
+import { GoogleTagManager } from '@next/third-parties/google';
 
 const getGlobalLayoutData = unstable_cache(
   async () => {
@@ -121,6 +122,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
+        <GoogleTagManager gtmId="GTM-KQG359W5" />
         <NextTopLoader 
           color="#f43f5e" 
           initialPosition={0.08} 
