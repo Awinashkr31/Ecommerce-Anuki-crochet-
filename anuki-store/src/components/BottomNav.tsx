@@ -50,33 +50,33 @@ export function BottomNav() {
           ? "border border-neutral-200 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] w-max h-14" 
           : "border-t border-neutral-200 rounded-none w-full shadow-[0_-4px_12px_rgba(0,0,0,0.05)] pb-safe"
       }`}>
-        <div className={`flex items-center w-full h-14 px-1 sm:px-2 gap-0.5 sm:gap-1 transition-all duration-300 ${
-          isScrolled ? "justify-center" : "justify-around"
+        <div className={`flex items-center w-full h-14 transition-all duration-300 ${
+          isScrolled ? "justify-center px-4 sm:px-6 gap-3 sm:gap-5" : "justify-around px-1 sm:px-2 gap-0.5 sm:gap-1"
         }`}>
           <Link 
             href="/" 
-            className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname === "/" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+            className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname === "/" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             <Home size={20} className="mb-1" />
             <span className="text-[9px] font-bold">Home</span>
           </Link>
           <Link 
             href="/products" 
-            className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname?.startsWith("/products") && !pathname.startsWith("/products/") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+            className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname?.startsWith("/products") && !pathname.startsWith("/products/") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             <ShoppingBag size={20} className="mb-1" />
             <span className="text-[9px] font-bold">Shop</span>
           </Link>
           <Link 
             href="/categories"
-            className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname === "/categories" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+            className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname === "/categories" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             <LayoutGrid size={20} className="mb-1" />
             <span className="text-[9px] font-bold">Category</span>
           </Link>
           <Link 
             href="/custom"
-            className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname === "/custom" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+            className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname === "/custom" ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
           >
             <Wand2 size={20} className="mb-1" />
             <span className="text-[9px] font-bold">Custom</span>
@@ -86,7 +86,7 @@ export function BottomNav() {
           {isAdmin ? (
             <Link 
               href="/admin" 
-              className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname?.startsWith("/admin") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+              className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname?.startsWith("/admin") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
             >
               <Shield size={20} className="mb-1" />
               <span className="text-[9px] font-bold">Admin</span>
@@ -94,7 +94,7 @@ export function BottomNav() {
           ) : isLoggedIn ? (
             <Link 
               href="/account"
-              className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${pathname?.startsWith("/account") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+              className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${pathname?.startsWith("/account") ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
             >
               {profile?.avatarUrl ? (
                 <Image 
@@ -117,7 +117,7 @@ export function BottomNav() {
           ) : (
             <button 
               onClick={() => setIsLoginOpen(true)}
-              className={`flex flex-col items-center justify-center w-12 sm:w-14 h-full transition-colors ${isLoginOpen ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
+              className={`flex flex-col items-center justify-center w-14 sm:w-16 h-full transition-colors ${isLoginOpen ? "text-rose-600" : "text-neutral-500 hover:text-neutral-900"}`}
             >
               <User size={20} className="mb-1" />
               <span className="text-[9px] font-bold">Log in</span>

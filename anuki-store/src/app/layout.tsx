@@ -51,7 +51,7 @@ const getGlobalLayoutData = unstable_cache(
     ]);
   },
   ['global-layout-data'],
-  { revalidate: 300, tags: ['settings', 'categories'] }
+  { revalidate: 86400, tags: ['settings', 'categories'] } // 24 hours - revalidated on-demand when settings/categories change
 );
 
 const geistSans = Geist({

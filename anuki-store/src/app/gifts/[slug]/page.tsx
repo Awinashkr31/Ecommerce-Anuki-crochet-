@@ -12,7 +12,7 @@ import {
   type SeoArticleSection,
 } from '@/lib/gift-pages';
 
-export const revalidate = 60;
+export const revalidate = 604800; // 7 days - evergreen Gift guide programmatic pages (drastically reduces Vercel ISR writes)
 
 // ──────────────────────────────────────────────
 // Static Params (ISR for all gift pages)

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import { Metadata } from "next";
 
-export const revalidate = 60; // Revalidate every 60 seconds to keep it fast but fresh
+export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
 
 export const metadata: Metadata = {
   alternates: {

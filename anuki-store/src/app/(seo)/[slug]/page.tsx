@@ -8,7 +8,7 @@ import MoreSeoIdeas from '@/components/MoreSeoIdeas';
 import { type SeoArticleSection, type GiftPageConfig } from '@/lib/gift-pages';
 import { getSeoPageBySlug, getAllSeoSlugs } from '@/lib/seo-pages';
 
-export const revalidate = 60;
+export const revalidate = 604800; // 7 days - evergreen SEO programmatic pages (drastically reduces Vercel ISR writes)
 
 // ──────────────────────────────────────────────
 // Static Params (ISR for all SEO pages)

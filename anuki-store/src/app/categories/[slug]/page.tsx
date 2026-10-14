@@ -5,7 +5,7 @@ import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
-export const revalidate = 60; // ISR revalidation
+export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
 
 export async function generateStaticParams() {
   const categories = await prisma.category.findMany({

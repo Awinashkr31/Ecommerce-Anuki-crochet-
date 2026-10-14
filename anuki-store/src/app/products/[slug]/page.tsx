@@ -7,7 +7,7 @@ import { Metadata } from 'next';
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 
-export const revalidate = 60; // ISR revalidation
+export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -53,7 +53,7 @@ const getRelatedProducts = unstable_cache(
     });
   },
   ['related-products-cache'],
-  { revalidate: 3600 } // Cache for 1 hour
+  { revalidate: 86400 } // Cache for 24 hours
 );
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
