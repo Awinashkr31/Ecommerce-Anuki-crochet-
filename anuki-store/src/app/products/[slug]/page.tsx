@@ -11,14 +11,19 @@ export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const products = await prisma.product.findMany({
-    where: { status: 'PUBLISHED' },
-    select: { slug: true },
-  });
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      select: { slug: true },
+    });
 
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
+    return products.map((product) => ({
+      slug: product.slug,
+    }));
+  } catch (err) {
+    console.warn('Failed to pre-render products during build, falling back to on-demand ISR:', err);
+    return [];
+  }
 }
 
 type Props = {

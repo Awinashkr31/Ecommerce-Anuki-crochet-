@@ -15,40 +15,45 @@ import { GoogleTagManager } from '@next/third-parties/google';
 
 const getGlobalLayoutData = unstable_cache(
   async () => {
-    return Promise.all([
-      prisma.category.findMany({
-        where: { isActive: true },
-        select: { 
-          id: true, 
-          name: true, 
-          slug: true, 
-          parentId: true, 
-          isActive: true,
-          bannerUrl: true,
-          products: {
-            take: 1,
-            where: { status: 'PUBLISHED' },
-            select: {
-              images: {
-                take: 1,
-                orderBy: { order: 'asc' },
-                select: { url: true }
+    try {
+      return await Promise.all([
+        prisma.category.findMany({
+          where: { isActive: true },
+          select: { 
+            id: true, 
+            name: true, 
+            slug: true, 
+            parentId: true, 
+            isActive: true,
+            bannerUrl: true,
+            products: {
+              take: 1,
+              where: { status: 'PUBLISHED' },
+              select: {
+                images: {
+                  take: 1,
+                  orderBy: { order: 'asc' },
+                  select: { url: true }
+                }
               }
             }
+          },
+        }),
+        prisma.storeSettings.findMany({
+          where: {
+            key: {
+              in: [
+                'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
+                'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
+              ]
+            }
           }
-        },
-      }),
-      prisma.storeSettings.findMany({
-        where: {
-          key: {
-            in: [
-              'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
-              'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
-            ]
-          }
-        }
-      })
-    ]);
+        })
+      ]);
+    } catch (err) {
+      console.error('Error fetching global layout data:', err);
+      return [[], []];
+    }
   },
   ['global-layout-data'],
   { revalidate: 86400, tags: ['settings', 'categories'] } // 24 hours - revalidated on-demand when settings/categories change

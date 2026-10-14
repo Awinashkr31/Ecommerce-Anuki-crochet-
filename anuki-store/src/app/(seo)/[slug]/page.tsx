@@ -9,13 +9,14 @@ import { type SeoArticleSection, type GiftPageConfig } from '@/lib/gift-pages';
 import { getSeoPageBySlug, getAllSeoSlugs } from '@/lib/seo-pages';
 
 export const revalidate = 604800; // 7 days - evergreen SEO programmatic pages (drastically reduces Vercel ISR writes)
+export const dynamicParams = true;
 
 // ──────────────────────────────────────────────
-// Static Params (ISR for all SEO pages)
+// Static Params (ISR for top SEO pages, rest generated on-demand)
 // ──────────────────────────────────────────────
 
 export function generateStaticParams() {
-  return getAllSeoSlugs().map((slug) => ({ slug }));
+  return getAllSeoSlugs().slice(0, 10).map((slug) => ({ slug }));
 }
 
 // ──────────────────────────────────────────────
@@ -53,8 +54,9 @@ const productInclude = {
 };
 
 async function fetchProducts(page: GiftPageConfig) {
-  const filter = page.productFilter;
-  const orderBy = page.orderBy === 'price_asc' ? { salePrice: 'asc' as const } : { salePrice: 'desc' as const };
+  try {
+    const filter = page.productFilter;
+    const orderBy = page.orderBy === 'price_asc' ? { salePrice: 'asc' as const } : { salePrice: 'desc' as const };
 
   if (filter.type === 'price') {
     const priceConditions: any[] = [];
@@ -73,7 +75,7 @@ async function fetchProducts(page: GiftPageConfig) {
       );
     }
 
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         ...(priceConditions.length > 0 ? { OR: priceConditions } : {}),
@@ -124,7 +126,7 @@ async function fetchProducts(page: GiftPageConfig) {
       );
     }
 
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         category: { slug: { in: filter.slugs } },
@@ -135,12 +137,16 @@ async function fetchProducts(page: GiftPageConfig) {
     });
   }
 
-  // type === 'all'
-  return prisma.product.findMany({
-    where: { status: 'PUBLISHED' },
-    include: productInclude,
-    orderBy,
-  });
+    // type === 'all'
+    return await prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      include: productInclude,
+      orderBy,
+    });
+  } catch (error) {
+    console.error(`Error fetching products for SEO page ${page.slug}:`, error);
+    return [];
+  }
 }
 
 // ──────────────────────────────────────────────

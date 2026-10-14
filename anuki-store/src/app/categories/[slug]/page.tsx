@@ -6,16 +6,22 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
 export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    select: { slug: true },
-  });
+  try {
+    const categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: { slug: true },
+    });
 
-  return categories.map((cat) => ({
-    slug: cat.slug,
-  }));
+    return categories.map((cat) => ({
+      slug: cat.slug,
+    }));
+  } catch (err) {
+    console.warn('Failed to pre-render categories during build, falling back to on-demand ISR:', err);
+    return [];
+  }
 }
 
 type Props = {
@@ -48,33 +54,41 @@ export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
-  const category = await prisma.category.findUnique({
-    where: { slug: decodedSlug },
-  });
+  let category: any = null;
+  let products: any[] = [];
+
+  try {
+    category = await prisma.category.findUnique({
+      where: { slug: decodedSlug },
+    });
+
+    if (category && category.isActive) {
+      const childCategories = await prisma.category.findMany({
+        where: { parentId: category.id, isActive: true },
+        select: { id: true }
+      });
+      
+      const categoryIds = [category.id, ...childCategories.map(c => c.id)];
+
+      products = await prisma.product.findMany({
+        where: {
+          categoryId: { in: categoryIds },
+          status: 'PUBLISHED'
+        },
+        include: {
+          category: true,
+          variants: true,
+          images: { orderBy: { order: 'asc' } },
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Error loading category:', err);
+  }
 
   if (!category || !category.isActive) {
     notFound();
   }
-
-  // Find all child categories to include their products
-  const childCategories = await prisma.category.findMany({
-    where: { parentId: category.id, isActive: true },
-    select: { id: true }
-  });
-  
-  const categoryIds = [category.id, ...childCategories.map(c => c.id)];
-
-  const products = await prisma.product.findMany({
-    where: {
-      categoryId: { in: categoryIds },
-      status: 'PUBLISHED'
-    },
-    include: {
-      category: true,
-      variants: true,
-      images: { orderBy: { order: 'asc' } },
-    }
-  });
 
   const jsonLd = {
     '@context': 'https://schema.org',

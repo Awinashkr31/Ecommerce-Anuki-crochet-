@@ -13,13 +13,14 @@ import {
 } from '@/lib/gift-pages';
 
 export const revalidate = 604800; // 7 days - evergreen Gift guide programmatic pages (drastically reduces Vercel ISR writes)
+export const dynamicParams = true;
 
 // ──────────────────────────────────────────────
-// Static Params (ISR for all gift pages)
+// Static Params (ISR for top gift pages, rest generated on-demand)
 // ──────────────────────────────────────────────
 
 export function generateStaticParams() {
-  return getAllGiftSlugs().map((slug) => ({ slug }));
+  return getAllGiftSlugs().slice(0, 10).map((slug) => ({ slug }));
 }
 
 // ──────────────────────────────────────────────
@@ -57,8 +58,9 @@ const productInclude = {
 };
 
 async function fetchProducts(page: GiftPageConfig) {
-  const filter = page.productFilter;
-  const orderBy = page.orderBy === 'price_asc' ? { salePrice: 'asc' as const } : { salePrice: 'desc' as const };
+  try {
+    const filter = page.productFilter;
+    const orderBy = page.orderBy === 'price_asc' ? { salePrice: 'asc' as const } : { salePrice: 'desc' as const };
 
   if (filter.type === 'price') {
     const priceConditions: any[] = [];
@@ -77,7 +79,7 @@ async function fetchProducts(page: GiftPageConfig) {
       );
     }
 
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         ...(priceConditions.length > 0 ? { OR: priceConditions } : {}),
@@ -129,7 +131,7 @@ async function fetchProducts(page: GiftPageConfig) {
       );
     }
 
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         category: { slug: { in: filter.slugs } },
@@ -140,12 +142,16 @@ async function fetchProducts(page: GiftPageConfig) {
     });
   }
 
-  // type === 'all'
-  return prisma.product.findMany({
-    where: { status: 'PUBLISHED' },
-    include: productInclude,
-    orderBy,
-  });
+    // type === 'all'
+    return await prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      include: productInclude,
+      orderBy,
+    });
+  } catch (error) {
+    console.error(`Error fetching products for gift page ${page.slug}:`, error);
+    return [];
+  }
 }
 
 // ──────────────────────────────────────────────
