@@ -91,13 +91,14 @@ export function Footer() {
 
           {/* Gift Ideas */}
           <div className="col-span-1 md:col-span-1 lg:col-span-1">
-            <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Gift Ideas</h3>
+            <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-4">Custom & Gifts</h3>
             <ul className="space-y-2.5 text-xs">
-              <li><Link href="/gifts/under-500" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹500</Link></li>
-              <li><Link href="/gifts/under-1000" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹1000</Link></li>
+              <li><Link href="/custom" className="text-neutral-400 hover:text-rose-400 transition-colors">Custom Crochet India</Link></li>
+              <li><Link href="/custom-crochet-india" className="text-neutral-400 hover:text-rose-400 transition-colors">Crochet Custom Orders</Link></li>
+              <li><Link href="/categories/toys" className="text-neutral-400 hover:text-rose-400 transition-colors">Crochet Plushies & Toys</Link></li>
+              <li><Link href="/custom-crochet-bouquet" className="text-neutral-400 hover:text-rose-400 transition-colors">Custom Bouquets</Link></li>
               <li><Link href="/gifts/birthday" className="text-neutral-400 hover:text-rose-400 transition-colors">Birthday Gifts</Link></li>
-              <li><Link href="/gifts/anniversary" className="text-neutral-400 hover:text-rose-400 transition-colors">Anniversary Gifts</Link></li>
-              <li><Link href="/custom" className="text-neutral-400 hover:text-rose-400 transition-colors">Custom Orders</Link></li>
+              <li><Link href="/gifts/under-500" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹500 Gifts</Link></li>
             </ul>
           </div>
 
@@ -140,8 +141,20 @@ export function Footer() {
 
 
 
+        {/* Popular Searches & Internal Linking Strip */}
+        <div className="mt-8 pt-6 border-t border-neutral-900 text-[11px] text-neutral-400 leading-relaxed">
+          <span className="font-semibold text-neutral-400 mr-2 uppercase tracking-wider text-[10px]">Popular Searches:</span>
+          <Link href="/custom" className="hover:text-rose-400 transition-colors">Custom Crochet India</Link> ·{' '}
+          <Link href="/custom-crochet-india" className="hover:text-rose-400 transition-colors">Crochet Custom Orders</Link> ·{' '}
+          <Link href="/custom-crochet-bouquet" className="hover:text-rose-400 transition-colors">Custom Crochet Bouquet</Link> ·{' '}
+          <Link href="/crochet-flowers" className="hover:text-rose-400 transition-colors">Crochet Flowers India</Link> ·{' '}
+          <Link href="/crochet-flower-bouquets" className="hover:text-rose-400 transition-colors">Handmade Flower Bouquets</Link> ·{' '}
+          <Link href="/amigurumi" className="hover:text-rose-400 transition-colors">Amigurumi Plush Toys</Link> ·{' '}
+          <Link href="/crochet-plushies" className="hover:text-rose-400 transition-colors">Cute Crochet Plushies</Link>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-6 pt-5 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-3">
+        <div className="mt-4 pt-4 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-xs text-neutral-400 font-medium">
             © {new Date().getFullYear()} Anuki Crochet Pvt. Ltd. All rights reserved. Made with ♥ in India.
           </p>

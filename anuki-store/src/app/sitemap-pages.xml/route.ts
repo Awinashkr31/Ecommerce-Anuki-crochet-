@@ -10,7 +10,7 @@ export async function GET() {
     { loc: '/products', freq: 'daily', prio: '0.9' },
     { loc: '/categories', freq: 'weekly', prio: '0.8' },
     { loc: '/blog', freq: 'weekly', prio: '0.7' },
-    { loc: '/custom', freq: 'monthly', prio: '0.7' },
+    { loc: '/custom', freq: 'daily', prio: '1.0' },
     { loc: '/faq', freq: 'monthly', prio: '0.6' },
     // Gift pages are now in sitemap-gifts.xml (auto-generated from gift-pages config)
     { loc: '/policies/privacy-policy', freq: 'yearly', prio: '0.5' },

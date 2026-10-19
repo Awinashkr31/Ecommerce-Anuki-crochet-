@@ -656,6 +656,74 @@ export const SEO_PAGES: GiftPageConfig[] = [
   // TOYS & AMIGURUMI
   // ═══════════════════════════════════════════
   {
+    slug: 'crochet-pikachu-plush',
+    title: 'Crochet Pikachu Plush | Handmade Pokémon Amigurumi Toy India',
+    description: 'Buy handmade crochet Pikachu plush toys online in India. Super soft, handcrafted amigurumi Pokémon plushies perfect for anime fans, kids, and gifts.',
+    ogDescription: 'Buy handmade crochet Pikachu plush toys online in India. Super soft, handcrafted amigurumi Pokémon plushies.',
+    hero: {
+      badge: '⚡ Anime & Gaming Plush',
+      heading: 'Crochet Pikachu Plush',
+      subheading: 'Bring home your favorite electric Pokémon with our soft, handcrafted crochet Pikachu plushie.',
+    },
+    productFilter: { type: 'category', slugs: ['toys', 'keychains'] },
+    orderBy: 'price_asc',
+    breadcrumbLabel: 'Crochet Pikachu Plush',
+    gridLabel: 'Shop Pikachu & character plushies',
+    itemListName: 'Crochet Pikachu Plush Collection',
+    seoArticle: [
+      {
+        heading: 'Handcrafted Pokémon Crochet Pikachu Plush in India',
+        level: 'h2',
+        paragraphs: [
+          'Our handmade crochet Pikachu plush is lovingly handcrafted using premium hypoallergenic acrylic yarn. With its iconic yellow body, signature pointy ears with black tips, and sweet embroidered face, this amigurumi Pikachu plush is the ultimate gift for Pokémon fans, anime lovers, gamers, and kids.',
+          'Each crochet plush is individually made with tight, durable stitching, ensuring it keeps its shape forever. Whether placed on your gaming desk, bookshelf, car dashboard, or given as a romantic or birthday surprise, this handmade Pikachu brings joy everywhere it goes.'
+        ]
+      },
+      {
+        heading: 'Why Order Handmade Crochet Plushies from Anuki Crochet?',
+        level: 'h2',
+        paragraphs: [
+          'Unlike mass-produced plastic toys, every single crochet plush at Anuki Crochet is made by skilled artisans in India. We also accept custom crochet orders — if you want a custom Pikachu with a little hat, a custom Pokéball, or your favorite anime companion, visit our Custom Crochet Orders page!'
+        ]
+      }
+    ],
+    relatedSlugs: ['amigurumi', 'crochet-plushies', 'crochet-toys', 'custom-crochet-india'],
+  },
+  {
+    slug: 'custom-crochet-india',
+    title: 'Custom Crochet India | Personalized Handmade Crochet Orders',
+    description: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, amigurumi gifts, and bespoke crochet orders delivered across India.',
+    ogDescription: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, and bespoke crochet gifts.',
+    hero: {
+      badge: '✨ Pan-India Custom Orders',
+      heading: 'Custom Crochet India',
+      subheading: 'Turn your imagination into handcrafted art. Commission custom crochet flowers, plushies, and bespoke gifts in India.',
+    },
+    productFilter: { type: 'category', slugs: ['flower-bouquets', 'toys', 'keychains'] },
+    orderBy: 'price_desc',
+    breadcrumbLabel: 'Custom Crochet India',
+    gridLabel: 'Browse popular custom styles',
+    itemListName: 'Custom Crochet India',
+    seoArticle: [
+      {
+        heading: 'How to Place Custom Crochet Orders in India',
+        level: 'h2',
+        paragraphs: [
+          'Looking for custom crochet in India? Anuki Crochet is India\'s favorite destination for bespoke crochet gifts. Whether you need a customized crochet bridal bouquet matching your lehenga, a personalized amigurumi plushie of your pet or favorite anime character (like Pikachu or Naruto), or custom name keychains, we handcraft each piece with precision.',
+          'Simply head over to our dedicated Custom Orders page (/custom) or message us on WhatsApp with reference photos, color choices, and dimensions. We ship custom crochet orders safely to Mumbai, Delhi NCR, Bangalore, Kolkata, Hyderabad, Chennai, Pune, Patna, and all across India.'
+        ]
+      },
+      {
+        heading: 'Affordable Bespoke Crochet Gifts in India',
+        level: 'h2',
+        paragraphs: [
+          'Our custom crochet orders start from just ₹299. Every order includes direct artisan consultation, premium yarn crafting, and protective gift packaging so your one-of-a-kind handmade treasure arrives in pristine condition.'
+        ]
+      }
+    ],
+    relatedSlugs: ['custom-crochet-bouquet', 'personalized-crochet-bouquet', 'crochet-pikachu-plush', 'crochet-flowers'],
+  },
+  {
     slug: 'amigurumi',
     title: 'Amigurumi | Handmade Crochet Plushies & Toys',
     description: 'Shop adorable amigurumi toys online. Handcrafted crochet plushies, animals, and cute characters made with premium, baby-safe yarn.',

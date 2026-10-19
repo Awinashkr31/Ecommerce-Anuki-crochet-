@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
-import { Camera, Send, MessageCircle, Star, PenTool, Sparkles, Truck, Users } from 'lucide-react';
+import { Camera, Send, MessageCircle, Star, PenTool, Sparkles, Truck, Users, Heart, ArrowRight } from 'lucide-react';
 
-// Custom icons based on the screenshot
+// Custom icons based on the process steps
 const processSteps = [
   { id: 1, icon: <MessageCircle size={20} className="text-[#991b1b]" />, title: 'Share Your Idea', desc: 'Tell us what you envision' },
   { id: 2, icon: <PenTool size={20} className="text-[#991b1b]" />, title: 'We Design', desc: 'We sketch and refine the concept' },
@@ -13,11 +13,31 @@ const processSteps = [
   { id: 4, icon: <Truck size={20} className="text-[#991b1b]" />, title: 'Delivery', desc: 'Your unique piece, delivered' }
 ];
 
-const portfolioImages = [
-  "/custom-portfolio/bouquet.webp",
-  "/custom-portfolio/spiderman.webp",
-  "/custom-portfolio/wedding.webp",
-  "/custom-portfolio/pet.webp"
+const portfolioItems = [
+  {
+    src: "/custom-portfolio/bouquet.webp",
+    alt: "Custom crochet flower bouquet order hand-crafted in India",
+    title: "Custom Crochet Flower Bouquet Order",
+    tag: "Custom Bouquet"
+  },
+  {
+    src: "/custom-portfolio/spiderman.webp",
+    alt: "Custom crochet character plush including Spiderman and crochet Pikachu plush orders in India",
+    title: "Custom Crochet Character & Anime Plushies",
+    tag: "Character Amigurumi"
+  },
+  {
+    src: "/custom-portfolio/wedding.webp",
+    alt: "Bespoke bridal crochet bouquet custom order for Indian wedding",
+    title: "Bespoke Bridal Crochet Bouquet",
+    tag: "Bridal Keepsake"
+  },
+  {
+    src: "/custom-portfolio/pet.webp",
+    alt: "Personalized crochet pet amigurumi portrait custom crochet India",
+    title: "Personalized Crochet Pet Amigurumi",
+    tag: "Pet Portrait"
+  }
 ];
 
 const testimonials = [
@@ -49,42 +69,45 @@ export default function CustomClient() {
     <div className="min-h-screen bg-[#fafaf9] overflow-x-hidden">
       
       {/* Hero Section */}
-      <section className="relative w-full h-[500px] md:h-[600px]">
+      <section className="relative w-full min-h-[520px] md:min-h-[580px] flex items-center justify-center overflow-hidden">
         {/* Background Image Overlay */}
         <div className="absolute inset-0 z-0">
           <NextImage 
             src="/custom-portfolio/hero.webp" 
-            alt="Custom Crochet Background" 
+            alt="Custom Crochet Orders India Handcrafted" 
             fill 
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-black/55"></div>
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center px-4 pt-12 pb-32">
+        <div className="relative z-10 w-full flex flex-col items-center justify-center text-center px-4 pt-8 pb-14 md:pt-14 md:pb-20">
           
-          <div className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-6 flex items-center gap-2">
-            <PenTool size={14} /> MADE JUST FOR YOU
+          <div className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 inline-flex items-center gap-2 shadow-sm">
+            <PenTool size={14} /> BESPOKE HANDMADE IN INDIA
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-serif text-white font-medium mb-4">
-            Custom & Personalized Crochet Gifts
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-white font-medium mb-3 md:mb-4 leading-tight drop-shadow-md max-w-3xl">
+            Custom Crochet Orders India
           </h1>
           
-          <p className="text-white/90 text-lg md:text-xl max-w-xl mx-auto mb-10">
-            Let's bring your unique vision to life. Whether you want a custom crochet bouquet for a birthday, a personalized crochet plush gift, or aesthetic handmade custom gifts, we craft it for you.
+          <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed drop-shadow-sm">
+            Looking for authentic <strong>custom crochet in India</strong>? We turn your unique imagination into handcrafted reality. From custom crochet flower bouquets and personalized amigurumi plushies (cuddly companions, characters & pets) to bespoke anniversary and wedding gifts, our artisans craft each piece with love.
           </p>
 
-          <a href="#form-section" className="bg-white text-neutral-900 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-100 transition-colors shadow-lg flex items-center gap-2">
-            START DESIGNING <PenTool size={16} />
+          <a 
+            href="#form-section" 
+            className="bg-white text-neutral-900 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-100 transition-all shadow-xl hover:scale-105 active:scale-95 inline-flex items-center gap-2"
+          >
+            START YOUR CUSTOM ORDER <PenTool size={16} />
           </a>
         </div>
       </section>
 
       {/* Process Steps (Floating) */}
-      <div className="max-w-6xl mx-auto px-4 -mt-24 relative z-20 mb-8 md:mb-12">
+      <div className="max-w-6xl mx-auto px-4 -mt-6 md:-mt-12 relative z-20 mb-8 md:mb-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-4">
           {processSteps.map((step) => (
             <div key={step.id} className="bg-white p-4 md:p-6 rounded-2xl shadow-lg border border-neutral-100 flex flex-col items-center text-center relative">
@@ -106,13 +129,30 @@ export default function CustomClient() {
         <p className="text-xs font-bold text-[#991b1b] uppercase tracking-widest mb-3">Our Portfolio</p>
         <h2 className="text-3xl md:text-4xl font-serif font-medium text-neutral-900 mb-4">Custom Crochet Masterpieces</h2>
         <p className="text-neutral-500 max-w-lg mx-auto mb-10 text-sm md:text-base">
-          A glimpse into personalized crochet gifts and custom orders we've hand-crafted for clients.
+          A glimpse into personalized crochet gifts and custom orders we've hand-crafted for clients across India.
         </p>
 
         <div className="grid grid-cols-2 gap-4 md:gap-6">
-          {portfolioImages.map((img, i) => (
-            <div key={i} className="aspect-square relative rounded-3xl overflow-hidden shadow-sm">
-              <NextImage src={img} alt={`Custom Portfolio ${i+1}`} fill className="object-cover hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 50vw, 33vw" />
+          {portfolioItems.map((item, i) => (
+            <div key={i} className="group relative rounded-3xl overflow-hidden shadow-sm aspect-square bg-neutral-100">
+              <NextImage 
+                src={item.src} 
+                alt={item.alt} 
+                title={item.title}
+                fill 
+                className="object-cover group-hover:scale-105 transition-transform duration-700" 
+                sizes="(max-width: 768px) 50vw, 33vw" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 text-left">
+                <div>
+                  <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full mb-1 inline-block">
+                    {item.tag}
+                  </span>
+                  <p className="text-xs md:text-sm font-semibold text-white drop-shadow-sm leading-tight">
+                    {item.title}
+                  </p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -138,7 +178,7 @@ export default function CustomClient() {
           </button>
           
           <p className="text-xs text-neutral-500 font-medium mt-6">
-            Average response time: &lt; 1 hour
+            Average response time: &lt; 1 hour · Delivery available all over India
           </p>
         </div>
       </section>
@@ -171,30 +211,36 @@ export default function CustomClient() {
       {/* SEO & FAQ Section */}
       <section className="max-w-4xl mx-auto px-4 py-12">
         <div className="prose prose-rose max-w-none">
-          <h2>How Custom Orders Work</h2>
+          <h2>How Custom Crochet Orders Work in India</h2>
           <p>
-            Ordering a custom crochet gift is easy! Whether you want a personalized amigurumi plushie, a custom flower bouquet for a wedding, or a unique keychain, our artisans are here to craft it.
+            Ordering a <strong>custom crochet</strong> gift in India with Anuki Crochet is straightforward and personalized. Whether you want a custom crochet bouquet for a wedding anniversary, a personalized amigurumi plushie of your pet or favorite character, or a special customized keepsake, our artisans bring every detail to life using premium yarn.
           </p>
           <ol>
-            <li><strong>Design Consultation:</strong> Send us your ideas, reference photos, and color preferences.</li>
-            <li><strong>Quote & Timeline:</strong> We'll provide a price estimate and how long it will take (usually 7-14 days).</li>
-            <li><strong>Crafting:</strong> Our skilled artisans hand-crochet your item with premium yarn.</li>
-            <li><strong>Delivery:</strong> We safely package and ship your custom gift anywhere in India.</li>
+            <li><strong>Design Consultation:</strong> Send us your custom crochet ideas, reference photos, color choices, and dimensions on WhatsApp.</li>
+            <li><strong>Quote & Timeline:</strong> We review the requirements and provide an exact quote and crafting timeline (usually 7–14 business days).</li>
+            <li><strong>Artisan Crafting:</strong> Our skilled needlework artisans meticulously handcraft your piece with high-grade, durable yarn.</li>
+            <li><strong>Pan-India Delivery:</strong> We carefully box and express ship your custom order safely anywhere across India.</li>
           </ol>
 
-          <h3>Frequently Asked Questions</h3>
+          <h3>Frequently Asked Questions About Custom Crochet Orders</h3>
           <div className="space-y-4 not-prose mt-6">
             <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
-              <h4 className="font-bold text-neutral-900 mb-2">How long does a custom crochet order take?</h4>
-              <p className="text-neutral-600 text-sm">Depending on the complexity, custom orders usually take 7-14 days to craft and ship across India.</p>
+              <h4 className="font-bold text-neutral-900 mb-2">How long does a custom crochet order take in India?</h4>
+              <p className="text-neutral-600 text-sm">Depending on the complexity, custom orders usually take 7 to 14 business days to craft and deliver safely anywhere in India.</p>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
-              <h4 className="font-bold text-neutral-900 mb-2">Can you recreate a specific character or plushie?</h4>
-              <p className="text-neutral-600 text-sm">Yes! We can create amigurumi plushies of characters, pets, or any specific design you provide reference images for.</p>
+              <h4 className="font-bold text-neutral-900 mb-2">Can you recreate a specific character, pet, or plushie?</h4>
+              <p className="text-neutral-600 text-sm">
+                Yes! We take bespoke custom crochet orders for amigurumi characters, pets, favorite figures, and personalized stuffed toys crafted from your reference photos.
+              </p>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
-              <h4 className="font-bold text-neutral-900 mb-2">Do you make custom bridal bouquets?</h4>
-              <p className="text-neutral-600 text-sm">Absolutely. We design custom crochet flower bouquets matching your wedding colors that will last forever as a keepsake.</p>
+              <h4 className="font-bold text-neutral-900 mb-2">Do you make custom bridal bouquets for weddings?</h4>
+              <p className="text-neutral-600 text-sm">Absolutely. We design custom crochet flower bouquets matching your wedding lehenga and color theme that will last a lifetime as a precious keepsake.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+              <h4 className="font-bold text-neutral-900 mb-2">How much does custom crochet cost in India?</h4>
+              <p className="text-neutral-600 text-sm">Our custom crochet items start from just ₹299 for mini accessories and keychains, with full bouquets and intricate amigurumi plushies typically ranging between ₹699 and ₹2,499.</p>
             </div>
           </div>
         </div>
@@ -202,40 +248,26 @@ export default function CustomClient() {
 
       {/* Internal Links */}
       <section className="max-w-6xl mx-auto px-4 pb-16">
-        <h2 className="text-xl font-bold text-neutral-900 mb-6 text-center">Looking for Ready-to-Ship Gifts?</h2>
+        <h2 className="text-xl font-bold text-neutral-900 mb-6 text-center">Explore Popular Handcrafted Categories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/gifts/birthday" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Birthday Gifts</p>
-            <p className="text-xs text-neutral-500">For their special day</p>
+          <Link href="/categories/toys" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all group">
+            <p className="font-bold text-neutral-900 group-hover:text-rose-600">Crochet Plushies</p>
+            <p className="text-xs text-neutral-500">Cuddly amigurumi toys</p>
           </Link>
-          <Link href="/gifts/anniversary" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Anniversary Gifts</p>
-            <p className="text-xs text-neutral-500">Celebrate love</p>
+          <Link href="/custom-crochet-india" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all group">
+            <p className="font-bold text-neutral-900 group-hover:text-rose-600">Custom Crochet India</p>
+            <p className="text-xs text-neutral-500">Pan-India custom orders</p>
           </Link>
-          <Link href="/gifts/under-500" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Under ₹500</p>
-            <p className="text-xs text-neutral-500">Best sellers</p>
-          </Link>
-          <Link href="/categories/flower-bouquets" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all">
-            <p className="font-bold text-neutral-900">Flower Bouquets</p>
+          <Link href="/custom-crochet-bouquet" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all group">
+            <p className="font-bold text-neutral-900 group-hover:text-rose-600">Custom Bouquets</p>
             <p className="text-xs text-neutral-500">Forever flowers</p>
+          </Link>
+          <Link href="/gifts/birthday" className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all group">
+            <p className="font-bold text-neutral-900 group-hover:text-rose-600">Birthday Gifts</p>
+            <p className="text-xs text-neutral-500">Special handmade gifts</p>
           </Link>
         </div>
       </section>
-
-      {/* Floating Sticky WhatsApp Button */}
-      <button
-        onClick={handleDirectWhatsApp}
-        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20bd5a] hover:scale-110 transition-all duration-300 flex items-center justify-center animate-bounce group"
-        aria-label="Chat on WhatsApp"
-      >
-        <MessageCircle size={28} />
-        {/* Tooltip on hover */}
-        <span className="absolute right-full mr-4 bg-gray-900 text-white text-xs font-bold py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap hidden md:block">
-          Chat with us!
-        </span>
-      </button>
-
     </div>
   );
 }

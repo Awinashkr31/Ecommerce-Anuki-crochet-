@@ -6,268 +6,443 @@ import { apiGet } from "../../lib/api";
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, SlidersHorizontal, CheckCircle, Package, Truck } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { 
+  Search, 
+  Sparkles, 
+  CheckCircle, 
+  Package, 
+  Truck, 
+  ArrowRight, 
+  Heart,
+  SlidersHorizontal
+} from 'lucide-react';
+
+const CATEGORY_META: Record<string, { badge: string; emoji: string; startingPrice: number; popularTag: string }> = {
+  'flower-bouquets': {
+    badge: 'Evergreen Bloomer',
+    emoji: '💐',
+    startingPrice: 499,
+    popularTag: 'Most Gifted'
+  },
+  'flower-pots': {
+    badge: 'Desk Decor Favorite',
+    emoji: '🪴',
+    startingPrice: 349,
+    popularTag: 'Zero Water Needed'
+  },
+  'keychains': {
+    badge: 'Everyday Keepsake',
+    emoji: '🔑',
+    startingPrice: 99,
+    popularTag: 'Under ₹199'
+  },
+  'hair-accessories': {
+    badge: 'Gentle & Cute',
+    emoji: '🎀',
+    startingPrice: 149,
+    popularTag: 'Allergy-Safe Clips'
+  },
+  'toys': {
+    badge: 'Amigurumi Plush',
+    emoji: '🧸',
+    startingPrice: 249,
+    popularTag: 'Baby-Safe Cotton'
+  }
+};
+
+const DEFAULT_CATEGORY_FALLBACKS: Record<string, string> = {
+  'flower-bouquets': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/categories/9c84717b-f60d-4eb9-b511-04fae1fec5bd.webp',
+  'flower-pots': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/categories/822ae450-00d6-43d7-bf07-e6f26ff113de.webp',
+  'keychains': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/categories/3d08d091-caff-459c-98b5-2dd8acd5ea14.webp',
+  'hair-accessories': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/categories/73b02eb3-b663-4d2c-8efc-810cdb4f1066.webp',
+  'toys': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/categories/34652fe6-19f2-4849-9455-283a54050dfc.webp'
+};
 
 export default function CategoriesClient() {
   const router = useRouter();
-  const { data: categories = [], isLoading } = useSWR('/categories', (url: string) => apiGet<any[]>(url));
-  const activeCategories = categories.filter((c: any) => c.isActive && !c.parentId);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all');
 
-  const fallbackImage1 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/ab49ce87-7429-4ee1-9f01-db2a8ceb9375.webp";
-  const fallbackImage2 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/bf4cf952-311e-4294-b79f-129258fe612e.webp";
-  const fallbackImage3 = "https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/811a8439-4e35-4013-a535-250ac8c8cda2.webp";
-  
-  const getCategoryImage = (slug: string, fallback: string) => {
-    const cat = categories.find((c: any) => c.slug === slug);
-    return cat?.bannerUrl || cat?.products?.[0]?.images?.[0]?.url || fallback;
-  };
+  const { data: categories = [], isLoading } = useSWR('/categories', (url: string) => apiGet<any[]>(url), {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
 
-  if (isLoading) {
+  // Keep active categories (fallback to all if isActive not set)
+  const activeCategories = useMemo(() => {
+    return categories.filter((c: any) => c.isActive !== false && !c.parentId);
+  }, [categories]);
+
+  // Client-side filtering by search and quick tag
+  const filteredCategories = useMemo(() => {
+    return activeCategories.filter((cat: any) => {
+      const matchesSearch = 
+        !searchQuery.trim() ||
+        cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cat.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (cat.description && cat.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      if (!matchesSearch) return false;
+
+      if (selectedFilter === 'all') return true;
+      if (selectedFilter === 'florals') return cat.slug === 'flower-bouquets' || cat.slug === 'flower-pots';
+      if (selectedFilter === 'accessories') return cat.slug === 'keychains' || cat.slug === 'hair-accessories';
+      if (selectedFilter === 'plushies') return cat.slug === 'toys';
+      return true;
+    });
+  }, [activeCategories, searchQuery, selectedFilter]);
+
+  const totalProductsCount = useMemo(() => {
+    return activeCategories.reduce((acc: number, c: any) => acc + (c._count?.products || 0), 0);
+  }, [activeCategories]);
+
+  if (isLoading && categories.length === 0) {
     return (
-      <div className="w-full max-w-7xl mx-auto min-h-screen bg-[#faf5f4] flex flex-col relative pb-24">
-        <section className="px-4 pt-4 pb-2">
-          <div className="h-10 bg-white/50 rounded-2xl animate-pulse"></div>
-        </section>
-        <section className="px-4 pt-3 pb-3">
-          <div className="h-10 w-48 bg-neutral-200 animate-pulse rounded-lg mb-2"></div>
-          <div className="h-4 w-3/4 bg-neutral-200 animate-pulse rounded-lg"></div>
-        </section>
-        <section className="px-4 py-3">
-          <div className="grid grid-cols-2 gap-3.5">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="aspect-[3/4] bg-neutral-200 animate-pulse rounded-2xl"></div>
-            ))}
-          </div>
-        </section>
+      <div className="w-full max-w-6xl mx-auto min-h-screen bg-[#fafaf9] px-4 py-8 pb-28">
+        <div className="h-10 bg-neutral-200/60 rounded-2xl animate-pulse mb-6 max-w-md mx-auto"></div>
+        <div className="h-20 bg-neutral-200/50 rounded-2xl animate-pulse mb-8"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="aspect-[4/5] bg-neutral-200/60 rounded-3xl animate-pulse"></div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-[768px] mx-auto min-h-[80vh] bg-[#faf5f4] flex flex-col relative">
-      <main className="flex-grow flex flex-col">
-        {/* Search & Filter Bar */}
-        <section className="px-4 pt-4 pb-2">
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              const query = new FormData(e.currentTarget).get('q')?.toString().trim();
-              if (query) router.push(`/products?search=${encodeURIComponent(query)}`);
-            }}
-            className="flex items-center gap-2.5"
-          >
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="w-4 h-4 text-[#e5989b]" />
-              </div>
-              <input 
-                name="q"
-                type="search" 
-                placeholder="Search categories, plushies, flowers..." 
-                className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#eddcd9] rounded-2xl text-xs text-[#2d2426] placeholder:text-[#5b4a4d]/50 focus:outline-none focus:border-[#be4b5c] focus:ring-1 focus:ring-[#be4b5c] shadow-sm transition-all"
-              />
-            </div>
-            <button 
-              type="button" 
-              aria-label="Filter products" 
-              className="w-10 h-10 rounded-2xl border border-[#eddcd9] bg-white flex items-center justify-center text-[#9f3647] hover:bg-[#fff0f0]/50 transition-colors shadow-sm active:scale-95 shrink-0"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
-          </form>
-        </section>
-
-        {/* Page Header */}
-        <section className="px-4 pt-3 pb-3">
-          <div className="flex items-baseline justify-between mb-1">
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#9f3647]">Categories</h1>
-            <span className="text-[11px] font-semibold text-[#9f3647] bg-[#fff0f0] px-2.5 py-1 rounded-full border border-[#eddcd9]/70">
-              {activeCategories.length} Collections
-            </span>
+    <div className="min-h-screen bg-[#fafaf9] flex flex-col pb-28 md:pb-16">
+      
+      {/* Hero Header Section */}
+      <section className="bg-gradient-to-b from-rose-50/70 via-white to-[#fafaf9] border-b border-rose-100/60 pt-6 pb-8 md:pt-10 md:pb-12 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          
+          <div className="inline-flex items-center gap-2 bg-rose-100/80 text-rose-800 text-xs font-semibold px-4 py-1.5 rounded-full mb-3 shadow-xs">
+            <Sparkles size={14} className="text-rose-600" />
+            <span>100% Handcrafted • Organic Milk Cotton</span>
           </div>
-          <p className="text-xs text-[#5b4a4d] leading-relaxed max-w-[95%]">
-            Explore our handcrafted world made loop by loop with love & organic milk cotton yarn.
+
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-neutral-900 tracking-tight mb-3">
+            Handcrafted Collections
+          </h1>
+
+          <p className="text-sm md:text-base text-neutral-600 max-w-2xl mx-auto leading-relaxed mb-6">
+            Explore our curated crochet collections made loop by loop with love. Forever flowers, cuddly amigurumi, and charming accessories made to be treasured.
           </p>
-          <div className="mt-2.5 flex items-center gap-2 text-[11px] text-[#5b4a4d] font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#be4b5c] inline-block"></span>
-            <span>40+ unique creations in stock & custom-crafted</span>
-          </div>
-        </section>
 
-        {/* Category Quick Filters */}
-        <section className="px-4 py-2">
-          <nav aria-label="Category filters" className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
-            <button className="shrink-0 px-3.5 py-1.5 bg-[#be4b5c] text-white text-xs font-semibold rounded-full shadow-sm shadow-[#be4b5c]/20 transition-transform active:scale-95">
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto relative mb-5">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-neutral-400" />
+            </div>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search bouquets, keychains, plush toys..." 
+              className="w-full pl-11 pr-4 py-3 bg-white border border-neutral-200/90 rounded-full text-sm text-neutral-900 placeholder:text-neutral-400 shadow-sm focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-xs text-neutral-400 hover:text-neutral-700"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Quick Filter Chips */}
+          <div className="flex items-center justify-center gap-2 overflow-x-auto hide-scrollbar py-1">
+            <button 
+              onClick={() => setSelectedFilter('all')}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                selectedFilter === 'all' 
+                  ? 'bg-neutral-900 text-white shadow-sm' 
+                  : 'bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-100'
+              }`}
+            >
               All ({activeCategories.length})
             </button>
-            <button className="shrink-0 px-3.5 py-1.5 bg-white border border-[#eddcd9] text-[#2d2426] text-xs font-medium rounded-full hover:bg-[#fff0f0] active:scale-95 transition-colors">
-              🔥 Bestsellers
+            <button 
+              onClick={() => setSelectedFilter('florals')}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                selectedFilter === 'florals' 
+                  ? 'bg-rose-600 text-white shadow-sm' 
+                  : 'bg-white border border-neutral-200 text-neutral-700 hover:bg-rose-50'
+              }`}
+            >
+              🌸 Florals & Pots
             </button>
-            <button className="shrink-0 px-3.5 py-1.5 bg-white border border-[#eddcd9] text-[#2d2426] text-xs font-medium rounded-full hover:bg-[#fff0f0] active:scale-95 transition-colors">
-              🧸 Plushies
+            <button 
+              onClick={() => setSelectedFilter('plushies')}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                selectedFilter === 'plushies' 
+                  ? 'bg-rose-600 text-white shadow-sm' 
+                  : 'bg-white border border-neutral-200 text-neutral-700 hover:bg-rose-50'
+              }`}
+            >
+              🧸 Amigurumi & Toys
             </button>
-            <button className="shrink-0 px-3.5 py-1.5 bg-white border border-[#eddcd9] text-[#2d2426] text-xs font-medium rounded-full hover:bg-[#fff0f0] active:scale-95 transition-colors">
-              🌸 Florals
+            <button 
+              onClick={() => setSelectedFilter('accessories')}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                selectedFilter === 'accessories' 
+                  ? 'bg-rose-600 text-white shadow-sm' 
+                  : 'bg-white border border-neutral-200 text-neutral-700 hover:bg-rose-50'
+              }`}
+            >
+              🔑 Keychains & Clips
             </button>
-          </nav>
-        </section>
+          </div>
 
-        {/* Primary Category Grid */}
-        <section className="px-4 py-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 md:gap-5">
-            {activeCategories.map((category: any, i: number) => {
-              const fallbackImage = category.products?.[0]?.images?.[0]?.url;
-              const displayImage = category.bannerUrl || fallbackImage;
-              
-              // Mock tags and prices based on index for the artisanal feel
-              const tags = ['Bestseller', 'Popular', 'Bridal & Gift', 'Under ₹300', 'New', 'Made to Order', 'Evergreen Accents', 'Luxury Hamper'];
-              const prices = ['249', '499', '1,199', '99', '119', '349', '399', '799'];
-              const tag = tags[i % tags.length];
-              const price = prices[i % prices.length];
-              
+          <div className="mt-3 text-xs text-neutral-500 font-medium">
+            <span>{filteredCategories.length} collections matching</span>
+            {totalProductsCount > 0 && <span> • {totalProductsCount}+ unique creations ready</span>}
+          </div>
+
+        </div>
+      </section>
+
+      {/* Main Categories Grid */}
+      <section className="max-w-6xl mx-auto px-4 py-8 w-full flex-grow">
+        {filteredCategories.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-neutral-200/80 shadow-sm max-w-lg mx-auto">
+            <span className="text-4xl block mb-3">🧶</span>
+            <h3 className="font-serif text-xl font-bold text-neutral-900 mb-2">No matching collection found</h3>
+            <p className="text-sm text-neutral-600 mb-6">Try searching for bouquets, plush toys, keychains, or clear the search filter.</p>
+            <button 
+              onClick={() => { setSearchQuery(''); setSelectedFilter('all'); }}
+              className="bg-rose-600 text-white font-semibold text-xs px-6 py-2.5 rounded-full hover:bg-rose-700 transition-colors shadow-sm"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+            {filteredCategories.map((category: any) => {
+              const meta = CATEGORY_META[category.slug] || {
+                badge: 'Handmade Special',
+                emoji: '✨',
+                startingPrice: 199,
+                popularTag: 'Handcrafted'
+              };
+
+              const displayImage = category.bannerUrl || 
+                category.products?.[0]?.images?.[0]?.url || 
+                DEFAULT_CATEGORY_FALLBACKS[category.slug];
+
+              const productCount = category._count?.products || category.products?.length || 0;
+              const startingPrice = category.products?.[0]?.salePrice || 
+                category.products?.[0]?.basePrice || 
+                meta.startingPrice;
+
               return (
-                <article key={category.id} className="bg-white rounded-2xl overflow-hidden border border-[#eddcd9] shadow-[0_2px_10px_rgba(45,36,38,0.04)] flex flex-col justify-between group hover:border-[#e5989b] transition-all active:scale-[0.98]">
-                  <Link href={`/products?category=${category.slug}`} className="block relative aspect-square w-full overflow-hidden bg-[#fff8f7]">
-                    {displayImage ? (
-                      <Image 
-                        src={displayImage}
-                        alt={category.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#fff0f0] text-[#e5989b] text-3xl">🧶</div>
-                    )}
-                    <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm text-[#2d2426] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#eddcd9]/50 shadow-sm">
-                      {tag}
-                    </span>
-                  </Link>
-                  <div className="p-3 flex flex-col flex-grow justify-between">
-                    <Link href={`/products?category=${category.slug}`}>
-                      <h2 className="font-serif font-bold text-sm text-[#2d2426] group-hover:text-[#be4b5c] transition-colors leading-tight line-clamp-2">
-                        {category.name}
-                      </h2>
-                      <p className="text-[11px] text-[#5b4a4d]/75 mt-0.5">{category.products?.length || 0} items</p>
+                <article 
+                  key={category.id}
+                  className="group bg-white rounded-3xl border border-neutral-200/80 overflow-hidden shadow-xs hover:shadow-xl hover:border-rose-300 transition-all duration-300 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Image Banner */}
+                    <Link 
+                      href={`/products?category=${category.slug}`}
+                      className="block relative aspect-[4/3] w-full overflow-hidden bg-rose-50/40"
+                    >
+                      {displayImage ? (
+                        <Image 
+                          src={displayImage}
+                          alt={category.name}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-neutral-400 bg-neutral-100">
+                          <span className="text-4xl mb-1">{meta.emoji}</span>
+                          <span className="text-xs font-semibold">{category.name}</span>
+                        </div>
+                      )}
+                      
+                      {/* Gradient overlay for text legibility */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10"></div>
+
+                      {/* Top Badges */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                        <span className="bg-white/95 backdrop-blur-md text-neutral-900 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs border border-white/50 flex items-center gap-1.5">
+                          <span>{meta.emoji}</span>
+                          <span>{meta.badge}</span>
+                        </span>
+
+                        <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-0.5 rounded-full">
+                          {productCount} {productCount === 1 ? 'Design' : 'Designs'}
+                        </span>
+                      </div>
+
+                      {/* Bottom Banner Title on Image */}
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-rose-200 drop-shadow-sm">
+                          {meta.popularTag}
+                        </span>
+                        <h2 className="font-serif text-xl sm:text-2xl font-bold leading-tight drop-shadow-md">
+                          {category.name}
+                        </h2>
+                      </div>
                     </Link>
-                    <div className="mt-2.5 pt-2 border-t border-[#eddcd9]/50 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[#9f3647]">From ₹{price}</span>
-                      <Link href={`/products?category=${category.slug}`} className="text-[#be4b5c] text-xs font-bold group-hover:translate-x-0.5 transition-transform">
-                        →
-                      </Link>
+
+                    {/* Card Content */}
+                    <div className="p-4 sm:p-5">
+                      <p className="text-xs sm:text-sm text-neutral-600 line-clamp-2 leading-relaxed mb-4">
+                        {category.description ? category.description.split('\n')[0] : 'Pure artisanal cotton creations handmade loop by loop.'}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                        <div>
+                          <span className="block text-[10px] uppercase font-bold tracking-wider text-neutral-400">
+                            Starting from
+                          </span>
+                          <span className="text-base font-bold text-neutral-900">
+                            ₹{startingPrice}
+                          </span>
+                        </div>
+
+                        <Link 
+                          href={`/products?category=${category.slug}`}
+                          className="inline-flex items-center gap-1.5 bg-neutral-900 text-white hover:bg-rose-600 font-semibold text-xs px-4 py-2 rounded-full transition-colors shadow-xs group/btn"
+                        >
+                          <span>Explore</span>
+                          <ArrowRight size={13} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </article>
               );
             })}
           </div>
-        </section>
+        )}
+      </section>
 
-        {/* Featured Spotlight Banner */}
-        <section className="px-4 py-4 mt-2">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#be4b5c] to-[#9f3647] text-white p-5 shadow-[0_4px_20px_-2px_rgba(190,75,92,0.08)]">
-            <div className="absolute -right-8 -bottom-8 opacity-15 pointer-events-none">
-              <svg className="w-40 h-40 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path>
-              </svg>
-            </div>
-            <div className="relative z-10">
-              <span className="inline-block uppercase tracking-wider text-[10px] font-bold bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full mb-2">
-                Artisanal Studio
-              </span>
-              <h2 className="font-serif text-xl font-bold leading-tight mb-1.5">
-                Co-Create Your Custom Amigurumi or Bouquet
-              </h2>
-              <p className="text-xs text-[#fff0f0]/90 leading-relaxed mb-4 max-w-[90%]">
-                Choose your favorite yarn shades, personalized tags, and custom details crafted exclusively for your loved ones.
-              </p>
-              <Link href="/custom" className="inline-flex items-center gap-2 bg-white text-[#2d2426] hover:bg-[#fff0f0] text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-sm transition-all active:scale-95">
-                <span>Design Bespoke Gift</span>
-                <span className="text-[#be4b5c] font-bold">→</span>
+      {/* Featured Spotlight: Custom Creations */}
+      <section className="max-w-6xl mx-auto px-4 py-4 w-full">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-900 via-neutral-900 to-rose-950 text-white p-6 sm:p-8 md:p-10 shadow-lg">
+          <div className="relative z-10 max-w-xl">
+            <span className="inline-flex items-center gap-1.5 uppercase tracking-widest text-[10px] font-bold bg-white/20 backdrop-blur-md px-3 py-1 rounded-full mb-3 text-rose-100">
+              <Sparkles size={12} /> Artisanal Commission Studio
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold leading-tight mb-2.5">
+              Have a custom vision in mind?
+            </h2>
+            <p className="text-xs sm:text-sm text-rose-100/90 leading-relaxed mb-6">
+              Choose your favorite yarn shades, personalized initials, and custom details. We hand-stitch bespoke crochet bouquets, amigurumi pets, and gifts crafted exclusively for your loved ones.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link 
+                href="/custom" 
+                className="inline-flex items-center gap-2 bg-white text-neutral-900 hover:bg-rose-50 text-xs sm:text-sm font-bold px-5 py-3 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all"
+              >
+                <span>Request Custom Gift</span>
+                <ArrowRight size={14} className="text-rose-600" />
               </Link>
+              <a 
+                href="https://wa.me/918434897767?text=Hi! I would like to request a custom crochet design."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-rose-200 hover:text-white px-3 py-2 font-medium transition-colors"
+              >
+                <span>Chat with Artisan on WhatsApp →</span>
+              </a>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Shop by Occasion */}
-        <section className="px-4 py-3 mt-2">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-serif text-lg font-bold text-[#9f3647]">Shop by Occasion</h2>
-            <Link href="/products" className="text-xs font-semibold text-[#9f3647] hover:underline">View All</Link>
+      {/* Shop by Occasion Section */}
+      <section className="max-w-6xl mx-auto px-4 py-8 w-full">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-rose-600">Thoughtful Gifting</span>
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-neutral-900">Popular Occasions</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-4">
-            <Link href="/products?category=toys" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 border border-neutral-100 shadow-sm relative group-hover:scale-105 transition-transform">
-                <Image src={getCategoryImage('toys', fallbackImage1)} alt="Birthday Keepsakes" fill className="object-cover" sizes="40px" />
-              </div>
-              <div>
-                <span className="block text-xs font-semibold text-[#2d2426]">Birthday Keepsakes</span>
-                <span className="block text-[10px] text-[#5b4a4d]">Plush & Cards</span>
-              </div>
-            </Link>
-            <Link href="/products?category=flower-pots" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 border border-neutral-100 shadow-sm relative group-hover:scale-105 transition-transform">
-                <Image src={getCategoryImage('flower-pots', fallbackImage2)} alt="Anniversary Flowers" fill className="object-cover" sizes="40px" />
-              </div>
-              <div>
-                <span className="block text-xs font-semibold text-[#2d2426]">Anniversary Flowers</span>
-                <span className="block text-[10px] text-[#5b4a4d]">Never-Wilting Roses</span>
-              </div>
-            </Link>
-            <Link href="/products?category=toys" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 border border-neutral-100 shadow-sm relative group-hover:scale-105 transition-transform">
-                <Image src={fallbackImage3} alt="Baby & Nursery" fill className="object-cover" sizes="40px" />
-              </div>
-              <div>
-                <span className="block text-xs font-semibold text-[#2d2426]">Baby & Nursery</span>
-                <span className="block text-[10px] text-[#5b4a4d]">Safe Milk Cotton</span>
-              </div>
-            </Link>
-            <Link href="/products?category=keychains" className="flex items-center p-3 bg-white border border-[#eddcd9] rounded-2xl hover:border-[#e5989b] transition-colors active:scale-[0.98] shadow-sm group">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3 shrink-0 border border-neutral-100 shadow-sm relative group-hover:scale-105 transition-transform">
-                <Image src={getCategoryImage('keychains', fallbackImage1)} alt="Budget Treats" fill className="object-cover" sizes="40px" />
-              </div>
-              <div>
-                <span className="block text-xs font-semibold text-[#2d2426]">Budget Treats</span>
-                <span className="block text-[10px] text-[#5b4a4d]">Gifts Under ₹300</span>
-              </div>
-            </Link>
-          </div>
-        </section>
+          <Link href="/products" className="text-xs font-semibold text-rose-600 hover:underline">
+            View All Products →
+          </Link>
+        </div>
 
-        {/* Artisanal Guarantee */}
-        <section className="mt-6 mb-8 px-4 py-6 bg-white/70 border-y border-[#eddcd9]/80">
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#fff0f0] flex items-center justify-center shrink-0 text-[#be4b5c]">
-                <CheckCircle className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-[#2d2426]">100% Handcrafted with Milk Cotton</h3>
-                <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Soft, allergy-safe, and carefully hand-stitched one stitch at a time.</p>
-              </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <Link 
+            href="/gifts/birthday"
+            className="group flex flex-col p-4 bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 hover:shadow-md transition-all text-center items-center"
+          >
+            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">🎂</span>
+            <h3 className="font-bold text-xs sm:text-sm text-neutral-900">Birthday Gifts</h3>
+            <span className="text-[11px] text-neutral-500">Bouquets & Plush</span>
+          </Link>
+
+          <Link 
+            href="/gifts/anniversary"
+            className="group flex flex-col p-4 bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 hover:shadow-md transition-all text-center items-center"
+          >
+            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">💍</span>
+            <h3 className="font-bold text-xs sm:text-sm text-neutral-900">Anniversary</h3>
+            <span className="text-[11px] text-neutral-500">Forever Roses</span>
+          </Link>
+
+          <Link 
+            href="/gifts/under-499"
+            className="group flex flex-col p-4 bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 hover:shadow-md transition-all text-center items-center"
+          >
+            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">🎁</span>
+            <h3 className="font-bold text-xs sm:text-sm text-neutral-900">Under ₹499</h3>
+            <span className="text-[11px] text-neutral-500">Pocket-Friendly</span>
+          </Link>
+
+          <Link 
+            href="/custom"
+            className="group flex flex-col p-4 bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 hover:shadow-md transition-all text-center items-center"
+          >
+            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">✨</span>
+            <h3 className="font-bold text-xs sm:text-sm text-neutral-900">Custom Orders</h3>
+            <span className="text-[11px] text-neutral-500">Handmade For You</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* Artisanal Guarantee Badges */}
+      <section className="max-w-6xl mx-auto px-4 py-6 w-full">
+        <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-xs">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <CheckCircle size={20} />
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#fff0f0] flex items-center justify-center shrink-0 text-[#be4b5c]">
-                <Package className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-[#2d2426]">Plastic-Free Eco Packaging</h3>
-                <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Wrapped in biodegradable tissue, ribbons, and hand-written notes.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#fff0f0] flex items-center justify-center shrink-0 text-[#be4b5c]">
-                <Truck className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-[#2d2426]">PAN-India Express Delivery</h3>
-                <p className="text-[11px] text-[#5b4a4d] leading-snug mt-0.5">Safely boxed and tracked from our boutique workshop to your door.</p>
-              </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 mb-1">100% Milk Cotton Yarn</h4>
+              <p className="text-xs text-neutral-600 leading-relaxed">Soft, allergy-safe, hypoallergenic, and hand-stitched with love in India.</p>
             </div>
           </div>
-        </section>
-      </main>
+
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <Package size={20} />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 mb-1">Gift-Ready Packaging</h4>
+              <p className="text-xs text-neutral-600 leading-relaxed">Wrapped in tissue with custom handwritten message cards for your loved ones.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <Truck size={20} />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 mb-1">PAN-India Express Shipping</h4>
+              <p className="text-xs text-neutral-600 leading-relaxed">Carefully boxed, insured, and tracked directly from our studio to your doorstep.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
