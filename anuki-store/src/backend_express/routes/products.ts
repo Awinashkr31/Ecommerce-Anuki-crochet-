@@ -5,6 +5,7 @@ import redisClient from '../lib/redis';
 
 const router = Router();
 import { prisma } from '../lib/prisma';
+import { triggerRevalidation } from '../../lib/revalidate';
 
 const PRODUCTS_CACHE_KEY = 'products_all';
 const PRODUCTS_MINIMAL_CACHE_KEY = 'products_minimal';
@@ -128,11 +129,14 @@ router.get('/:id', async (req: any, res: any) => {
   }
 });
 
-const invalidateProductsCache = async () => {
+const invalidateProductsCache = async (slug?: string) => {
   if (redisClient.isReady) {
     await redisClient.del(PRODUCTS_CACHE_KEY);
     await redisClient.del(PRODUCTS_MINIMAL_CACHE_KEY);
   }
+  const paths = ['/products', '/'];
+  if (slug) paths.push(`/products/${slug}`);
+  triggerRevalidation({ paths, tags: ['related-products-cache'] }).catch(() => {});
 };
 
 const createAuditLog = async (userId: string, action: string, entityId: string, details: any) => {
@@ -159,15 +163,25 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
       subcategoryId, brand, tags, collections, isHandmade, material,
       careInstructions, countryOfOrigin, shippingCharges, freeShipping,
       seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
-      stock, color, size
+      stock, color, size, noIndex
     } = body;
+
+    const rawSlug = slug || name;
+    const cleanSlug = rawSlug
+      ? String(rawSlug)
+          .toLowerCase()
+          .trim()
+          .replace(/&/g, 'and')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      : '';
 
     const hasStyles = variants && variants.length > 0 ? variants.some((v: any) => v.style || v.color) : false;
     const hasSizes = variants && variants.length > 0 ? variants.some((v: any) => v.size) : false;
 
     const product = await prisma.product.create({
       data: {
-        name, slug, shortDesc, fullDesc, isMadeToOrder, processingDays,
+        name, slug: cleanSlug, shortDesc, fullDesc, isMadeToOrder, processingDays,
         category: { connect: { id: categoryId } },
         basePrice, salePrice, status,
         featured, trending, bestseller, limitedEdition,
@@ -176,6 +190,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
         subcategoryId, brand, tags, collections, isHandmade, material,
         careInstructions, countryOfOrigin, shippingCharges, freeShipping,
         seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+        noIndex: Boolean(noIndex),
         stock, hasStyles, hasSizes, color, size,
         variants: {
           create: variants || []
@@ -190,7 +205,7 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MAN
       include: { variants: true, images: true, customizationOptions: true }
     });
 
-    await invalidateProductsCache();
+    await invalidateProductsCache(product.slug);
     await createAuditLog(req.user.userId, 'CREATE_PRODUCT', product.id, { name: product.name });
 
     return res.status(201).json(product);
@@ -214,18 +229,29 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
       subcategoryId, brand, tags, collections, isHandmade, material,
       careInstructions, countryOfOrigin, shippingCharges, freeShipping,
       seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
-      stock, color, size,
+      stock, color, size, noIndex,
       variants, images
     } = body;
 
     const hasStyles = variants && variants.length > 0 ? variants.some((v: any) => v.style || v.color) : (body.hasStyles ?? false);
     const hasSizes = variants && variants.length > 0 ? variants.some((v: any) => v.size) : (body.hasSizes ?? false);
 
+    const cleanSlug = slug
+      ? String(slug)
+          .toLowerCase()
+          .trim()
+          .replace(/&/g, 'and')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      : undefined;
+
     // First update the scalar fields
     const product = await prisma.product.update({
       where: { id: id as string },
       data: {
-        name, slug, shortDesc, fullDesc, isMadeToOrder, processingDays,
+        name,
+        ...(cleanSlug ? { slug: cleanSlug } : {}),
+        shortDesc, fullDesc, isMadeToOrder, processingDays,
         category: categoryId ? { connect: { id: categoryId } } : undefined,
         basePrice, salePrice, status,
         featured, trending, bestseller, limitedEdition,
@@ -234,6 +260,7 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
         subcategoryId, brand, tags, collections, isHandmade, material,
         careInstructions, countryOfOrigin, shippingCharges, freeShipping,
         seoTitle, seoDesc, seoKeywords, canonicalUrl, ogImage, videoUrl,
+        ...(noIndex !== undefined ? { noIndex: Boolean(noIndex) } : {}),
         stock, hasStyles, hasSizes, color, size
       },
     });
@@ -254,7 +281,7 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
       }
     }
 
-    await invalidateProductsCache();
+    await invalidateProductsCache(product.slug);
     await createAuditLog(req.user.userId, 'UPDATE_PRODUCT', product.id, { name: product.name });
 
     return res.json(product);

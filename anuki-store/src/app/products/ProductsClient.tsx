@@ -1,8 +1,9 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { expandProductsByColor } from '../../utils/productUtils';
+import { trackViewItemList } from "@/lib/gtm";
 
 import { ProductCard, Product } from "../../components/ProductCard";
 import FilterSidebar from "./components/FilterSidebar";
@@ -31,6 +32,22 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
   const categories = useMemo(() => Array.from(new Set(products.map(p => p.category?.name?.toLowerCase()).filter(Boolean))), [products]) as string[];
   const colors = useMemo(() => Array.from(new Set(products.flatMap(p => p.variants?.map(v => v.color?.toLowerCase())).filter(Boolean))), [products]) as string[];
   const sizes = useMemo(() => Array.from(new Set(products.flatMap(p => p.variants?.map(v => v.size?.toLowerCase())).filter(Boolean))), [products]) as string[];
+
+  // GA4 view_item_list event
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      const listName = categoryFilter !== "all" ? categoryFilter : "All Products";
+      trackViewItemList(
+        listName,
+        initialProducts.map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.salePrice || p.basePrice || 0),
+          category: p.category?.name || "All Products",
+        }))
+      );
+    }
+  }, []);
 
   // Filtering Logic
   const filteredProducts = useMemo(() => {

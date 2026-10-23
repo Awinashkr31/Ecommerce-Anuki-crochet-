@@ -3,7 +3,9 @@ import BreadcrumbSchema from "@/components/BreadcrumbSchema";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Custom Crochet Orders India | Personalized Handmade Gifts | Anuki Crochet',
+  title: {
+    absolute: 'Custom Crochet Orders India | Personalized Handmade Gifts | Anuki Crochet'
+  },
   description: 'Order custom crochet gifts in India. Get personalized handmade plushies, custom crochet bouquets, amigurumi characters, and bespoke crochet gifts delivered across India. Place your custom crochet order today!',
   keywords: [
     'custom crochet india',

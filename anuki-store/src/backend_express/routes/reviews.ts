@@ -106,6 +106,22 @@ router.put('/:id/status', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), a
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// PUT reply to a review (Admin)
+router.put('/:id/reply', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), async (req: AuthRequest, res) => {
+  const id = req.params.id as string;
+  const { adminReply } = req.body;
+
+  try {
+    const review = await prisma.review.update({
+      where: { id },
+      data: { adminReply: adminReply ? String(adminReply).trim() : null }
+    });
+    res.json(review);
+  } catch (error) {
+    console.error('Error adding admin reply:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // DELETE a review
 router.delete('/:id', verifyToken, requireRoles(['SUPER_ADMIN', 'ADMIN']), async (req: AuthRequest, res) => {

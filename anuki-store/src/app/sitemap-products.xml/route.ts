@@ -19,8 +19,8 @@ export async function GET() {
   let products: any[] = [];
   try {
     products = await prisma.product.findMany({
-      where: { status: 'PUBLISHED' },
-      select: { slug: true, name: true, images: { take: 1, select: { url: true } }, updatedAt: true }
+      where: { status: 'PUBLISHED', noIndex: false },
+      select: { slug: true, name: true, images: { take: 1, select: { url: true, altText: true } }, updatedAt: true }
     });
   } catch (error) {
     console.error('Failed to fetch products for sitemap:', error);
@@ -40,6 +40,7 @@ export async function GET() {
       <image:image>
         <image:loc>${escapeXml(p.images[0].url)}</image:loc>
         <image:title>${escapeXml(p.name || '')}</image:title>
+        ${p.images[0].altText ? `<image:caption>${escapeXml(p.images[0].altText)}</image:caption>` : ''}
       </image:image>
       ` : ''}
     </url>

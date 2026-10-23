@@ -1,7 +1,24 @@
 import { getAllSeoSlugs } from '@/lib/seo-pages';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const slugs = getAllSeoSlugs();
+  let noIndexSlugs = new Set<string>();
+  try {
+    const noIndexed = await prisma.pageSeo.findMany({
+      where: {
+        pageType: 'TOPIC',
+        noIndex: true
+      },
+      select: { slug: true }
+    });
+    noIndexSlugs = new Set(noIndexed.map(p => p.slug));
+  } catch (err) {
+    console.error('Failed to query noIndex topic pages for sitemap:', err);
+  }
+
+  const slugs = getAllSeoSlugs().filter(slug => !noIndexSlugs.has(slug));
   const baseUrl = 'https://www.anukicrochet.in';
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

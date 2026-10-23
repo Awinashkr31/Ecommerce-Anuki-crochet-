@@ -1,10 +1,27 @@
 import { getAllGiftSlugs } from '@/lib/gift-pages';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.anukicrochet.in';
-  const slugs = getAllGiftSlugs();
+  const REDIRECTED_SLUGS = new Set(['under-1000', 'under-300', 'under-500']);
+  
+  let noIndexSlugs = new Set<string>();
+  try {
+    const noIndexed = await prisma.pageSeo.findMany({
+      where: {
+        pageType: 'GIFT',
+        noIndex: true
+      },
+      select: { slug: true }
+    });
+    noIndexSlugs = new Set(noIndexed.map(p => p.slug.replace(/^gifts\//, '')));
+  } catch (err) {
+    console.error('Failed to query noIndex gift pages for sitemap:', err);
+  }
+
+  const slugs = getAllGiftSlugs().filter(slug => !REDIRECTED_SLUGS.has(slug) && !noIndexSlugs.has(slug));
   const now = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

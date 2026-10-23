@@ -48,9 +48,28 @@ router.get('/', async (req: any, res: any) => {
 router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_MANAGER']), async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { name, slug, description, parentId, bannerUrl } = body;
+    const { name, slug, description, parentId, bannerUrl, seoTitle, seoDesc, canonicalUrl, noIndex } = body;
+    const rawSlug = slug || name;
+    const cleanSlug = rawSlug
+      ? String(rawSlug)
+          .toLowerCase()
+          .trim()
+          .replace(/&/g, 'and')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      : '';
     const category = await prisma.category.create({
-      data: { name, slug, description, parentId, bannerUrl },
+      data: { 
+        name, 
+        slug: cleanSlug, 
+        description, 
+        parentId, 
+        bannerUrl,
+        seoTitle: seoTitle ? String(seoTitle).trim() : null,
+        seoDesc: seoDesc ? String(seoDesc).trim() : null,
+        canonicalUrl: canonicalUrl ? String(canonicalUrl).trim() : null,
+        noIndex: Boolean(noIndex),
+      },
     });
     if (redisClient.isReady) await redisClient.del(CACHE_KEY);
     return res.status(201).json(category);
@@ -64,10 +83,28 @@ router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'CATALOG_M
   try {
     const { id } = req.params;
     const body = req.body;
-    const { name, slug, description, parentId, bannerUrl } = body;
+    const { name, slug, description, parentId, bannerUrl, seoTitle, seoDesc, canonicalUrl, noIndex } = body;
+    const cleanSlug = slug
+      ? String(slug)
+          .toLowerCase()
+          .trim()
+          .replace(/&/g, 'and')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      : undefined;
     const category = await prisma.category.update({
       where: { id },
-      data: { name, slug, description, parentId, bannerUrl },
+      data: { 
+        name, 
+        ...(cleanSlug ? { slug: cleanSlug } : {}), 
+        description, 
+        parentId, 
+        bannerUrl,
+        ...(seoTitle !== undefined ? { seoTitle: seoTitle ? String(seoTitle).trim() : null } : {}),
+        ...(seoDesc !== undefined ? { seoDesc: seoDesc ? String(seoDesc).trim() : null } : {}),
+        ...(canonicalUrl !== undefined ? { canonicalUrl: canonicalUrl ? String(canonicalUrl).trim() : null } : {}),
+        ...(noIndex !== undefined ? { noIndex: Boolean(noIndex) } : {}),
+      },
     });
     if (redisClient.isReady) await redisClient.del(CACHE_KEY);
     return res.json(category);

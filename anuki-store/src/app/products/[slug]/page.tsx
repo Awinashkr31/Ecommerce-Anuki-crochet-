@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import ProductDetailClient from './ProductDetailClient';
 import Link from 'next/link';
@@ -31,18 +31,52 @@ type Props = {
 };
 
 const getProduct = cache(async (slug: string) => {
-  return prisma.product.findUnique({
+  const includeQuery = {
+    category: true,
+    variants: true,
+    images: { orderBy: { order: 'asc' as const } },
+    reviews: { 
+      where: { approved: true },
+      include: { user: { select: { fullName: true } } }
+    },
+  };
+
+  // 1. Exact slug match
+  let product = await prisma.product.findUnique({
     where: { slug },
-    include: {
-      category: true,
-      variants: true,
-      images: { orderBy: { order: 'asc' } },
-      reviews: { 
-        where: { approved: true },
-        include: { user: { select: { fullName: true } } }
-      },
-    }
+    include: includeQuery,
   });
+
+  if (product) return product;
+
+  // 2. Case-insensitive slug match or ID match
+  product = await prisma.product.findFirst({
+    where: {
+      OR: [
+        { slug: { equals: slug, mode: 'insensitive' } },
+        { id: slug },
+      ]
+    },
+    include: includeQuery,
+  });
+
+  if (product) return product;
+
+  // 3. Fallback: partial word match on published products (e.g. legacy/short slugs)
+  const cleanParts = slug.toLowerCase().split('-').filter(p => p.length > 2);
+  if (cleanParts.length >= 2) {
+    product = await prisma.product.findFirst({
+      where: {
+        status: 'PUBLISHED',
+        AND: cleanParts.map(part => ({
+          slug: { contains: part, mode: 'insensitive' as const }
+        }))
+      },
+      include: includeQuery,
+    });
+  }
+
+  return product;
 });
 
 const getRelatedProducts = unstable_cache(
@@ -70,14 +104,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Product Not Found' };
   }
 
-  const title = product.seoTitle || `${product.name} - Buy Handmade Crochet Online`;
-  const description = product.seoDesc || (product.shortDesc || product.fullDesc || '').substring(0, 160);
-  const imageUrl = product.images?.length > 0 ? product.images[0].url : '/logo.png';
-  const productUrl = `https://www.anukicrochet.in/products/${product.slug}`;
+  // Requirement 17: Product title template from Site Settings using {product_name} and {brand}
+  let titleTemplate = '{product_name} | Anuki Crochet';
+  try {
+    const templateSetting = await prisma.storeSettings.findUnique({
+      where: { key: 'product_title_template' }
+    });
+    if (templateSetting?.value) {
+      titleTemplate = templateSetting.value;
+    }
+  } catch (err) {
+    // fallback to default
+  }
+
+  const generatedTitle = titleTemplate
+    .replace(/{product_name}/g, product.name)
+    .replace(/{brand}/g, 'Anuki Crochet');
+
+  let title = product.seoTitle || generatedTitle;
+  if (!title.toLowerCase().includes('anuki crochet')) {
+    title = `${title} | Anuki Crochet`;
+  }
+
+  const rawDesc = product.shortDesc || product.fullDesc || '';
+  const cleanDesc = rawDesc.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim();
+  const defaultDesc = cleanDesc.length > 20
+    ? (cleanDesc.length > 155 ? `${cleanDesc.substring(0, 152)}...` : cleanDesc)
+    : `Buy ${product.name} handcrafted with premium yarn by Anuki Crochet. Perfect handmade crochet gift delivered across India with free shipping over ₹799.`;
+
+  const description = product.seoDesc || defaultDesc;
+
+  const imageUrl = product.images?.length > 0 ? product.images[0].url : 'https://www.anukicrochet.in/logo.png';
+  const productUrl = product.canonicalUrl || `https://www.anukicrochet.in/products/${product.slug}`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
+    robots: product.noIndex ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       title,
       description,
@@ -87,6 +150,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      title,
+      description,
       images: [imageUrl],
     },
     alternates: {
@@ -103,6 +168,11 @@ export default async function ProductDetailPage({ params }: Props) {
     getProduct(decodedSlug),
     getRelatedProducts()
   ]);
+
+  // If found under an older slug, uppercase, or ID, redirect 301 to canonical product URL
+  if (product && product.status === 'PUBLISHED' && product.slug !== decodedSlug) {
+    redirect(`/products/${product.slug}`);
+  }
 
   const otherProducts = allProducts.filter(p => p.id !== product?.id);
 
@@ -199,27 +269,6 @@ export default async function ProductDetailPage({ params }: Props) {
         "name": rev.user?.fullName || "Verified Buyer"
       }
     }));
-  } else {
-    structuredData.aggregateRating = {
-      "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "reviewCount": 1,
-      "bestRating": "5",
-      "worstRating": "1"
-    };
-    structuredData.review = [{
-      "@type": "Review",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": "5",
-        "bestRating": "5"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Anuki Crochet"
-      },
-      "reviewBody": "Beautiful handmade crochet product with excellent quality."
-    }];
   }
 
   return (

@@ -34,14 +34,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const page = getGiftPageBySlug(slug);
   if (!page) return {};
 
+  let dbSeo: any = null;
+  try {
+    dbSeo = await prisma.pageSeo.findFirst({
+      where: {
+        OR: [
+          { slug: `gifts/${slug}` },
+          { slug }
+        ]
+      }
+    });
+  } catch (err) {
+    // fallback
+  }
+
+  const title = dbSeo?.seoTitle || page.title;
+  const description = dbSeo?.metaDescription || page.description;
+  const canonicalUrl = dbSeo?.canonicalUrl || `https://www.anukicrochet.in/gifts/${page.slug}`;
+
   return {
-    title: page.title,
-    description: page.description,
-    alternates: { canonical: `/gifts/${page.slug}` },
+    title: { absolute: title },
+    description,
+    robots: dbSeo?.noIndex ? { index: false, follow: false } : { index: true, follow: true },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
-      title: page.title,
-      description: page.ogDescription,
-      url: `https://www.anukicrochet.in/gifts/${page.slug}`,
+      title,
+      description: dbSeo?.metaDescription || page.ogDescription,
+      url: canonicalUrl,
       type: 'website',
     },
   };
@@ -203,13 +222,23 @@ export default async function GiftPage({ params }: PageProps) {
   const page = getGiftPageBySlug(slug);
   if (!page) notFound();
 
-  const products = await fetchProducts(page);
+  const [products, dbSeo] = await Promise.all([
+    fetchProducts(page),
+    prisma.pageSeo.findFirst({
+      where: {
+        OR: [
+          { slug: `gifts/${slug}` },
+          { slug }
+        ]
+      }
+    }).catch(() => null)
+  ]);
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: page.itemListName,
-    description: page.description,
+    name: dbSeo?.seoTitle || page.itemListName,
+    description: dbSeo?.metaDescription || page.description,
     numberOfItems: products.length,
     itemListElement: products.map((p: any, i: number) => ({
       '@type': 'ListItem',
@@ -245,6 +274,12 @@ export default async function GiftPage({ params }: PageProps) {
           <p className="text-neutral-600 max-w-2xl mx-auto leading-relaxed">
             {page.hero.subheading}
           </p>
+          {dbSeo?.introContent && (
+            <div className="mt-6 max-w-3xl mx-auto p-5 bg-[#FAF7F5] border border-rose-100 rounded-2xl text-sm text-neutral-700 leading-relaxed text-left shadow-sm">
+              <p className="font-semibold text-rose-800 mb-1">About This Collection</p>
+              <p>{dbSeo.introContent}</p>
+            </div>
+          )}
         </div>
       </section>
 

@@ -429,7 +429,8 @@ export class PaymentService {
                 }
               }
             },
-            user: { select: { id: true, email: true, fullName: true } }
+            user: { select: { id: true, email: true, fullName: true } },
+            shipment: true
           }
         }
       }

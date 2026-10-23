@@ -62,10 +62,23 @@ router.get('/admin/all', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MAR
 router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MARKETING']), async (req: any, res: any) => {
   try {
     const body = req.body;
-    const { title, slug, content, published, authorId } = body;
+    const { title, slug, content, published, authorId, seoTitle, seoDesc, canonicalUrl, noIndex } = body;
+    const cleanSlug = slug
+      ? String(slug).toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+      : String(title).toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     
     const post = await prisma.post.create({
-      data: { title, slug, content, published, authorId }
+      data: { 
+        title, 
+        slug: cleanSlug, 
+        content, 
+        published: Boolean(published), 
+        authorId,
+        seoTitle: seoTitle ? String(seoTitle).trim() : null,
+        seoDesc: seoDesc ? String(seoDesc).trim() : null,
+        canonicalUrl: canonicalUrl ? String(canonicalUrl).trim() : null,
+        noIndex: Boolean(noIndex),
+      }
     });
     
     return res.status(201).json(post);
@@ -73,15 +86,29 @@ router.post('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MARKETING']
     return res.status(400).json({ error: 'Failed to save post.' });
   }
 });
+
 // PUT Update post (Admin)
 router.put('/:id', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'MARKETING']), async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const { title, slug, content, published, authorId } = req.body;
+    const { title, slug, content, published, authorId, seoTitle, seoDesc, canonicalUrl, noIndex } = req.body;
+    const cleanSlug = slug
+      ? String(slug).toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+      : undefined;
     
     const post = await prisma.post.update({
       where: { id },
-      data: { title, slug, content, published, authorId }
+      data: { 
+        title, 
+        ...(cleanSlug ? { slug: cleanSlug } : {}), 
+        content, 
+        published: published !== undefined ? Boolean(published) : undefined, 
+        authorId,
+        ...(seoTitle !== undefined ? { seoTitle: seoTitle ? String(seoTitle).trim() : null } : {}),
+        ...(seoDesc !== undefined ? { seoDesc: seoDesc ? String(seoDesc).trim() : null } : {}),
+        ...(canonicalUrl !== undefined ? { canonicalUrl: canonicalUrl ? String(canonicalUrl).trim() : null } : {}),
+        ...(noIndex !== undefined ? { noIndex: Boolean(noIndex) } : {}),
+      }
     });
     
     return res.json(post);

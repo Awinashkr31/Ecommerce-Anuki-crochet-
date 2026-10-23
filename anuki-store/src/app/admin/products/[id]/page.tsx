@@ -186,6 +186,16 @@ export default function EditProductPage() {
       };
 
       await apiPut(`/products/${id}`, payload);
+      // Trigger storefront on-demand revalidation
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: 'anuki_secret_revalidate_token',
+          paths: [`/products/${slug}`, '/products', '/'],
+          tag: 'related-products-cache'
+        })
+      }).catch(console.error);
       router.push('/admin/products');
     } catch (err: any) {
       setError(err.message || 'Failed to save product');

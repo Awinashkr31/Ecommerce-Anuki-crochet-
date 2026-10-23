@@ -25,7 +25,8 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'FINANCE', 'M
 
     const orders = await prisma.order.findMany({
       where: { 
-        status: { not: 'CANCELLED' },
+        status: { notIn: ['CANCELLED', 'AWAITING_PAYMENT'] },
+        NOT: { payment: { status: 'FAILED' } },
         createdAt: { gte: monthStart }
       },
       select: {
@@ -52,9 +53,14 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'FINANCE', 'M
       }
     });
 
-    const lowStockVariants = await prisma.variant.count({
-      where: { stock: { lt: 5 } }
-    });
+    const [lowStockVariants, lowStockProducts, pendingReturns, pendingReviews] = await Promise.all([
+      prisma.variant.count({ where: { stock: { lt: 5 } } }),
+      prisma.product.count({ where: { stock: { lt: 5 } } }),
+      prisma.returnRequest.count({ where: { status: 'REQUESTED' } }),
+      prisma.review.count({ where: { approved: false } })
+    ]);
+
+    const totalLowStock = lowStockVariants + lowStockProducts;
 
     // Time boundaries already defined above
 
@@ -97,15 +103,16 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'FINANCE', 'M
       }));
 
       // Simplified salesTrend to avoid complex date manipulation for now
-      // It returns flat data; can be expanded later
       const salesTrend = [{ label: 'Total', revenue }];
 
       return {
         revenue,
         ordersPlaced: orderList.length,
         pendingAction,
-        lowStock: lowStockVariants,
+        lowStock: totalLowStock,
         newSignups: 0,
+        pendingReturns,
+        pendingReviews,
         salesTrend,
         topProducts,
         categories
@@ -116,6 +123,8 @@ router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'FINANCE', 'M
       today: aggregateData(todayOrders),
       week: aggregateData(weekOrders),
       month: aggregateData(monthOrders),
+      pendingReturns,
+      pendingReviews
     };
 
     return res.json(analytics);

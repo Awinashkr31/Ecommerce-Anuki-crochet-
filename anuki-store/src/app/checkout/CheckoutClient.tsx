@@ -11,6 +11,7 @@ import AddressModal from "@/components/AddressModal";
 import { useAddressStore } from "@/store/addressStore";
 import CartOffers from "@/app/cart/CartOffers";
 import { load } from "@cashfreepayments/cashfree-js";
+import { trackBeginCheckout } from "@/lib/gtm";
 
 export default function CheckoutClient({ settings }: { settings: Record<string, string> }) {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const { selectedAddress, setSelectedAddress, fetchAddressesOnce, addresses, hydrate } = useAddressStore();
   const processingRef = useRef(false); // Double-click protection
   const cashfreeRef = useRef<any>(null); // Cache preloaded SDK
+  const hasTrackedBeginCheckout = useRef(false);
   const [paymentStep, setPaymentStep] = useState<string | null>(null); // For animated overlay
 
   // Guest checkout fields
@@ -41,6 +43,15 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  // GA4 begin_checkout event
+  useEffect(() => {
+    if (items && items.length > 0 && !hasTrackedBeginCheckout.current) {
+      hasTrackedBeginCheckout.current = true;
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      trackBeginCheckout(subtotal, items);
+    }
+  }, [items.length]);
 
   // If cart is empty, redirect to cart
   useEffect(() => {

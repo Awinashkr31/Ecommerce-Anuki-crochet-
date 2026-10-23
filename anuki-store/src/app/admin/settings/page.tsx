@@ -44,6 +44,16 @@ export default function AdminSettingsPage() {
       setSaving(true);
       setSuccess('');
       await apiPut('/settings', settings);
+      // Trigger Next.js storefront on-demand revalidation
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: 'anuki_secret_revalidate_token',
+          paths: ['/', '/products', '/contact'],
+          tag: 'settings'
+        })
+      }).catch(console.error);
       setSuccess('Settings saved successfully!');
     } catch (err) {
       console.error('Failed to save settings:', err);
@@ -181,6 +191,28 @@ export default function AdminSettingsPage() {
                 <div className="text-xs text-amber-700 pb-3 font-medium">
                   Control how Cash on Delivery appears to customers. Set extra charge to 0 for no fee.
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SEO & Title Templates (Phase E) */}
+          <div className="bg-white rounded-3xl shadow-sm border border-neutral-200 p-6 space-y-6">
+            <h2 className="text-lg font-black text-neutral-900 border-b border-neutral-100 pb-3 flex items-center gap-2">
+              <span className="text-rose-600">🔍</span> Search Engine & Title Settings
+            </h2>
+            <div className="max-w-2xl space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Product title template</label>
+                <input
+                  type="text"
+                  value={settings['product_title_template'] ?? '{product_name} | Anuki Crochet'}
+                  onChange={(e) => updateSetting('product_title_template', e.target.value)}
+                  placeholder="{product_name} | Anuki Crochet"
+                  className="w-full border border-neutral-200 rounded-xl p-3 focus:border-rose-500 outline-none font-mono text-sm"
+                />
+                <p className="text-xs text-neutral-500 mt-2 leading-relaxed">
+                  Allowed placeholders: <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-rose-700 font-bold">&#123;product_name&#125;</code> and <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-rose-700 font-bold">&#123;brand&#125;</code>. Default: <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-800">&#123;product_name&#125; | Anuki Crochet</code>. No automatic city/location text is appended.
+                </p>
               </div>
             </div>
           </div>

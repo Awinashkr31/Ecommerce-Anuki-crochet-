@@ -69,6 +69,10 @@ model Category {
   slug        String     @unique
   description String?
   bannerUrl   String?
+  seoTitle    String?
+  seoDesc     String?
+  canonicalUrl String?
+  noIndex     Boolean    @default(false)
   isActive    Boolean    @default(true)
   parentId    String?
   createdAt   DateTime   @default(now())
@@ -119,6 +123,7 @@ model Product {
   seoTitle             String?
   shippingCharges      Float?
   sku                  String?
+  noIndex              Boolean               @default(false)
   status               String                @default("DRAFT")
   stockStatus          String                @default("IN_STOCK")
   subcategoryId        String?
@@ -316,6 +321,7 @@ model Review {
   productId String
   rating    Int
   comment   String?
+  adminReply String?
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -414,6 +420,8 @@ model Post {
   keywords  String?
   seoDesc   String?
   seoTitle  String?
+  canonicalUrl String?
+  noIndex   Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id])
 }
 
@@ -592,4 +600,42 @@ enum PaymentStatus {
   COD_CONFIRMED
   PAYMENT_REVIEW
   RETRY_PAYMENT
+}
+
+model Redirect {
+  id         String   @id @default(uuid())
+  fromPath   String   @unique
+  toPath     String
+  statusCode Int      @default(301)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  section   String   @default("home")
+  question  String
+  answer    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([section, isActive, order])
+}
+
+model PageSeo {
+  id              String   @id @default(uuid())
+  pageType        String   // 'GIFT', 'TOPIC', 'STATIC', 'CATEGORY', 'PRODUCT', 'BLOG'
+  slug            String   @unique
+  seoTitle        String?
+  metaDescription String?
+  canonicalUrl    String?
+  noIndex         Boolean  @default(false)
+  introContent    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([pageType, noIndex])
 }

@@ -125,14 +125,14 @@ export default function AdminDashboardPage() {
               <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center"><RotateCcw size={20}/></div>
               <span className="font-bold">Returns Awaiting Approval</span>
             </div>
-            <span className="bg-neutral-100 text-neutral-600 text-xs font-black px-2 py-1 rounded-full">3</span>
+            <span className="bg-neutral-100 text-neutral-600 text-xs font-black px-2 py-1 rounded-full">{data?.pendingReturns ?? 0}</span>
           </Link>
           <Link href="/admin/reviews" className="bg-white border border-neutral-200 text-neutral-900 p-4 rounded-2xl flex items-center justify-between hover:border-neutral-300 transition-colors group shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center"><Star size={20}/></div>
               <span className="font-bold">Reviews to Moderate</span>
             </div>
-            <span className="bg-neutral-100 text-neutral-600 text-xs font-black px-2 py-1 rounded-full">12</span>
+            <span className="bg-neutral-100 text-neutral-600 text-xs font-black px-2 py-1 rounded-full">{data?.pendingReviews ?? 0}</span>
           </Link>
         </div>
       </div>

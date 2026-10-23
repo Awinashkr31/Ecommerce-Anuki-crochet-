@@ -218,6 +218,14 @@ export default function ProductReviews({ productId }: { productId: string }) {
                       ))}
                     </div>
                   )}
+                  {review.adminReply && (
+                    <div className="mt-3.5 p-3.5 bg-rose-50/60 rounded-xl border border-rose-100 text-xs">
+                      <p className="font-bold text-rose-950 mb-1 flex items-center gap-1.5">
+                        <span>🌸</span> Official Response from Anuki Crochet:
+                      </p>
+                      <p className="text-neutral-700 leading-relaxed font-medium">{review.adminReply}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -62,6 +62,7 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
   const [seoDesc, setSeoDesc] = useState('');
   const [seoKeywords, setSeoKeywords] = useState('');
   const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [noIndex, setNoIndex] = useState(false);
   const [featured, setFeatured] = useState(false);
   const [bestseller, setBestseller] = useState(false);
   
@@ -70,7 +71,7 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(true);
   useEffect(() => {
     if (name && !isSlugManuallyEdited) {
-      setSlug(name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+      setSlug(name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
     }
   }, [name, isSlugManuallyEdited]);
 
@@ -107,13 +108,14 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
       setSeoDesc(product.seoDesc || '');
       setSeoKeywords(product.seoKeywords || '');
       setCanonicalUrl(product.canonicalUrl || '');
+      setNoIndex(product.noIndex ?? false);
       setFeatured(product.featured ?? false);
       setBestseller(product.bestseller ?? false);
     }
   }, [product]);
 
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSlug(e.target.value);
+    setSlug(e.target.value.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-'));
     setIsSlugManuallyEdited(true);
   };
 
@@ -127,7 +129,7 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
       formData.append('image', compressedFile);
       formData.append('folder', 'products');
       const data = await apiUpload('/upload', formData);
-      setImages([...images, { url: data.url, altText: name || 'Product image' }]);
+      setImages([...images, { url: data.url, altText: name || 'Handmade crochet product' }]);
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : 'Failed to upload image. Please try again or check the file format.');
@@ -137,19 +139,51 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
     }
   };
 
-
-
   const handleSubmit = async (status: string) => {
     if (!name || !slug || !categoryId || basePrice === '') {
       setError('Please fill in Name, Slug, Category, and Base Price.');
       return;
     }
+
+    const cleanSlug = slug
+      .toLowerCase()
+      .trim()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    // Duplicate SEO Check Warning
+    if (seoTitle || seoDesc) {
+      try {
+        const dupRes = await apiPost<any>('/seo/check-duplicates', {
+          seoTitle,
+          metaDescription: seoDesc,
+          currentSlug: cleanSlug,
+        });
+        const warnings: string[] = [];
+        if (dupRes.isDuplicateTitle) {
+          warnings.push(`SEO Title duplicates:\n${dupRes.titleMatches.join('\n')}`);
+        }
+        if (dupRes.isDuplicateDesc) {
+          warnings.push(`Meta Description duplicates:\n${dupRes.descMatches.join('\n')}`);
+        }
+        if (warnings.length > 0) {
+          const proceed = confirm(`⚠️ Duplicate SEO Warning:\n\n${warnings.join('\n\n')}\n\nDo you want to save anyway?`);
+          if (!proceed) return;
+        }
+      } catch (err) {
+        // Continue if duplicate check fails
+      }
+    }
+
     try {
       setSaving(true);
       setError('');
       
       const payload = {
-        name, slug, shortDesc, fullDesc, categoryId,
+        name,
+        slug: cleanSlug,
+        shortDesc, fullDesc, categoryId,
         basePrice: Number(basePrice),
         salePrice: salePrice !== '' ? Number(salePrice) : undefined,
         taxSettings, stockStatus, stock, lowStockThreshold,
@@ -161,12 +195,23 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
         height: height !== '' ? Number(height) : undefined,
         shippingCharges: shippingCharges !== '' ? Number(shippingCharges) : undefined,
         freeShipping, seoTitle, seoDesc, seoKeywords, canonicalUrl, videoUrl,
+        noIndex,
         featured, bestseller,
         status,
         images: images.map((img, i) => ({ ...img, order: i }))
       };
 
       await apiPut(`/products/${params.id}`, payload);
+      // Trigger storefront on-demand revalidation
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: 'anuki_secret_revalidate_token',
+          paths: [`/products/${cleanSlug}`, '/products', '/'],
+          tag: 'related-products-cache'
+        })
+      }).catch(console.error);
       router.push('/admin/products');
     } catch (err: any) {
       setError(err.message || 'Failed to save product');
@@ -248,17 +293,42 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Product Images</label>
-                <div className="flex gap-4 flex-wrap mb-4">
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Product Images & Alt Text (SEO)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {images.map((img, i) => (
-                    <div key={i} className="relative w-24 h-24 border rounded-xl overflow-hidden group">
-                      <img src={img.url} className="w-full h-full object-cover" alt="" />
-                      <button onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-white p-1 rounded-full text-red-500 opacity-0 group-hover:opacity-100"><X size={14}/></button>
+                    <div key={i} className="flex items-center gap-3 p-3 border rounded-2xl bg-neutral-50 relative group">
+                      <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 border bg-white">
+                        <img src={img.url} className="w-full h-full object-cover" alt={img.altText || ''} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <label className="block text-[11px] font-bold text-neutral-500 mb-1">
+                          Alt Text {!img.altText?.trim() && <span className="text-amber-600 font-bold">(Empty)</span>}
+                        </label>
+                        <input
+                          type="text"
+                          value={img.altText || ''}
+                          onChange={(e) => {
+                            const newImages = [...images];
+                            newImages[i] = { ...newImages[i], altText: e.target.value };
+                            setImages(newImages);
+                          }}
+                          placeholder="e.g. Handmade pink crochet flower bouquet"
+                          className="w-full text-xs p-2.5 border rounded-lg bg-white outline-none focus:border-rose-500 font-medium"
+                        />
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => setImages(images.filter((_, idx) => idx !== i))} 
+                        className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors"
+                        title="Remove image"
+                      >
+                        <Trash2 size={16}/>
+                      </button>
                     </div>
                   ))}
-                  <label className="w-24 h-24 border-2 border-dashed border-neutral-300 rounded-xl flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:bg-neutral-50 hover:border-neutral-400">
-                    {uploadingImage ? <Loader2 size={24} className="animate-spin" /> : <UploadCloud size={24} />}
-                    <span className="text-xs mt-2 font-medium">Upload</span>
+                  <label className="min-h-[96px] border-2 border-dashed border-neutral-300 rounded-2xl flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:bg-neutral-50 hover:border-neutral-400 transition-colors">
+                    {uploadingImage ? <Loader2 size={24} className="animate-spin text-rose-500" /> : <UploadCloud size={24} />}
+                    <span className="text-xs mt-2 font-bold text-neutral-700">Add New Image</span>
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
                   </label>
                 </div>
@@ -385,8 +455,26 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
                 <textarea value={seoDesc} onChange={e => setSeoDesc(e.target.value)} rows={3} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="Write a compelling description for search results..." />
               </div>
               <div>
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Meta Keywords</label>
-                <input type="text" value={seoKeywords} onChange={e => setSeoKeywords(e.target.value)} className="w-full border p-3 rounded-xl outline-none focus:border-rose-500" placeholder="crochet, handmade, bouquet..." />
+                <label className="block text-sm font-bold text-neutral-700 mb-2">Canonical URL Override</label>
+                <input 
+                  type="url" 
+                  value={canonicalUrl} 
+                  onChange={e => setCanonicalUrl(e.target.value)} 
+                  className="w-full border p-3 rounded-xl outline-none focus:border-rose-500 font-mono text-sm" 
+                  placeholder="https://www.anukicrochet.in/products/..." 
+                />
+                <p className="text-xs text-neutral-500 mt-1">Leave empty to use default canonical URL (https://www.anukicrochet.in/products/{slug})</p>
+              </div>
+              <div className="p-4 rounded-2xl border border-neutral-200 bg-neutral-50 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900">Robots Indexing Status</h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">Controls meta robots tag & inclusion in Google sitemaps.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked={!noIndex} onChange={e => setNoIndex(!e.target.checked)} className="sr-only peer" />
+                  <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  <span className="ml-3 text-xs font-bold text-neutral-700">{noIndex ? 'No-Index (Excluded from sitemaps)' : 'Indexed (Live on Google)'}</span>
+                </label>
               </div>
               
               <h2 className="text-xl font-bold border-b pb-4 pt-6">Marketing Flags</h2>

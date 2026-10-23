@@ -19,7 +19,7 @@ export async function GET() {
   let posts: any[] = [];
   try {
     posts = await prisma.post.findMany({
-      where: { published: true },
+      where: { published: true, noIndex: false },
       select: { slug: true, updatedAt: true }
     });
   } catch (error) {

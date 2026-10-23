@@ -1,5 +1,6 @@
-import { Metadata, ResolvingMetadata } from 'next';
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -24,7 +25,11 @@ async function getPost(slug: string) {
     excerpt: post.excerpt || '',
     date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     author: "Anuki",
-    imageUrl: post.imageUrl || "https://anukicrochet.in/crochet-care.jpg"
+    imageUrl: post.imageUrl || "https://www.anukicrochet.in/crochet-care.jpg",
+    seoTitle: post.seoTitle,
+    seoDesc: post.seoDesc,
+    canonicalUrl: post.canonicalUrl,
+    noIndex: post.noIndex,
   };
 }
 
@@ -32,17 +37,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
 
+  const title = post.seoTitle || `${post.title} | Anuki Crochet`;
+  const description = post.seoDesc || post.excerpt || `${post.title}. Read the complete handmade crochet guide on the Anuki Crochet journal. Handcrafted in India.`;
+  const canonicalUrl = post.canonicalUrl || `https://www.anukicrochet.in/blog/${post.slug}`;
+
   return {
-    title: `${post.title} | The Maker's Journal`,
-    description: post.excerpt,
+    title: { absolute: title },
+    description,
+    robots: post.noIndex ? { index: false, follow: false } : { index: true, follow: true },
     alternates: {
-      canonical: `/blog/${post.slug}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title,
+      description,
       type: 'article',
-      url: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.anukicrochet.in'}/blog/${post.slug}`,
+      url: canonicalUrl,
       images: [
         {
           url: post.imageUrl,
@@ -54,8 +64,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt,
+      title,
+      description,
       images: [post.imageUrl],
     },
   };
@@ -94,6 +104,13 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#fff8f7] text-[#221a1a] font-sans pb-16">
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', item: '/' },
+          { name: 'Blog', item: '/blog' },
+          { name: post.title, item: `/blog/${post.slug}` }
+        ]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -215,13 +232,86 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="space-y-3">
             <h3 className="text-xl font-bold font-serif text-[#221a1a]">Written by {post.author}</h3>
             <p className="text-[#6E6363] text-sm leading-relaxed">
-              Founder & Lead Crafter at Anuki Crochet. Passionate about reviving heirloom fiber arts, mentoring women artisans across rural Karnataka, and teaching beginner loopers how to create magic with yarn.
+              Founder & Lead Crafter at Anuki Crochet. Passionate about reviving heirloom fiber arts, mentoring women artisans in Patna, Bihar, and sharing the warmth of handmade crochet across India.
             </p>
             <Link href="/about" className="inline-block mt-2 text-[#9e3345] font-bold text-sm hover:underline">
-              View all posts by {post.author} (14) →
+              About Anuki Crochet →
             </Link>
           </div>
         </div>
+
+        {/* Explore Handcrafted Crochet Gifts (Crawl & Discovery Graph) */}
+        <section className="mt-14 pt-10 border-t border-[#EFE5DE]">
+          <h2 className="text-2xl font-serif font-bold text-[#221a1a] mb-2">
+            Explore Handcrafted Crochet Gifts
+          </h2>
+          <p className="text-[#6E6363] text-sm mb-6">
+            Looking for thoughtful handmade treasures? Browse our popular collections made with love in Patna and delivered across India.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            <Link
+              href="/categories/flower-bouquets"
+              className="p-3.5 bg-white rounded-2xl border border-[#EFE5DE] hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#221a1a]">Flower Bouquets</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Everlasting roses & sunflowers</p>
+            </Link>
+
+            <Link
+              href="/categories/flower-pots"
+              className="p-3.5 bg-white rounded-2xl border border-[#EFE5DE] hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#221a1a]">Flower Pots</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Mini potted plants & desk decor</p>
+            </Link>
+
+            <Link
+              href="/categories/toys"
+              className="p-3.5 bg-white rounded-2xl border border-[#EFE5DE] hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#221a1a]">Amigurumi Plushies</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Cuddly hypoallergenic toys</p>
+            </Link>
+
+            <Link
+              href="/categories/keychains"
+              className="p-3.5 bg-white rounded-2xl border border-[#EFE5DE] hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#221a1a]">Crochet Keychains</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Strawberry, dino & bag charms</p>
+            </Link>
+
+            <Link
+              href="/categories/hair-accessories"
+              className="p-3.5 bg-white rounded-2xl border border-[#EFE5DE] hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#221a1a]">Hair Accessories</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Gentle floral clips & bands</p>
+            </Link>
+
+            <Link
+              href="/custom"
+              className="p-3.5 bg-rose-50/60 rounded-2xl border border-rose-200 hover:border-[#be4b5c] hover:shadow-sm transition-all"
+            >
+              <p className="font-bold text-xs sm:text-sm text-[#9e3345]">Custom Orders</p>
+              <p className="text-[11px] text-[#6E6363] mt-0.5">Personalized colors & tags</p>
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[#6E6363]">
+            <span className="font-semibold text-[#221a1a]">Popular Gifts:</span>
+            <Link href="/gifts/birthday" className="underline hover:text-[#9e3345]">Birthday Gifts</Link>
+            <span>•</span>
+            <Link href="/gifts/anniversary" className="underline hover:text-[#9e3345]">Anniversary Gifts</Link>
+            <span>•</span>
+            <Link href="/gifts/under-499" className="underline hover:text-[#9e3345]">Gifts Under ₹499</Link>
+            <span>•</span>
+            <Link href="/gifts/under-999" className="underline hover:text-[#9e3345]">Gifts Under ₹999</Link>
+            <span>•</span>
+            <Link href="/custom-crochet-gifts" className="underline hover:text-[#9e3345]">Custom Crochet Gifts</Link>
+          </div>
+        </section>
 
         {/* Newsletter Signup */}
         <section className="mt-12 p-8 rounded-3xl bg-[#f4e5e4] border border-[#EFE5DE] relative overflow-hidden text-center space-y-4">

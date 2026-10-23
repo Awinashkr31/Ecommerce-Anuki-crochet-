@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { trackAddToCart, trackRemoveFromCart } from '@/lib/gtm';
 
 export interface CartItem {
   id: string; // unique cart item id (usually variantId + customizations hash)
@@ -35,22 +36,51 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       setIsOpen: (isOpen) => set({ isOpen }),
       items: [],
-      addItem: (item) => set((state) => {
-        const existing = state.items.find((i) => i.id === item.id);
-        if (existing) {
-          return {
-            items: state.items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-            ),
-            appliedCoupon: null,
-          };
+      addItem: (item) => {
+        try {
+          trackAddToCart({
+            id: item.id,
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          });
+        } catch {
+          // ignore error
         }
-        return { items: [...state.items, item], appliedCoupon: null };
-      }),
-      removeItem: (id) => set((state) => ({
-        items: state.items.filter((i) => i.id !== id),
-        appliedCoupon: null,
-      })),
+        return set((state) => {
+          const existing = state.items.find((i) => i.id === item.id);
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+              ),
+              appliedCoupon: null,
+            };
+          }
+          return { items: [...state.items, item], appliedCoupon: null };
+        });
+      },
+      removeItem: (id) => {
+        try {
+          const item = get().items.find((i) => i.id === id);
+          if (item) {
+            trackRemoveFromCart({
+              id: item.id,
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            });
+          }
+        } catch {
+          // ignore error
+        }
+        return set((state) => ({
+          items: state.items.filter((i) => i.id !== id),
+          appliedCoupon: null,
+        }));
+      },
       updateQuantity: (id, quantity) => set((state) => ({
         items: state.items.map((i) =>
           i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i

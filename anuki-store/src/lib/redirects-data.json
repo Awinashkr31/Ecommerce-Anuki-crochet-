@@ -1,0 +1,37 @@
+[
+  {
+    "fromPath": "/policies/returns-and-exchanges",
+    "toPath": "/policies/return-policy",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/products/Handmade-Crochet-Strawberry-&-Daisy-Keychain",
+    "toPath": "/products/handmade-crochet-strawberry-daisy-keychain",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/products/Handmade-Crochet-Strawberry-%26-Daisy-Keychain",
+    "toPath": "/products/handmade-crochet-strawberry-daisy-keychain",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/products/Handmade-Crochet-Baby-Dinosaur-Keychain",
+    "toPath": "/products/handmade-crochet-baby-dinosaur-keychain",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/gifts/under-1000",
+    "toPath": "/gifts/under-999",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/gifts/under-300",
+    "toPath": "/gifts/under-299",
+    "statusCode": 301
+  },
+  {
+    "fromPath": "/gifts/under-500",
+    "toPath": "/gifts/under-499",
+    "statusCode": 301
+  }
+]

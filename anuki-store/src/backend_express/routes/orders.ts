@@ -463,16 +463,40 @@ router.get('/analytics', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORD
       failedOrders,
       totalRevenueData
     ] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.count({ where: { createdAt: { gte: today } } }),
-      prisma.order.count({ where: { status: 'PENDING' } }),
+      prisma.order.count({
+        where: {
+          status: { notIn: ['CANCELLED', 'AWAITING_PAYMENT'] },
+          NOT: { payment: { status: 'FAILED' } }
+        }
+      }),
+      prisma.order.count({
+        where: {
+          createdAt: { gte: today },
+          status: { notIn: ['CANCELLED', 'AWAITING_PAYMENT'] },
+          NOT: { payment: { status: 'FAILED' } }
+        }
+      }),
+      prisma.order.count({ where: { status: 'PENDING', NOT: { payment: { status: 'FAILED' } } } }),
       prisma.order.count({ where: { status: 'PROCESSING' } }),
       prisma.order.count({ where: { status: 'SHIPPED' } }),
       prisma.order.count({ where: { status: 'DELIVERED' } }),
       prisma.order.count({ where: { status: 'CANCELLED' } }),
       prisma.order.count({ where: { items: { some: { returnRequest: { isNot: null } } } } }),
-      prisma.order.count({ where: { payment: { status: 'FAILED' } } }),
-      prisma.order.aggregate({ _sum: { totalAmount: true }, where: { status: { not: 'CANCELLED' } } })
+      prisma.order.count({
+        where: {
+          OR: [
+            { payment: { status: 'FAILED' } },
+            { status: 'AWAITING_PAYMENT' }
+          ]
+        }
+      }),
+      prisma.order.aggregate({
+        _sum: { totalAmount: true },
+        where: {
+          status: { notIn: ['CANCELLED', 'AWAITING_PAYMENT'] },
+          NOT: { payment: { status: 'FAILED' } }
+        }
+      })
     ]);
 
     const totalRevenue = totalRevenueData._sum.totalAmount || 0;
@@ -546,18 +570,74 @@ router.get('/:id', optionalAuth, async (req: import('express').Request | any, re
       return res.status(401).json({ error: 'Access denied' });
     }
 
-    // Customer aggregate stats
+    // Extract customer contact info from order, user, or internalNotes
+    let customerEmail: string | null = order.user?.email || null;
+    let customerPhone: string | null = order.user?.phone || null;
+    let customerName: string = order.user?.fullName || 'Customer';
+
+    if (order.internalNotes) {
+      const emailMatch = order.internalNotes.match(/Email:\s*([^\s,\n]+)/i);
+      if (emailMatch && (!customerEmail || customerEmail === 'N/A')) customerEmail = emailMatch[1].trim();
+
+      const phoneMatch = order.internalNotes.match(/Phone:\s*([^\s,\n]+)/i);
+      if (phoneMatch && (!customerPhone || customerPhone === 'N/A')) customerPhone = phoneMatch[1].trim();
+
+      const nameMatch = order.internalNotes.match(/Name:\s*([^,\n]+)/i);
+      if (nameMatch && (customerName === 'Customer' || !customerName)) customerName = nameMatch[1].trim();
+    }
+
+    // Try finding matching user record if guest
+    let matchedUserId = order.userId;
+    if (!matchedUserId && (customerEmail || customerPhone)) {
+      const userConditions: any[] = [];
+      if (customerEmail && customerEmail !== 'N/A') userConditions.push({ email: customerEmail });
+      if (customerPhone && customerPhone !== 'N/A') userConditions.push({ phone: customerPhone });
+      if (userConditions.length > 0) {
+        const matchedUser = await prisma.user.findFirst({
+          where: { OR: userConditions }
+        });
+        if (matchedUser) {
+          matchedUserId = matchedUser.id;
+          if (!customerName || customerName === 'Customer') customerName = matchedUser.fullName;
+          if (!customerEmail || customerEmail === 'N/A') customerEmail = matchedUser.email;
+          if (!customerPhone || customerPhone === 'N/A') customerPhone = matchedUser.phone;
+        }
+      }
+    }
+
+    // Customer aggregate stats (link orders by userId, email, or phone)
     let totalLifetimeSpend = 0;
     let totalOrdersCount = 0;
-    
-    if (order.userId && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN')) {
-      const stats = await prisma.order.aggregate({
-        where: { userId: order.userId, status: { not: 'CANCELLED' } },
-        _sum: { totalAmount: true },
-        _count: { id: true }
-      });
-      totalLifetimeSpend = stats._sum.totalAmount || 0;
-      totalOrdersCount = stats._count.id || 0;
+
+    if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ORDER_FULFILLMENT' || userRole === 'CUSTOMER_SUPPORT') {
+      const customerOrderConditions: any[] = [];
+      if (matchedUserId) {
+        customerOrderConditions.push({ userId: matchedUserId });
+      }
+      if (customerEmail && customerEmail !== 'N/A') {
+        customerOrderConditions.push({ internalNotes: { contains: customerEmail, mode: 'insensitive' } });
+      }
+      if (customerPhone && customerPhone !== 'N/A') {
+        customerOrderConditions.push({ internalNotes: { contains: customerPhone, mode: 'insensitive' } });
+      }
+      customerOrderConditions.push({ id: order.id });
+
+      const customerOrderWhere: any = { OR: customerOrderConditions };
+
+      const [allCustomerOrders, customerSpendData] = await Promise.all([
+        prisma.order.count({ where: customerOrderWhere }),
+        prisma.order.aggregate({
+          where: {
+            ...customerOrderWhere,
+            status: { notIn: ['CANCELLED', 'AWAITING_PAYMENT'] },
+            NOT: { payment: { status: 'FAILED' } }
+          },
+          _sum: { totalAmount: true }
+        })
+      ]);
+
+      totalOrdersCount = Math.max(1, allCustomerOrders);
+      totalLifetimeSpend = customerSpendData._sum.totalAmount || 0;
     }
 
     // Filter timeline for customer/guest
@@ -568,7 +648,11 @@ router.get('/:id', optionalAuth, async (req: import('express').Request | any, re
 
     const mappedOrder = {
       ...order,
-      user: order.user ? { name: order.user.fullName, email: order.user.email, phone: order.user.phone } : null,
+      user: {
+        name: customerName,
+        email: customerEmail || 'N/A',
+        phone: customerPhone || 'N/A'
+      },
       timeline: filteredTimeline.map((t: any) => ({
         ...t,
         user: t.user ? { name: t.user.fullName, role: t.user.role } : null
@@ -675,6 +759,73 @@ router.put('/:id/status', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'OR
     return res.json(order);
   } catch (error: unknown) {
     return res.status(400).json({ error: 'Failed to update order status' });
+  }
+});
+
+// PUT update order tracking / shipment (Admin)
+router.put('/:id/shipment', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: import('express').Request | any, res: import('express').Response | any) => {
+  try {
+    const { id } = req.params;
+    const { awbNumber, courierName, trackingUrl } = req.body;
+
+    if (!awbNumber || !String(awbNumber).trim()) {
+      return res.status(400).json({ error: 'Tracking/AWB number is required' });
+    }
+
+    const order = await prisma.order.findUnique({ where: { id }, include: { shipment: true } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const trimmedAwb = String(awbNumber).trim();
+    const courier = (courierName || 'Standard Courier').trim();
+    const url = trackingUrl ? String(trackingUrl).trim() : null;
+
+    let shipment;
+    if (order.shipment) {
+      shipment = await prisma.shipment.update({
+        where: { id: order.shipment.id },
+        data: {
+          awbNumber: trimmedAwb,
+          courierName: courier,
+          trackingUrl: url,
+          status: 'SHIPPED'
+        }
+      });
+    } else {
+      shipment = await prisma.shipment.create({
+        data: {
+          orderId: id,
+          awbNumber: trimmedAwb,
+          courierName: courier,
+          trackingUrl: url,
+          status: 'SHIPPED'
+        }
+      });
+    }
+
+    // Advance status to SHIPPED if currently PENDING or PROCESSING
+    if (order.status === 'PENDING' || order.status === 'PROCESSING') {
+      await prisma.order.update({
+        where: { id },
+        data: { status: 'SHIPPED' }
+      });
+    }
+
+    // Log tracking update in timeline
+    await prisma.orderTimeline.create({
+      data: {
+        orderId: id,
+        status: 'SHIPPED',
+        note: `Shipment tracking assigned: ${courier} | AWB: ${trimmedAwb}`,
+        isInternal: false,
+        type: 'STATUS_CHANGE',
+        userId: req.user?.userId
+      }
+    });
+
+    return res.json({ success: true, shipment });
+  } catch (error: any) {
+    console.error('Failed to update shipment tracking:', error);
+    return res.status(400).json({ error: error.message || 'Failed to update tracking' });
   }
 });
 

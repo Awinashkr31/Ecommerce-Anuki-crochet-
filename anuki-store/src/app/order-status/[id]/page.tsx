@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { useCartStore } from "@/store/cartStore";
 import { PAYMENT_STATUS_CONFIG, PAYMENT_ACTIONS, PaymentStatusKey } from "@/lib/paymentConfig";
+import { trackPurchase } from "@/lib/gtm";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -13,7 +14,7 @@ import {
   CheckCircle2, XCircle, Clock, Loader2, LogOut, Ban, Timer,
   CalendarX2, RotateCcw, AlertTriangle, Banknote, Eye, RefreshCw,
   CreditCard, Package, Download, ShoppingBag, ShoppingCart,
-  MessageCircle, ArrowLeft, ChevronDown, ChevronUp
+  MessageCircle, ArrowLeft, ChevronDown, ChevronUp, Truck, ExternalLink
 } from "lucide-react";
 
 // Icon mapper
@@ -68,6 +69,25 @@ export default function OrderStatusPage() {
       if (config?.clearCart && !cartCleared.current) {
         clearCart();
         cartCleared.current = true;
+      }
+
+      // GA4 purchase event (fires exactly once per order ID via deduplication)
+      const isSuccess = ['SUCCESS', 'COD_CONFIRMED', 'COD_PENDING'].includes(result.payment.status);
+      if (isSuccess && result.order) {
+        trackPurchase({
+          id: result.order.id || orderId,
+          totalAmount: result.payment.amount || result.order.totalAmount,
+          shippingCharge: result.order.shippingCharge || 0,
+          tax: result.order.tax || 0,
+          items: (result.order.items || []).map((it: any) => ({
+            id: it.id,
+            productId: it.variant?.product?.id || it.variantId || it.id,
+            name: it.variant?.product?.name || it.name || 'Crochet Item',
+            price: Number(it.price) || 0,
+            quantity: Number(it.quantity) || 1,
+            category: it.variant?.product?.category?.name || 'Crochet Gifts',
+          })),
+        });
       }
 
       // Stop polling if terminal state
@@ -320,6 +340,44 @@ export default function OrderStatusPage() {
             );
           })}
         </div>
+
+        {/* ── Shipment Tracking Card ── */}
+        {data?.order?.shipment && (
+          <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-neutral-900 flex items-center gap-2">
+                <Truck size={18} className="text-rose-500" /> Shipment & Tracking
+              </h3>
+              <span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full text-xs font-bold border border-blue-100">
+                {data.order.shipment.status?.replace(/_/g, ' ') || 'SHIPPED'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-neutral-100">
+              <div>
+                <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Courier Partner</p>
+                <p className="font-bold text-neutral-900 mt-0.5">{data.order.shipment.courierName || 'Standard Courier'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">AWB / Tracking No.</p>
+                <p className="font-mono font-bold text-neutral-900 mt-0.5 bg-neutral-100 px-2 py-0.5 rounded inline-block">
+                  {data.order.shipment.awbNumber}
+                </p>
+              </div>
+            </div>
+            {data.order.shipment.trackingUrl && (
+              <div className="mt-4 pt-3 border-t border-neutral-100">
+                <a
+                  href={data.order.shipment.trackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 font-bold hover:underline inline-flex items-center gap-1.5"
+                >
+                  Track Package Online <ExternalLink size={14} />
+                </a>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Order Items ── */}
         {orderItems.length > 0 && (

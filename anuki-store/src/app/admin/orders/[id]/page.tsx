@@ -1,9 +1,9 @@
 "use client";
 
 import useSWR from 'swr';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Loader2, Printer, Download, MapPin, Mail, MessageCircle, Send, Plus, Search, ShieldAlert, Package, CreditCard, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, Loader2, Printer, Download, MapPin, Mail, MessageCircle, Send, Plus, Search, ShieldAlert, Package, CreditCard, RefreshCw, Trash2, Truck, ExternalLink } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiGet, apiPut, apiPost, apiDelete } from '../../../../lib/api';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ interface OrderDetail {
   user?: { name: string; email: string; phone: string } | null;
   items: { id: string; quantity: number; price: number; customization: string | null; variant: { sku: string; size: string | null; color: string | null; product: { name: string; images: {url: string}[] } } }[];
   payment?: { gateway: string; transactionId: string; status: string; amount: number; createdAt: string } | null;
-  shipment?: { awbNumber: string; courierName: string; status: string } | null;
+  shipment?: { id?: string; awbNumber: string; courierName: string; status: string; trackingUrl?: string | null } | null;
   timeline?: { id: string; status: string; note: string | null; createdAt: string; isInternal: boolean; type: string; user?: { name: string; role: string } | null }[];
   customerStats?: { totalLifetimeSpend: number; totalOrdersCount: number };
 }
@@ -31,6 +31,44 @@ export default function OrderDetailPage() {
   const [updating, setUpdating] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isInternal, setIsInternal] = useState(true);
+
+  // Tracking / AWB state
+  const [awbInput, setAwbInput] = useState('');
+  const [courierInput, setCourierInput] = useState('Delhivery');
+  const [trackingUrlInput, setTrackingUrlInput] = useState('');
+  const [isEditingTracking, setIsEditingTracking] = useState(false);
+  const [savingTracking, setSavingTracking] = useState(false);
+
+  useEffect(() => {
+    if (order?.shipment) {
+      setAwbInput(order.shipment.awbNumber || '');
+      setCourierInput(order.shipment.courierName || 'Delhivery');
+      setTrackingUrlInput(order.shipment.trackingUrl || '');
+    }
+  }, [order?.shipment]);
+
+  const handleSaveTracking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!awbInput.trim()) {
+      toast.error("Please enter an AWB / Tracking number");
+      return;
+    }
+    try {
+      setSavingTracking(true);
+      await apiPut(`/orders/${orderId}/shipment`, {
+        awbNumber: awbInput.trim(),
+        courierName: courierInput.trim() || 'Standard Courier',
+        trackingUrl: trackingUrlInput.trim() || undefined
+      });
+      toast.success("Shipment tracking details saved successfully");
+      setIsEditingTracking(false);
+      mutate();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save tracking information");
+    } finally {
+      setSavingTracking(false);
+    }
+  };
 
   const deleteOrder = async () => {
     if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) return;
@@ -402,7 +440,110 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Shipping Address */}
+          {/* Shipping & Tracking Card (AWB Entry) */}
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50 flex justify-between items-center">
+              <h2 className="font-bold text-neutral-900 flex items-center gap-2"><Truck size={16}/> Shipping & Tracking (AWB)</h2>
+              {order.shipment?.status && (
+                <span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full text-xs font-bold border border-blue-100">
+                  {order.shipment.status.replace(/_/g, ' ')}
+                </span>
+              )}
+            </div>
+            <div className="p-6 space-y-4">
+              {order.shipment?.awbNumber && !isEditingTracking ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Courier</span>
+                    <span className="text-sm font-bold text-neutral-900">{order.shipment.courierName || 'Standard'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">AWB Number</span>
+                    <span className="text-sm font-mono font-bold text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded">
+                      {order.shipment.awbNumber}
+                    </span>
+                  </div>
+                  {order.shipment.trackingUrl && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Track Link</span>
+                      <a href={order.shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 font-bold hover:underline inline-flex items-center gap-1">
+                        Open URL <ExternalLink size={12}/>
+                      </a>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setAwbInput(order.shipment?.awbNumber || '');
+                      setCourierInput(order.shipment?.courierName || 'Delhivery');
+                      setTrackingUrlInput(order.shipment?.trackingUrl || '');
+                      setIsEditingTracking(true);
+                    }}
+                    className="w-full mt-2 py-2 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  >
+                    Edit Tracking Details
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveTracking} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1">
+                      Courier Partner
+                    </label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. Delhivery, BlueDart, DTDC, India Post"
+                      value={courierInput}
+                      onChange={(e) => setCourierInput(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1">
+                      AWB / Tracking Number *
+                    </label>
+                    <input 
+                      type="text"
+                      placeholder="Enter courier AWB number"
+                      value={awbInput}
+                      onChange={(e) => setAwbInput(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm font-bold font-mono focus:ring-2 focus:ring-neutral-900 outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1">
+                      Tracking URL (optional)
+                    </label>
+                    <input 
+                      type="url"
+                      placeholder="https://..."
+                      value={trackingUrlInput}
+                      onChange={(e) => setTrackingUrlInput(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    {order.shipment?.awbNumber && (
+                      <button 
+                        type="button" 
+                        onClick={() => setIsEditingTracking(false)}
+                        className="flex-1 py-2 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button 
+                      type="submit"
+                      disabled={savingTracking || !awbInput.trim()}
+                      className="flex-1 py-2 bg-neutral-900 text-white rounded-xl text-xs font-bold hover:bg-neutral-800 disabled:opacity-50 transition-colors shadow-sm"
+                    >
+                      {savingTracking ? 'Saving...' : 'Save Tracking'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
           <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50 flex justify-between items-center">
               <h2 className="font-bold text-neutral-900 flex items-center gap-2"><MapPin size={16}/> Shipping Address</h2>

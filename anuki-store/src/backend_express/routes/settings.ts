@@ -6,6 +6,7 @@ import { verifyToken, requireRoles } from '../middleware/auth';
 const router = Router();
 import { prisma } from '../lib/prisma';
 import redisClient from '../lib/redis';
+import { triggerRevalidation } from '../../lib/revalidate';
 
 const CACHE_KEY = 'settings_public';
 
@@ -19,7 +20,8 @@ router.get('/public', async (req: any, res: any) => {
 
     const keys = [
       'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
-      'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
+      'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4',
+      'product_title_template', 'store_address', 'store_phone', 'store_email', 'store_name'
     ];
     const settings = await prisma.storeSettings.findMany({
       where: { key: { in: keys } }
@@ -71,6 +73,7 @@ router.put('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req:
     );
 
     if (redisClient.isReady) await redisClient.del(CACHE_KEY);
+    await triggerRevalidation({ paths: ['/', '/products', '/contact'], tags: ['settings'] });
     return res.json({ success: true });
   } catch (error) {
     return res.status(400).json({ error: 'Failed to update store settings' });

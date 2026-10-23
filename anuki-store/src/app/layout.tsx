@@ -11,7 +11,8 @@ import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from 'sonner';
 import { prisma } from '@/lib/prisma';
 import { unstable_cache } from 'next/cache';
-import { GoogleTagManager } from '@next/third-parties/google';
+import { DevServiceWorkerCleaner } from '@/components/DevServiceWorkerCleaner';
+import { ScrollToTop } from '@/components/ScrollToTop';
 
 const getGlobalLayoutData = unstable_cache(
   async () => {
@@ -44,7 +45,8 @@ const getGlobalLayoutData = unstable_cache(
             key: {
               in: [
                 'min_order_value', 'free_delivery_threshold', 'delivery_charge', 'cod_extra_charge', 'cod_payment_status',
-                'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4'
+                'instagram_handle', 'instagram_reel_1', 'instagram_reel_2', 'instagram_reel_3', 'instagram_reel_4',
+                'store_address', 'store_phone', 'store_email', 'store_name'
               ]
             }
           }
@@ -91,6 +93,35 @@ export const metadata: Metadata = {
   },
 };
 
+function parseStoreAddress(rawAddress: string) {
+  const postalMatch = rawAddress.match(/\b\d{6}\b/);
+  const postalCode = postalMatch ? postalMatch[0] : '800026';
+  const withoutPostal = rawAddress.replace(/\b\d{6}\b/, '').replace(/,\s*$/, '').trim();
+  const parts = withoutPostal.split(',').map((p) => p.trim()).filter(Boolean);
+
+  let streetAddress = rawAddress;
+  let locality = 'Patna';
+  let region = 'Bihar';
+
+  if (parts.length >= 3) {
+    region = parts[parts.length - 1];
+    locality = parts[parts.length - 2];
+    streetAddress = parts.slice(0, parts.length - 2).join(', ');
+  } else if (parts.length === 2) {
+    locality = parts[0];
+    region = parts[1];
+    streetAddress = parts[0];
+  }
+
+  return {
+    streetAddress: streetAddress || rawAddress,
+    addressLocality: locality,
+    addressRegion: region,
+    postalCode,
+    addressCountry: 'IN'
+  };
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -104,6 +135,11 @@ export default async function RootLayout({
     return acc;
   }, {} as Record<string, string>);
 
+  const storeAddress = settingsMap['store_address'] || 'Maurya Vihar Colony, Kumhrar, Patna, Bihar 800026';
+  const storePhone = settingsMap['store_phone'] || '+91-8434897767';
+  const storeEmail = settingsMap['store_email'] || 'anukicrochet@gmail.com';
+  const parsedAddress = parseStoreAddress(storeAddress);
+
   const fallback = {
     '/categories': categories,
     '/settings/public': settingsMap
@@ -115,6 +151,17 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Google Tag Manager */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KQG359W5');`,
+          }}
+        />
+        {/* End Google Tag Manager */}
         <link rel="preconnect" href="https://wzhxuzxfoayjzrhufyxw.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://wzhxuzxfoayjzrhufyxw.supabase.co" />
         <link rel="preconnect" href="https://sdk.cashfree.com" />
@@ -127,7 +174,16 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <GoogleTagManager gtmId="GTM-KQG359W5" />
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-KQG359W5"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
         <NextTopLoader 
           color="#f43f5e" 
           initialPosition={0.08} 
@@ -152,16 +208,12 @@ export default async function RootLayout({
               "logo": "https://www.anukicrochet.in/logo.png",
               "image": "https://www.anukicrochet.in/logo.png",
               "description": "Shop the best handmade crochet gifts in India. Buy premium custom flower bouquets, amigurumi plushies, and handmade gifts locally from Bihar.",
-              "telephone": "+91-8434897767",
-              "email": "anukicrochet@gmail.com",
+              "telephone": storePhone,
+              "email": storeEmail,
               "priceRange": "₹₹",
               "address": {
                 "@type": "PostalAddress",
-                "streetAddress": "Ashok Rajpath Rd, near Gandhi Maidan, Lalbagh",
-                "addressLocality": "Patna",
-                "addressRegion": "Bihar",
-                "postalCode": "800001",
-                "addressCountry": "IN"
+                ...parsedAddress
               },
               "geo": {
                 "@type": "GeoCoordinates",
@@ -193,6 +245,8 @@ export default async function RootLayout({
             })
           }}
         />
+        <DevServiceWorkerCleaner />
+        <ScrollToTop />
         <WebVitals />
         <AnalyticsProvider>
           <SWRProvider fallback={fallback}>

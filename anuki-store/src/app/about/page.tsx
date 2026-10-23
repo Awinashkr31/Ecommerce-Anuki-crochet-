@@ -3,10 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'About Us | Anuki Crochet',
-  description: 'Learn about Anuki Crochet, our brand story, and our founder\'s mission to bring joy through premium handmade crochet gifts and amigurumi.',
+  title: {
+    absolute: 'About Us | Anuki Crochet'
+  },
+  description: 'Learn about Anuki Crochet, our brand story, and our mission in Patna, Bihar to bring joy through premium handmade crochet gifts and amigurumi across India.',
   alternates: {
-    canonical: '/about'
+    canonical: 'https://www.anukicrochet.in/about'
   }
 };
 
@@ -21,15 +23,15 @@ export default function AboutPage() {
       name: 'Anuki Crochet',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://anukicrochet.in/logo.png'
+        url: 'https://www.anukicrochet.in/logo.png'
       }
     },
     mainEntity: {
       '@type': 'Person',
       name: 'Anuki',
       jobTitle: 'Founder & Master Artisan',
-      description: 'An expert crochet artisan with over a decade of experience crafting amigurumi plushies, floral bouquets, and bespoke handmade gifts.',
-      url: 'https://anukicrochet.in/about',
+      description: 'An expert crochet artisan crafting amigurumi plushies, floral bouquets, and bespoke handmade gifts based in Patna, Bihar.',
+      url: 'https://www.anukicrochet.in/about',
       sameAs: [
         'https://instagram.com/anukicrochet',
         'https://pinterest.com/anukicrochet'

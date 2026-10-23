@@ -16,7 +16,11 @@ interface Category {
 
 export function Footer() {
   const { data: categories = [] } = useSWR('/categories', (url: string) => apiGet<Category[]>(url));
+  const { data: settings = {} } = useSWR<Record<string, string>>('/settings/public', (url: string) => apiGet<Record<string, string>>(url));
   const activeCategories = categories.filter((c: Category) => c.isActive && !c.parentId);
+
+  const storeAddress = settings?.store_address || 'Maurya Vihar Colony, Kumhrar, Patna, Bihar 800026';
+  const storeEmail = settings?.store_email || 'anukicrochet@gmail.com';
 
   return (
     <footer className="bg-neutral-950 text-neutral-300 mt-auto">
@@ -52,11 +56,11 @@ export function Footer() {
             <div className="space-y-2 text-xs">
               <div className="flex items-start gap-2 text-neutral-400">
                 <MapPin size={12} className="text-neutral-500 shrink-0 mt-0.5" />
-                <span className="leading-snug">Ashok Rajpath Rd, near Gandhi Maidan, Lalbagh, Patna, Bihar 800001</span>
+                <span className="leading-snug">{storeAddress}</span>
               </div>
               <div className="flex items-center gap-2 text-neutral-400">
                 <Mail size={12} className="text-neutral-500 shrink-0" />
-                <a href="mailto:anukicrochet@gmail.com" className="hover:text-rose-400 transition-colors">anukicrochet@gmail.com</a>
+                <a href={`mailto:${storeEmail}`} className="hover:text-rose-400 transition-colors">{storeEmail}</a>
               </div>
             </div>
             {/* Social Icons */}
@@ -98,7 +102,7 @@ export function Footer() {
               <li><Link href="/categories/toys" className="text-neutral-400 hover:text-rose-400 transition-colors">Crochet Plushies & Toys</Link></li>
               <li><Link href="/custom-crochet-bouquet" className="text-neutral-400 hover:text-rose-400 transition-colors">Custom Bouquets</Link></li>
               <li><Link href="/gifts/birthday" className="text-neutral-400 hover:text-rose-400 transition-colors">Birthday Gifts</Link></li>
-              <li><Link href="/gifts/under-500" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹500 Gifts</Link></li>
+              <li><Link href="/gifts/under-499" className="text-neutral-400 hover:text-rose-400 transition-colors">Under ₹499 Gifts</Link></li>
             </ul>
           </div>
 
@@ -142,15 +146,31 @@ export function Footer() {
 
 
         {/* Popular Searches & Internal Linking Strip */}
-        <div className="mt-8 pt-6 border-t border-neutral-900 text-[11px] text-neutral-400 leading-relaxed">
-          <span className="font-semibold text-neutral-400 mr-2 uppercase tracking-wider text-[10px]">Popular Searches:</span>
-          <Link href="/custom" className="hover:text-rose-400 transition-colors">Custom Crochet India</Link> ·{' '}
-          <Link href="/custom-crochet-india" className="hover:text-rose-400 transition-colors">Crochet Custom Orders</Link> ·{' '}
-          <Link href="/custom-crochet-bouquet" className="hover:text-rose-400 transition-colors">Custom Crochet Bouquet</Link> ·{' '}
-          <Link href="/crochet-flowers" className="hover:text-rose-400 transition-colors">Crochet Flowers India</Link> ·{' '}
-          <Link href="/crochet-flower-bouquets" className="hover:text-rose-400 transition-colors">Handmade Flower Bouquets</Link> ·{' '}
-          <Link href="/amigurumi" className="hover:text-rose-400 transition-colors">Amigurumi Plush Toys</Link> ·{' '}
-          <Link href="/crochet-plushies" className="hover:text-rose-400 transition-colors">Cute Crochet Plushies</Link>
+        <div className="mt-8 pt-6 border-t border-neutral-900 text-[11px] text-neutral-400 leading-relaxed space-y-2">
+          <div>
+            <span className="font-semibold text-neutral-300 mr-2 uppercase tracking-wider text-[10px]">Categories:</span>
+            <Link href="/categories/flower-bouquets" className="hover:text-rose-400 transition-colors">Flower Bouquets</Link> ·{' '}
+            <Link href="/categories/flower-pots" className="hover:text-rose-400 transition-colors">Flower Pots</Link> ·{' '}
+            <Link href="/categories/toys" className="hover:text-rose-400 transition-colors">Amigurumi Toys</Link> ·{' '}
+            <Link href="/categories/keychains" className="hover:text-rose-400 transition-colors">Crochet Keychains</Link> ·{' '}
+            <Link href="/categories/hair-accessories" className="hover:text-rose-400 transition-colors">Hair Accessories</Link>
+          </div>
+          <div>
+            <span className="font-semibold text-neutral-300 mr-2 uppercase tracking-wider text-[10px]">Gift Occasions:</span>
+            <Link href="/gifts/birthday" className="hover:text-rose-400 transition-colors">Birthday Gifts</Link> ·{' '}
+            <Link href="/gifts/anniversary" className="hover:text-rose-400 transition-colors">Anniversary Gifts</Link> ·{' '}
+            <Link href="/gifts/valentines-day" className="hover:text-rose-400 transition-colors">Valentine's Day Gifts</Link> ·{' '}
+            <Link href="/gifts/under-499" className="hover:text-rose-400 transition-colors">Gifts Under ₹499</Link> ·{' '}
+            <Link href="/gifts/under-999" className="hover:text-rose-400 transition-colors">Gifts Under ₹999</Link>
+          </div>
+          <div>
+            <span className="font-semibold text-neutral-300 mr-2 uppercase tracking-wider text-[10px]">Popular Topics:</span>
+            <Link href="/custom" className="hover:text-rose-400 transition-colors">Custom Crochet India</Link> ·{' '}
+            <Link href="/custom-crochet-gifts" className="hover:text-rose-400 transition-colors">Custom Crochet Gifts</Link> ·{' '}
+            <Link href="/crochet-flower-bouquets" className="hover:text-rose-400 transition-colors">Crochet Flower Bouquets</Link> ·{' '}
+            <Link href="/amigurumi-gifts" className="hover:text-rose-400 transition-colors">Amigurumi Gifts</Link> ·{' '}
+            <Link href="/crochet-plushies" className="hover:text-rose-400 transition-colors">Crochet Plushies</Link>
+          </div>
         </div>
 
         {/* Bottom Bar */}

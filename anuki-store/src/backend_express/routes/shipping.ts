@@ -5,6 +5,56 @@ import { createShiprocketOrder } from '../lib/shiprocket';
 const router = Router();
 import { prisma } from '../lib/prisma';
 
+// GET all shipments from real orders
+router.get('/', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: any, res: any) => {
+  try {
+    const shipments = await prisma.shipment.findMany({
+      include: {
+        order: {
+          select: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            internalNotes: true,
+            createdAt: true,
+            user: { select: { fullName: true, email: true, phone: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const mapped = shipments.map((s: any) => {
+      let customerName = s.order?.user?.fullName || 'Customer';
+      let destination = 'India';
+      if (!s.order?.user?.fullName && s.order?.internalNotes) {
+        const nameMatch = s.order.internalNotes.match(/Name:\s*([^,\n]+)/i);
+        if (nameMatch) customerName = nameMatch[1].trim();
+        const cityMatch = s.order.internalNotes.match(/,\s*([^,]+),\s*([^,-]+)\s*-\s*\d{6}/i);
+        if (cityMatch) destination = `${cityMatch[1].trim()}, ${cityMatch[2].trim()}`;
+      }
+
+      return {
+        id: s.orderId ? `ORD-${s.orderId.slice(-8).toUpperCase()}` : s.id,
+        orderId: s.orderId,
+        awb: s.awbNumber,
+        courier: s.courierName,
+        trackingUrl: s.trackingUrl,
+        status: s.status,
+        expectedDelivery: null,
+        customer: customerName,
+        destination,
+        createdAt: s.createdAt
+      };
+    });
+
+    return res.json(mapped);
+  } catch (error) {
+    console.error('Error fetching shipments:', error);
+    return res.status(500).json({ error: 'Failed to fetch shipments' });
+  }
+});
+
 router.post('/create', verifyToken, requireRoles(['ADMIN', 'SUPER_ADMIN', 'ORDER_FULFILLMENT']), async (req: any, res: any) => {
   try {
     const body = req.body;

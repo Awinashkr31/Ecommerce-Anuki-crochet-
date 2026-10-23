@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 export default function AdminReviewsPage() {
   const { data: reviews = [], mutate, isLoading } = useSWR<any[]>('/reviews/admin', apiGet);
-  const [replyModal, setReplyModal] = useState<string | null>(null);
+  const [replyReviewId, setReplyReviewId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [filter, setFilter] = useState("PENDING");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
     try {
@@ -33,10 +34,26 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const handleReplySubmit = () => {
-    toast.success('Reply submitted');
-    setReplyModal(null);
-    setReplyText("");
+  const openReply = (review: any) => {
+    setReplyReviewId(review.id);
+    setReplyText(review.adminReply || "");
+  };
+
+  const handleReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyReviewId) return;
+    setIsSubmittingReply(true);
+    try {
+      await apiPut(`/reviews/${replyReviewId}/reply`, { adminReply: replyText });
+      toast.success('Reply saved successfully');
+      setReplyReviewId(null);
+      setReplyText("");
+      mutate();
+    } catch (error) {
+      toast.error('Failed to save reply');
+    } finally {
+      setIsSubmittingReply(false);
+    }
   };
 
   const filteredReviews = reviews.filter((r: any) => {
@@ -120,6 +137,16 @@ export default function AdminReviewsPage() {
                       ))}
                     </div>
                   )}
+
+                  {review.adminReply && (
+                    <div className="mt-3 p-3.5 bg-rose-50/60 rounded-xl border border-rose-100 text-xs">
+                      <p className="font-bold text-neutral-800 flex items-center gap-1.5 mb-1">
+                        <MessageSquareReply size={14} className="text-rose-600" />
+                        Official Store Response:
+                      </p>
+                      <p className="text-neutral-700 leading-relaxed">{review.adminReply}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -137,9 +164,15 @@ export default function AdminReviewsPage() {
                       onClick={() => handleAction(review.id, 'REJECT')}
                       className="w-full py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      <XCircle size={16} /> Unapprove
+                      <XCircle size={16} /> Reject (Unpublish)
                     </button>
                   )}
+                  <button 
+                    onClick={() => openReply(review)}
+                    className="w-full py-2.5 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 border border-neutral-200 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageSquareReply size={16} /> {review.adminReply ? 'Edit Reply' : 'Reply'}
+                  </button>
                   <button 
                     onClick={() => handleDelete(review.id)}
                     className="w-full py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
@@ -152,6 +185,42 @@ export default function AdminReviewsPage() {
           </div>
         )}
       </div>
+
+      {/* Reply Modal */}
+      {replyReviewId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-100 animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-xl font-bold text-neutral-900 mb-2">Reply to Customer Review</h3>
+            <p className="text-xs text-neutral-500 mb-4">This reply will appear publicly under the review on the product page.</p>
+            <form onSubmit={handleReplySubmit} className="space-y-4">
+              <textarea 
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Thank you for your feedback! We're glad you loved the handmade craft..."
+                rows={4}
+                required
+                className="w-full p-4 border border-neutral-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed font-medium"
+              />
+              <div className="flex gap-3 justify-end">
+                <button 
+                  type="button"
+                  onClick={() => setReplyReviewId(null)}
+                  className="px-5 py-2.5 border border-neutral-200 rounded-xl font-bold text-sm text-neutral-600 hover:bg-neutral-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmittingReply}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
+                >
+                  {isSubmittingReply ? 'Saving...' : 'Save Public Reply'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

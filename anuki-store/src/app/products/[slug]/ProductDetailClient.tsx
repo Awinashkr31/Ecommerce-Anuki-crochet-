@@ -16,6 +16,7 @@ import ProductAccordions from './components/ProductAccordions';
 import StickyBuyBar from './components/StickyBuyBar';
 import ProductReviews from './components/ProductReviews';
 import { ProductCard } from '@/components/ProductCard';
+import { trackViewItem } from '@/lib/gtm';
 
 function calculateDiscount(base: number, sale: number | null) {
   if (!sale || sale >= base) return null;
@@ -66,6 +67,32 @@ export default function ProductDetailClient({
 
   const discount = calculateDiscount(originalPrice || (currentVariant?.price || product.basePrice), displayPrice);
   const inStock = product.stockStatus !== 'OUT_OF_STOCK' && (!currentVariant || currentVariant.stock > 0);
+
+  // Scroll to top immediately when product loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [product?.id]);
+
+  // GA4 view_item event on product page load
+  useEffect(() => {
+    if (product && product.id) {
+      trackViewItem({
+        id: product.id,
+        name: product.name,
+        price: displayPrice,
+        category: product.category?.name || 'Crochet Gifts',
+        sku: product.sku || product.id,
+      });
+    }
+  }, [product?.id]);
 
   const handleAddToCart = () => {
     setIsAddingToCart(true);

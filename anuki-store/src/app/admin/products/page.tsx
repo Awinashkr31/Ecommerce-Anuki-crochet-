@@ -235,6 +235,11 @@ export default function AdminProductsPage() {
                                 'bg-rose-100 text-rose-700'
                               }`}>{f}</span>
                             ))}
+                            {product.images && product.images.length > 0 && product.images.some(img => !img.altText || !img.altText.trim()) && (
+                              <span className="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300" title="One or more images missing SEO alt text">
+                                Missing Alt Text
+                              </span>
+                            )}
                           </div>
                           <div className="text-xs text-neutral-500 mt-0.5 font-medium">{product.variants[0]?.sku || product.slug}</div>
                         </div>

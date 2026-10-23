@@ -176,7 +176,7 @@ const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Pro
         </div>
 
         {/* Images */}
-        <Link href={`/products/${product.slug}`} prefetch={false} className="relative block w-full h-full">
+        <Link href={`/products/${product.slug}`} prefetch={false} scroll={true} className="relative block w-full h-full">
           {product.images && product.images.length > 0 ? (
             product.images.slice(0, 4).map((img, idx) => (
               <Image 
@@ -220,7 +220,7 @@ const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Pro
           )}
         </div>
         
-        <Link href={`/products/${product.slug}`} prefetch={false} className="text-neutral-900 font-bold hover:text-[#8c3a44] transition-colors line-clamp-2 text-sm leading-tight mb-2">
+        <Link href={`/products/${product.slug}`} prefetch={false} scroll={true} className="text-neutral-900 font-bold hover:text-[#8c3a44] transition-colors line-clamp-2 text-sm leading-tight mb-2">
           {product.name}
         </Link>
         

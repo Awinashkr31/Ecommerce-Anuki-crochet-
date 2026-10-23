@@ -84,12 +84,14 @@ export default function HomeClient({
  featuredProducts,
  latestProducts,
  categories,
- randomProducts = []
+ randomProducts = [],
+ faqs = []
 }: {
  featuredProducts: any[];
  latestProducts: any[];
  categories: any[];
  randomProducts?: any[];
+ faqs?: { question: string; answer: string }[];
 }) {
  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
@@ -199,33 +201,39 @@ export default function HomeClient({
  {slide.badge}
  </div>
  
- <div className="md:hidden">
+ <div className="mb-3">
  {index === 0 ? (
  <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
- {slide.title}
+ {slide.desktopTitle && slide.desktopTitle !== slide.title ? (
+ <>
+ <span className="md:hidden">{slide.title}</span>
+ <span className="hidden md:inline">{slide.desktopTitle}</span>
+ </>
+ ) : (
+ slide.title
+ )}
  </h1>
  ) : (
  <h2 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
- {slide.title}
- </h2>
- )}
- <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
- {slide.description}
- </p>
- </div>
- 
- <div className="hidden md:block">
- {index === 0 ? (
- <h1 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
- {slide.desktopTitle || slide.title}
- </h1>
+ {slide.desktopTitle && slide.desktopTitle !== slide.title ? (
+ <>
+ <span className="md:hidden">{slide.title}</span>
+ <span className="hidden md:inline">{slide.desktopTitle}</span>
+ </>
  ) : (
- <h2 className="text-3xl lg:text-4xl font-serif text-white mb-3 leading-[1.15] drop-shadow-md">
- {slide.desktopTitle || slide.title}
+ slide.title
+ )}
  </h2>
  )}
  <p className="text-white/90 text-xs lg:text-sm mb-6 font-medium max-w-sm leading-relaxed drop-shadow-sm">
- {slide.desktopDescription || slide.description}
+ {slide.desktopDescription && slide.desktopDescription !== slide.description ? (
+ <>
+ <span className="md:hidden">{slide.description}</span>
+ <span className="hidden md:inline">{slide.desktopDescription}</span>
+ </>
+ ) : (
+ slide.description
+ )}
  </p>
  </div>
  
@@ -613,33 +621,60 @@ export default function HomeClient({
  <h2 className="text-[10px] font-bold tracking-widest text-neutral-500 text-center uppercase mb-2">Got Questions?</h2>
  <h3 className="text-2xl font-serif font-bold text-center mb-8 text-neutral-900">Frequently Asked Questions</h3>
  <div className="space-y-3">
- {[
- { q: "What is a crochet bouquet?", a: "A crochet bouquet is a handcrafted arrangement of yarn flowers. Unlike real flowers, a crochet bouquet is a handmade gift that lasts forever, making it perfect for gifting." },
- { q: "How long does a crochet bouquet last?", a: "Our handmade crochet flower bouquets are crafted from premium yarn and never wilt. They are beautiful forever flowers that last a lifetime." },
- { q: "Are crochet plushies washable?", a: "Yes, we recommend gentle spot cleaning or hand washing in cold water with a mild detergent. Lay flat to dry to keep your handmade stuffed toys looking perfect." },
- { q: "Does Anuki Crochet deliver across India?", a: "Yes, we deliver our affordable handmade gifts securely packaged across all of India." }
- ].map((faq, i) => (
- <div key={i} className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-2xl overflow-hidden shadow-sm">
- <button 
- onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
- className="w-full text-left p-5 flex justify-between items-center focus:outline-none"
+ {(faqs && faqs.length > 0 ? faqs : [
+ { question: "What is a crochet bouquet?", answer: "A crochet bouquet is a handcrafted arrangement of yarn flowers. Unlike real flowers, a crochet bouquet is a handmade gift that lasts forever, making it perfect for gifting." },
+ { question: "How long does a crochet bouquet last?", answer: "Our handmade crochet flower bouquets are crafted from premium yarn and never wilt. They are beautiful forever flowers that last a lifetime." },
+ { question: "What is an amigurumi toy?", answer: "An amigurumi toy is a small, stuffed yarn plushie made using the Japanese art of knitting or crocheting. You can explore our cuddly crochet plushies for unique gifts." },
+ { question: "Are crochet plushies washable?", answer: "Yes, we recommend gentle spot cleaning or hand washing in cold water with a mild detergent. Lay flat to dry to keep your handmade stuffed toys looking perfect." },
+ { question: "How long does a custom crochet order take?", answer: "Most custom crochet orders take 5-7 business days to create before shipping across India. Specific estimates are provided at checkout." },
+ { question: "Does Anuki Crochet deliver across India?", answer: "Yes, we deliver our affordable handmade gifts securely packaged across all of India." }
+ ]).map((faq, i) => (
+ <details key={i} open={openFaqIndex === i} className="bg-[#fcf8f7] border border-[#f0e8e6] rounded-2xl overflow-hidden shadow-sm">
+ <summary 
+ onClick={(e) => {
+   e.preventDefault();
+   setOpenFaqIndex(openFaqIndex === i ? null : i);
+ }}
+ className="w-full text-left p-5 flex justify-between items-center cursor-pointer list-none focus:outline-none"
  >
- <span className="font-bold text-sm text-neutral-900">{faq.q}</span>
+ <span className="font-bold text-sm text-neutral-900">{faq.question}</span>
  <ChevronDown size={18} className={`text-neutral-400 transition-transform duration-300 shrink-0 ${openFaqIndex === i ? 'rotate-180' : ''}`} />
- </button>
- {openFaqIndex === i && (
- <div className="px-5 pb-5 text-sm text-neutral-600 leading-relaxed animate-fade-in border-t border-[#f0e8e6]/50 pt-3">
- {faq.a}
+ </summary>
+ <div className="px-5 pb-5 text-sm text-neutral-600 leading-relaxed border-t border-[#f0e8e6]/50 pt-3">
+ {faq.answer}
  </div>
- )}
- </div>
+ </details>
  ))}
  </div>
  </section>
 
-
-
-
+ {/* Popular Crochet Gifts by Occasion (Crawl Graph) */}
+ <section className="py-10 px-4 bg-[#FAFAFA] border-t border-[#f0e8e6]">
+   <div className="max-w-5xl mx-auto">
+     <div className="text-center mb-6">
+       <h2 className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-1">Gifting Guide</h2>
+       <h3 className="text-2xl font-serif font-bold text-neutral-900">Shop Crochet Gifts by Occasion</h3>
+     </div>
+     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+       <Link href="/gifts/birthday" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all group">
+         <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">Birthday Gifts</p>
+         <p className="text-xs text-neutral-500 mt-0.5">Plushies & bouquets</p>
+       </Link>
+       <Link href="/gifts/anniversary" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all group">
+         <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">Anniversary Gifts</p>
+         <p className="text-xs text-neutral-500 mt-0.5">Forever yarn roses</p>
+       </Link>
+       <Link href="/gifts/under-499" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all group">
+         <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">Gifts Under ₹499</p>
+         <p className="text-xs text-neutral-500 mt-0.5">Keychains & clips</p>
+       </Link>
+       <Link href="/gifts/under-999" className="p-4 bg-white rounded-2xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all group">
+         <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">Gifts Under ₹999</p>
+         <p className="text-xs text-neutral-500 mt-0.5">Mini potted plants</p>
+       </Link>
+     </div>
+   </div>
+ </section>
 
  {/* Category & Custom Showcase Cards */}
  <section className="px-4 pb-8 bg-white border-t border-[#f0e8e6] pt-8">
@@ -656,7 +691,7 @@ export default function HomeClient({
  Custom Crochet India <ArrowRight size={14} />
  </div>
  </Link>
- <Link href="/products?category=flower-pots" className="snap-start min-w-[280px] w-[280px] h-[180px] relative rounded-3xl overflow-hidden group shadow-sm">
+ <Link href="/categories/flower-pots" className="snap-start min-w-[280px] w-[280px] h-[180px] relative rounded-3xl overflow-hidden group shadow-sm">
  <Image src={flowerPotsImg} alt="Shop Crochet Flower Pots" fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
  <div className="absolute bottom-5 left-5 text-white">
@@ -665,7 +700,7 @@ export default function HomeClient({
  <span className="text-xs font-medium underline underline-offset-4 decoration-white/50 group-hover:decoration-white transition-colors drop-shadow-sm">Shop Online</span>
  </div>
  </Link>
- <Link href="/products?category=toys" className="snap-start min-w-[280px] w-[280px] h-[180px] relative rounded-3xl overflow-hidden group shadow-sm">
+ <Link href="/categories/toys" className="snap-start min-w-[280px] w-[280px] h-[180px] relative rounded-3xl overflow-hidden group shadow-sm">
  <Image src={plushToysImg} alt="Shop Amigurumi Plush Toys" fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 50vw" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
  <div className="absolute bottom-5 left-5 text-white">

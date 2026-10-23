@@ -3,23 +3,30 @@ import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-  title: "The Maker's Journal - Crochet Tips & Guides",
-  description: "Tips, patterns, and behind-the-scenes from our crochet studio. Learn how to care for handmade crochet, discover gift ideas, and more.",
+  title: {
+    absolute: "The Maker's Journal | Anuki Crochet Blog"
+  },
+  description: "Tips, patterns, and behind-the-scenes from our crochet studio in Patna, Bihar. Learn how to care for handmade crochet, discover gift ideas, and more.",
   alternates: {
-    canonical: '/blog',
+    canonical: 'https://www.anukicrochet.in/blog',
   },
 };
 
 export default async function BlogIndexPage() {
-  const posts = await prisma.post.findMany({
-    where: { 
-      published: true,
-      NOT: {
-        slug: { startsWith: 'crochet-gifts-in-' }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  let posts: any[] = [];
+  try {
+    posts = await prisma.post.findMany({
+      where: { 
+        published: true,
+        NOT: {
+          slug: { startsWith: 'crochet-gifts-in-' }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (err) {
+    console.warn('Failed to fetch posts for /blog prerender, falling back to empty list for on-demand ISR:', err);
+  }
 
   return (
     <div className="min-h-screen bg-[#fff8f7] text-[#221a1a] font-sans flex flex-col items-center">

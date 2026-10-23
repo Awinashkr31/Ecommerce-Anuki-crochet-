@@ -19,7 +19,7 @@ export async function GET() {
   let categories: any[] = [];
   try {
     categories = await prisma.category.findMany({
-      where: { isActive: true },
+      where: { isActive: true, noIndex: false },
       select: { slug: true, updatedAt: true }
     });
   } catch (error) {
