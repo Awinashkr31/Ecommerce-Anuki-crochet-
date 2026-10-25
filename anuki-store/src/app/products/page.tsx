@@ -7,7 +7,7 @@ import { Metadata } from 'next';
 export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
 
 type Props = {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; product?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {

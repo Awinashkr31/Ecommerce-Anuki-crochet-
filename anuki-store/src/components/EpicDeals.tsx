@@ -58,7 +58,7 @@ const epicDeals = [
     discount: "MADE TO ORDER",
     href: "/custom",
     image: "https://images.unsplash.com/photo-1622434641406-a158123450f9?w=400&h=400&fit=crop",
-    brands: ["BESPOKE", "UNIQUE"]
+    brands: ["CUSTOM", "UNIQUE"]
   }
 ];
 

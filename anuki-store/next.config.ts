@@ -24,8 +24,8 @@ const nextConfig: NextConfig = {
   turbopack: {},
   images: {
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 828, 1080],
-    imageSizes: [16, 32, 48, 64, 96],
+    deviceSizes: [360, 414, 640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000,
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
@@ -53,6 +53,25 @@ const nextConfig: NextConfig = {
       { source: '/gifts/under-1000', destination: '/gifts/under-999', statusCode: 301 },
       { source: '/gifts/under-300', destination: '/gifts/under-299', statusCode: 301 },
       { source: '/gifts/under-500', destination: '/gifts/under-499', statusCode: 301 },
+      // Redirect removed Rakhi pages
+      { source: '/gifts/raksha-bandhan', destination: '/gifts', statusCode: 301 },
+      { source: '/gifts/raksha-bandhan-for-sister', destination: '/gifts/for-sister', statusCode: 301 },
+      { source: '/gifts/raksha-bandhan-for-brother', destination: '/gifts/for-brother', statusCode: 301 },
+      { source: '/raksha-bandhan', destination: '/gifts', statusCode: 301 },
+      { source: '/rakhi', destination: '/gifts', statusCode: 301 },
+      // Redirect all custom-related pages to /custom
+      { source: '/custom-crochet-india', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-gifts', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-bouquet', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-plushie', destination: '/custom', statusCode: 301 },
+      { source: '/custom-order-process', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-gifts-for-couples', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-wedding-gifts', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-baby-gifts', destination: '/custom', statusCode: 301 },
+      { source: '/custom-crochet-bulk-orders', destination: '/custom', statusCode: 301 },
+      { source: '/custom-color-crochet-gifts', destination: '/custom', statusCode: 301 },
+      { source: '/custom-:slug(.*)', destination: '/custom', statusCode: 301 },
     ];
   },
   async headers() {
@@ -76,7 +95,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Immutable cache for all files in the public directory (Edge Cache)
-        source: '/:all*(svg|jpg|png|webp|avif|ico|woff|woff2|ttf|eot)',
+        source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2|ttf|eot)',
         headers: [
           {
             key: 'Cache-Control',

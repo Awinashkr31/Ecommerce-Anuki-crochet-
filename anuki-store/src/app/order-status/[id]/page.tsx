@@ -72,8 +72,9 @@ export default function OrderStatusPage() {
       }
 
       // GA4 purchase event (fires exactly once per order ID via deduplication)
-      const isSuccess = ['SUCCESS', 'COD_CONFIRMED', 'COD_PENDING'].includes(result.payment.status);
-      if (isSuccess && result.order) {
+      // Must reflect real paid orders only (not failed-payment orders)
+      const isPaidOrder = ['SUCCESS', 'COD_CONFIRMED', 'COD_PENDING'].includes(result.payment.status);
+      if (isPaidOrder && result.order) {
         trackPurchase({
           id: result.order.id || orderId,
           totalAmount: result.payment.amount || result.order.totalAmount,
@@ -81,7 +82,9 @@ export default function OrderStatusPage() {
           tax: result.order.tax || 0,
           items: (result.order.items || []).map((it: any) => ({
             id: it.id,
-            productId: it.variant?.product?.id || it.variantId || it.id,
+            productId: it.variant?.product?.slug || it.variant?.product?.sku || it.variant?.product?.id || it.variantId || it.id,
+            slug: it.variant?.product?.slug,
+            sku: it.variant?.product?.sku,
             name: it.variant?.product?.name || it.name || 'Crochet Item',
             price: Number(it.price) || 0,
             quantity: Number(it.quantity) || 1,

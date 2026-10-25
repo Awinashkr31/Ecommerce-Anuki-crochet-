@@ -89,7 +89,8 @@ export default function ProductDetailClient({
         name: product.name,
         price: displayPrice,
         category: product.category?.name || 'Crochet Gifts',
-        sku: product.sku || product.id,
+        slug: product.slug,
+        sku: product.sku || product.slug || product.id,
       });
     }
   }, [product?.id]);
@@ -105,6 +106,9 @@ export default function ProductDetailClient({
         price: displayPrice,
         quantity,
         image: displayImages[0].url,
+        slug: product.slug,
+        sku: product.sku,
+        category: product.category?.name || 'Crochet Gifts',
         variantText: currentVariant ? [currentVariant.color, currentVariant.size, currentVariant.style, currentVariant.material].filter(Boolean).join(' - ') : undefined
       };
       addItem(item);

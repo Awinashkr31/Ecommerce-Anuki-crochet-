@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import ClickSuccess from "@/components/animations/ClickSuccess";
 
 export interface CouponModalProps {
   isOpen: boolean;
@@ -227,13 +228,14 @@ export default function CouponModal({
             <span className="text-[11px] font-bold text-[#282c3f]">Maximum savings:</span>
             <span className="text-lg font-bold text-[#282c3f]">₹{maxSavings}</span>
           </div>
-          <button 
+          <ClickSuccess 
             onClick={handleApplyClick}
             disabled={(!selectedCode && !manualCode.trim()) || isApplying}
+            successText="Applied!"
             className="bg-[#ff3f6c] text-white font-bold text-sm px-10 py-3 rounded hover:bg-[#ff3f6c]/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] flex items-center justify-center"
           >
             {isApplying ? <Loader2 size={18} className="animate-spin" /> : 'APPLY'}
-          </button>
+          </ClickSuccess>
         </div>
       </div>
     </div>

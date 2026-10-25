@@ -264,7 +264,7 @@ export default async function Page() {
           ]
         },
         "sameAs": [
-          "https://instagram.com/anukicrochet",
+          "https://instagram.com/anuki_crochet",
           "https://facebook.com/anukicrochet",
           "https://pinterest.com/anukicrochet"
         ]

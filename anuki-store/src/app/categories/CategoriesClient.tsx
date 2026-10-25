@@ -334,7 +334,7 @@ export default function CategoriesClient() {
               Have a custom vision in mind?
             </h2>
             <p className="text-xs sm:text-sm text-rose-100/90 leading-relaxed mb-6">
-              Choose your favorite yarn shades, personalized initials, and custom details. We hand-stitch bespoke crochet bouquets, amigurumi pets, and gifts crafted exclusively for your loved ones.
+              Choose your favorite yarn shades, personalized initials, and custom details. We hand-stitch custom crochet bouquets, amigurumi pets, and gifts crafted exclusively for your loved ones.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link 

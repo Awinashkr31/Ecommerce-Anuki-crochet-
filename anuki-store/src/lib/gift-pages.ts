@@ -218,59 +218,6 @@ export const GIFT_PAGES: GiftPageConfig[] = [
     relatedSlugs: ['for-girlfriend', 'for-boyfriend', 'anniversary', 'for-couples'],
   },
 
-  {
-    slug: 'raksha-bandhan',
-    title: 'Raksha Bandhan Gifts | Handmade Crochet Rakhi Gifts India',
-    description: 'Shop unique Raksha Bandhan gifts for sisters and brothers! Handmade crochet keychains, hair clips, flower bouquets, and more. Affordable rakhi gifts under ₹500 delivered across India.',
-    ogDescription: 'Shop unique Raksha Bandhan gifts! Handmade crochet keychains, hair clips, and flower bouquets.',
-    hero: {
-      badge: '🪢 For Your Sibling',
-      heading: 'Raksha Bandhan Gifts',
-      subheading: 'Celebrate the bond of love with a thoughtful handmade gift this Raksha Bandhan. From cute keychains for bhaiya to pretty hair clips for didi — find the perfect rakhi gift here.',
-    },
-    productFilter: { type: 'category', slugs: ['keychains', 'hair-accessories', 'flower-bouquets'] },
-    orderBy: 'price_asc',
-    breadcrumbLabel: 'Raksha Bandhan Gifts',
-    gridLabel: 'Raksha Bandhan gift ideas',
-    itemListName: 'Raksha Bandhan Gifts',
-    seoArticle: [
-      {
-        heading: 'Handmade Rakhi Gifts That Show You Care',
-        level: 'h2',
-        paragraphs: [
-          "Skip the generic chocolates and mass-produced gifts this Raksha Bandhan. A handmade crochet gift tells your sibling they're truly special. Each piece is crafted with love, making it a keepsake they'll cherish long after the festival is over.",
-        ],
-      },
-      {
-        heading: 'Rakhi Gift Ideas for Sisters',
-        level: 'h3',
-        bullets: [
-          { text: 'Crochet Hair Accessories — Daisy clips, heart clips, sunflower claw clips', href: '/categories/hair-accessories' },
-          { text: 'Mini Flower Bouquets — A tiny forever bouquet for her desk', href: '/categories/flower-bouquets' },
-        ],
-      },
-      {
-        heading: 'Rakhi Gift Ideas for Brothers',
-        level: 'h3',
-        bullets: [
-          { text: 'Fun Crochet Keychains — Teddy bear, dinosaur, Pikachu keychains', href: '/categories/keychains' },
-          { text: 'Custom Crochet — Get a keychain of his favorite character', href: '/custom' },
-        ],
-      },
-      {
-        heading: 'Budget-Friendly Rakhi Gifts',
-        level: 'h3',
-        paragraphs: [
-          'Most of our Raksha Bandhan gifts are under ₹300, making them perfect for gifting to multiple siblings without breaking the bank.',
-        ],
-        bullets: [
-          { text: 'Browse gifts under ₹300 →', href: '/gifts/under-300' },
-        ],
-      },
-    ],
-    relatedSlugs: ['for-sister', 'for-brother', 'under-300', 'under-500'],
-  },
-
   // ═══════════════════════════════════════════
   // EXISTING BUDGET PAGES (preserved content)
   // ═══════════════════════════════════════════
@@ -304,7 +251,6 @@ export const GIFT_PAGES: GiftPageConfig[] = [
         bullets: [
           { text: 'Birthday gifts for friends and classmates' },
           { text: 'Return gifts and party favors' },
-          { text: 'Raksha Bandhan gifts for siblings', href: '/gifts/raksha-bandhan' },
           { text: 'Small gestures that make a big impact' },
         ],
       },
@@ -430,8 +376,8 @@ export const GIFT_PAGES: GiftPageConfig[] = [
   {
     slug: 'premium',
     title: 'Premium Handmade Gifts | Luxury Crochet Gifts India',
-    description: 'Discover our premium handmade crochet gift collection. Large amigurumi plush toys, luxury flower bouquets, and bespoke custom creations. Premium gifting delivered across India.',
-    ogDescription: 'Discover our premium handmade crochet gifts. Large plush toys, luxury flower bouquets, and bespoke creations.',
+    description: 'Discover our premium handmade crochet gift collection. Large amigurumi plush toys, luxury flower bouquets, and personalized custom creations. Premium gifting delivered across India.',
+    ogDescription: 'Discover our premium handmade crochet gifts. Large plush toys, luxury flower bouquets, and custom creations.',
     hero: {
       badge: '✨ Luxury Collection',
       heading: 'Premium Handmade Gifts',
@@ -456,7 +402,7 @@ export const GIFT_PAGES: GiftPageConfig[] = [
         bullets: [
           { text: 'Large Flower Bouquets — Stunning arrangements with 10+ flowers', href: '/categories/flower-bouquets' },
           { text: 'Oversized Plush Toys — Huggable amigurumi that become centerpieces', href: '/categories/toys' },
-          { text: 'Custom Creations — Commission a bespoke design just for them', href: '/custom' },
+          { text: 'Custom Creations — Commission a custom design just for them', href: '/custom' },
         ],
       },
       {
@@ -607,7 +553,7 @@ export const GIFT_PAGES: GiftPageConfig[] = [
           { text: 'Premium Flower Bouquets — Large, romantic tulip and rose arrangements', href: '/categories/flower-bouquets' },
           { text: 'Flower Pot Arrangements — Beautiful desk or shelf décor', href: '/categories/flower-pots' },
           { text: 'Hair Accessories — Elegant handmade crochet accessories', href: '/categories/hair-accessories' },
-          { text: 'Custom Gifts — Commission a bespoke creation in her favorite colors', href: '/custom' },
+          { text: 'Custom Gifts — Commission a custom creation in her favorite colors', href: '/custom' },
         ],
       },
       {
@@ -753,12 +699,12 @@ export const GIFT_PAGES: GiftPageConfig[] = [
   {
     slug: 'for-sister',
     title: 'Crochet Gifts for Sister | Cute Handmade Gift Ideas India',
-    description: 'Find the cutest handmade gifts for your sister! Crochet hair accessories, keychains, flower bouquets, and more. Perfect for Raksha Bandhan and birthdays. Delivered across India.',
+    description: 'Find the cutest handmade gifts for your sister! Crochet hair accessories, keychains, flower bouquets, and more. Perfect for birthdays and celebrations. Delivered across India.',
     ogDescription: 'Find the cutest handmade gifts for your sister! Crochet hair accessories, keychains, and bouquets.',
     hero: {
       badge: '👭 For Your Didi / Sis',
       heading: 'Gifts for Sister',
-      subheading: 'She\'s your first friend and forever ally. Whether it\'s Raksha Bandhan or her birthday, give her a handmade gift that matches her sparkle — crochet hair clips, cute keychains, or flower bouquets.',
+      subheading: 'She\'s your first friend and forever ally. Whether it\'s her birthday or a special celebration, give her a handmade gift that matches her sparkle — crochet hair clips, cute keychains, or flower bouquets.',
     },
     productFilter: { type: 'category', slugs: ['hair-accessories', 'keychains', 'flower-bouquets'] },
     orderBy: 'price_asc',
@@ -786,19 +732,18 @@ export const GIFT_PAGES: GiftPageConfig[] = [
         heading: 'Perfect Occasions',
         level: 'h3',
         bullets: [
-          { text: 'Raksha Bandhan gifts', href: '/gifts/raksha-bandhan' },
           { text: 'Birthday gifts', href: '/gifts/birthday' },
           { text: 'Budget gifts under ₹300', href: '/gifts/under-300' },
         ],
       },
     ],
-    relatedSlugs: ['for-brother', 'raksha-bandhan', 'under-300', 'for-best-friend'],
+    relatedSlugs: ['for-brother', 'under-300', 'for-best-friend'],
   },
 
   {
     slug: 'for-brother',
     title: 'Crochet Gifts for Brother | Cool Handmade Gift Ideas India',
-    description: 'Find cool handmade gifts for your brother! Crochet keychains, plush toys, and custom designs. Perfect for Raksha Bandhan and birthdays. Delivered across India.',
+    description: 'Find cool handmade gifts for your brother! Crochet keychains, plush toys, and custom designs. Perfect for birthdays and celebrations. Delivered across India.',
     ogDescription: 'Find cool handmade gifts for your brother! Crochet keychains, plush toys, and custom designs.',
     hero: {
       badge: '🤜🤛 For Your Bro',
@@ -831,13 +776,12 @@ export const GIFT_PAGES: GiftPageConfig[] = [
         heading: 'Perfect Occasions',
         level: 'h3',
         bullets: [
-          { text: 'Raksha Bandhan gifts', href: '/gifts/raksha-bandhan' },
           { text: 'Birthday gifts', href: '/gifts/birthday' },
           { text: 'Budget gifts under ₹300', href: '/gifts/under-300' },
         ],
       },
     ],
-    relatedSlugs: ['for-sister', 'raksha-bandhan', 'under-300', 'birthday'],
+    relatedSlugs: ['for-sister', 'under-300', 'birthday'],
   },
 
   {
@@ -2262,7 +2206,7 @@ export const GIFT_PAGES: GiftPageConfig[] = [
         paragraphs: ['Skip the traditional sweets and gift something lasting this Bhai Dooj. Our handmade crochet items make the perfect, memorable present for your brother or sister.']
       }
     ],
-    relatedSlugs: ['raksha-bandhan', 'for-brother', 'for-sister'],
+    relatedSlugs: ['for-brother', 'for-sister'],
   },
   {
     slug: 'womens-day',
@@ -3108,54 +3052,6 @@ export const GIFT_PAGES: GiftPageConfig[] = [
       }
     ],
     relatedSlugs: ['mothers-day', 'for-mom', 'under-500-for-mom'],
-  },
-  {
-    slug: 'raksha-bandhan-for-sister',
-    title: 'Raksha Bandhan Gifts for Sister | Handmade Surprises',
-    description: 'Shop Raksha Bandhan gifts for your sister. Cute handmade crochet keychains, hair accessories, and plushies.',
-    ogDescription: 'Shop Raksha Bandhan gifts for your sister. Cute handmade crochet keychains, hair accessories, and plushies.',
-    hero: {
-      badge: '🎀 Happy Rakhi',
-      heading: 'Rakhi Gifts for Sister',
-      subheading: 'Spoil your sister with adorable, handcrafted crochet accessories and toys.',
-    },
-    productFilter: { type: 'category', slugs: ['hair-accessories', 'toys', 'flower-bouquets'] },
-    orderBy: 'price_asc',
-    breadcrumbLabel: 'Rakhi for Sister',
-    gridLabel: 'Rakhi gifts for sister',
-    itemListName: 'Raksha Bandhan Gifts for Sister',
-    seoArticle: [
-      {
-        heading: 'Spoil Your Sister this Rakhi',
-        level: 'h2',
-        paragraphs: ['Fulfill your Rakhi promise with a beautiful, handmade crochet gift that she will genuinely love and use.']
-      }
-    ],
-    relatedSlugs: ['raksha-bandhan', 'for-sister', 'bhai-dooj'],
-  },
-  {
-    slug: 'raksha-bandhan-for-brother',
-    title: 'Raksha Bandhan Gifts for Brother | Unique Handmade Gifts',
-    description: 'Find unique Raksha Bandhan gifts for your brother. Cool handmade crochet keychains and fun desk accessories.',
-    ogDescription: 'Find unique Raksha Bandhan gifts for your brother. Cool handmade crochet keychains and fun desk accessories.',
-    hero: {
-      badge: '🎁 Happy Rakhi',
-      heading: 'Rakhi Gifts for Brother',
-      subheading: 'Surprise your brother with a cool, handmade crochet gift along with his Rakhi.',
-    },
-    productFilter: { type: 'category', slugs: ['keychains', 'toys'] },
-    orderBy: 'price_asc',
-    breadcrumbLabel: 'Rakhi for Brother',
-    gridLabel: 'Rakhi gifts for brother',
-    itemListName: 'Raksha Bandhan Gifts for Brother',
-    seoArticle: [
-      {
-        heading: 'Unique Rakhi Gifts for Him',
-        level: 'h2',
-        paragraphs: ['A handmade crochet keychain of his favorite character is the perfect add-on to your Rakhi this year.']
-      }
-    ],
-    relatedSlugs: ['raksha-bandhan', 'for-brother', 'bhai-dooj'],
   },
   {
     slug: 'friendship-day-for-best-friend',

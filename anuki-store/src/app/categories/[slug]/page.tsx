@@ -1,44 +1,76 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ProductCard } from '@/components/ProductCard';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import TrackViewItemList from '@/components/TrackViewItemList';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Sparkles, Truck, Gift, Palette, HelpCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export const revalidate = 86400; // 24 hours - cached on edge, reduces daily ISR writes dramatically
+export const revalidate = 86400; // 24 hours
 export const dynamicParams = true;
 
 const categoryDescriptions: Record<string, string> = {
-  'flower-bouquets': 'Shop handmade crochet flower bouquets online in India. Everlasting yarn roses, sunflowers & tulips handcrafted for gifting. Free delivery over ₹799.',
-  'flower-pots': 'Buy cute handmade crochet flower pots & mini succulents online in India. Everlasting yarn desk decor & thoughtful gifts with pan-India delivery.',
-  'keychains': 'Shop handmade crochet keychains online in India. Cute strawberry, daisy & animal bag charms crafted with durable cotton yarn. Pan-India delivery.',
-  'hair-accessories': 'Buy handmade crochet hair clips, scrunchies & bands online in India. Gentle, hypoallergenic yarn accessories crafted for girls & women. Pan-India delivery.',
-  'toys': 'Shop handmade amigurumi crochet toys & plushies online in India. Soft, hypoallergenic yarn stuffed companions crafted with love. Fast shipping.',
+  'flower-bouquets': 'Handmade crochet flower bouquets online in India. Everlasting yarn roses, sunflowers & tulips.',
+  'flower-pots': 'Cute handmade crochet flower pots & mini succulents with pan-India delivery.',
+  'keychains': 'Handmade crochet keychains with durable cotton yarn. Pan-India delivery.',
+  'hair-accessories': 'Handmade crochet hair clips, scrunchies & bands for girls & women.',
+  'toys': 'Handmade amigurumi crochet toys & plushies online in India.',
 };
+
+const categoryThumbnails: Record<string, string> = {
+  'toys': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/811a8439-4e35-4013-a535-250ac8c8cda2.webp',
+  'flower-bouquets': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/e146f9cf-704c-4152-802b-a6f63335ca56.webp',
+  'flower-pots': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/400b9afe-1528-40dd-89ea-4d2fca701da4.webp',
+  'hair-accessories': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/b2f5985a-5495-43a0-ba97-cca9c951f5bd.webp',
+  'keychains': 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/78fa09b4-11ce-49f0-98f1-eddff6e0582e.webp',
+};
+
+const occasionGiftCards = [
+  {
+    title: 'Birthday Gifts',
+    badge: 'Birthday',
+    image: 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/78fa09b4-11ce-49f0-98f1-eddff6e0582e.webp',
+    href: '/gifts/birthday',
+  },
+  {
+    title: 'Anniversary Gifts',
+    badge: 'Anniversary',
+    image: 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/e146f9cf-704c-4152-802b-a6f63335ca56.webp',
+    href: '/gifts/anniversary',
+  },
+  {
+    title: 'Gifts Under ₹499',
+    badge: 'Under ₹499',
+    image: 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/b2f5985a-5495-43a0-ba97-cca9c951f5bd.webp',
+    href: '/gifts/under-499',
+  },
+  {
+    title: 'Gifts Under ₹999',
+    badge: 'Under ₹999',
+    image: 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/811a8439-4e35-4013-a535-250ac8c8cda2.webp',
+    href: '/gifts/under-999',
+  },
+];
 
 function getCategoryFaqs(categoryName: string) {
   return [
     {
       question: `How long do handmade crochet ${categoryName.toLowerCase()} last?`,
-      answer: `Unlike fresh flowers or delicate plastic trinkets, our crochet ${categoryName.toLowerCase()} are hand-stitched with premium cotton and soft yarn. They do not wilt, fade, or snap, remaining vibrant keepsakes for years.`
+      answer: `Our crochet items are hand-stitched with premium cotton and soft yarn. They do not wilt, fade, or snap, remaining vibrant keepsakes for years.`
     },
     {
-      question: `Can I customize colors, sizes, or designs for ${categoryName.toLowerCase()}?`,
-      answer: `Yes! We offer full personalization. You can request custom colors, bouquet combinations, or personalized message tags by visiting our Custom Orders page.`
+      question: `Can I customize colors, sizes, or designs?`,
+      answer: `Yes! We offer full personalization via WhatsApp or our Custom Orders page.`
     },
     {
       question: `How long does delivery take across India?`,
-      answer: `Ready-to-ship items are dispatched within 24 to 48 hours and typically arrive within 4 to 7 business days across India. Custom or made-to-order creations usually take 3 to 5 crafting days before shipping.`
+      answer: `Ready-to-ship items are dispatched within 24 to 48 hours and typically arrive within 4 to 7 business days.`
     },
     {
-      question: `What are the shipping charges for ${categoryName.toLowerCase()}?`,
-      answer: `We provide Free Shipping across India on all orders over ₹799. For smaller orders under ₹799, standard courier charges apply at checkout.`
-    },
-    {
-      question: `How should I clean and care for my crochet items?`,
-      answer: `Keep them in a dry indoor space away from harsh direct sunlight. To dust, use a soft brush or a cool hairdryer setting. For small spots, dab gently with a damp cloth and mild soap; do not machine wash.`
+      question: `What are the shipping charges?`,
+      answer: `Free Shipping across India on all orders over ₹799.`
     }
   ];
 }
@@ -49,12 +81,8 @@ export async function generateStaticParams() {
       where: { isActive: true },
       select: { slug: true },
     });
-
-    return categories.map((cat) => ({
-      slug: cat.slug,
-    }));
-  } catch (err) {
-    console.warn('Failed to pre-render categories during build, falling back to on-demand ISR:', err);
+    return categories.map((cat) => ({ slug: cat.slug }));
+  } catch {
     return [];
   }
 }
@@ -68,14 +96,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const decodedSlug = decodeURIComponent(slug);
   const category = await prisma.category.findUnique({
     where: { slug: decodedSlug },
-  });
+  }).catch(() => null);
 
   if (!category) {
     return { title: 'Category Not Found' };
   }
 
   const metaDesc = category.seoDesc || categoryDescriptions[category.slug] || 
-    `Shop handcrafted crochet ${category.name.toLowerCase()} online in India at Anuki Crochet. Premium artisan gifts handmade with soft yarn and delivered pan-India.`;
+    `Buy ${category.name} online in India at Anuki Crochet.`;
 
   const pageTitle = category.seoTitle || `Buy ${category.name} Online India | Anuki Crochet`;
   const canonicalUrl = category.canonicalUrl || `https://www.anukicrochet.in/categories/${category.slug}`;
@@ -84,9 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: pageTitle },
     description: metaDesc,
     robots: category.noIndex ? { index: false, follow: false } : { index: true, follow: true },
-    alternates: {
-      canonical: canonicalUrl
-    },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: pageTitle,
       description: metaDesc,
@@ -138,11 +164,12 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const metaDesc = categoryDescriptions[category.slug] || 
-    `Browse our beautiful collection of handmade crochet ${category.name.toLowerCase()}.`;
+  const metaDesc = category.seoDesc || categoryDescriptions[category.slug] || 
+    `Browse our collection of handmade crochet ${category.name.toLowerCase()}.`;
 
   const faqs = getCategoryFaqs(category.name);
 
+  // SEO JSON-LD kept for Google crawlers without cluttering the screen
   const itemListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -170,15 +197,15 @@ export default async function CategoryPage({ params }: Props) {
     }))
   };
 
-  // Fetch sibling active categories for related links (excluding current)
+  // Sibling categories for visual discovery
   const allCategories = await prisma.category.findMany({
     where: { isActive: true, id: { not: category.id } },
     select: { name: true, slug: true },
-    take: 6
+    take: 4
   });
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 md:pb-0">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans pb-28 sm:pb-20">
       <BreadcrumbSchema 
         items={[
           { name: 'Home', item: '/' },
@@ -188,243 +215,153 @@ export default async function CategoryPage({ params }: Props) {
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      
-      {/* Category Hero / Header */}
-      <section className="bg-white border-b border-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="w-3.5 h-3.5" /> 100% Handcrafted in India
+
+      {/* Clean, Compact Category Header — Products Immediately Visible */}
+      <section className="bg-white border-b border-neutral-100 py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-neutral-900 capitalize">
+              {category.name}
+            </h1>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              {products.length} {products.length === 1 ? 'Design' : 'Designs'} • 100% Handcrafted
+            </p>
           </div>
-          <h1 className="text-3xl md:text-5xl font-serif font-bold text-neutral-900 mb-4 capitalize">
-            {category.name}
-          </h1>
-          <p className="text-neutral-600 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-            {metaDesc}
-          </p>
+
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-3 py-1.5 rounded-full font-medium">
+            <CheckCircle2 size={13} className="text-emerald-600" /> Free delivery &gt; ₹799
+          </span>
         </div>
       </section>
 
-      {/* Product Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-serif font-bold text-neutral-900">
-            Available Designs ({products.length})
-          </h2>
-          <span className="text-xs text-neutral-500 font-medium">
-            Pan-India Delivery • Free shipping over ₹799
-          </span>
-        </div>
-
+      {/* Product Grid — FRONT AND CENTER */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         <TrackViewItemList listName={category.name} products={products} />
 
         {products.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
             {products.map(product => (
               <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-2xl border border-neutral-100">
-            <p className="text-neutral-500 mb-4">No products currently listed in this category.</p>
+            <p className="text-neutral-500 mb-4">No products found in this category.</p>
             <Link href="/products" className="text-rose-600 font-medium hover:underline">
-              View all handcrafted products
+              View all products
             </Link>
           </div>
         )}
       </main>
-      
-      {/* Category Buying Guide / Key Highlights */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="bg-white rounded-2xl border border-neutral-200 p-6 md:p-10">
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mb-2">
-            Why Choose Our Handcrafted {category.name}?
-          </h2>
-          <p className="text-neutral-600 mb-8 max-w-3xl">
-            Every creation at Anuki Crochet is meticulously hand-stitched by skilled women artisans in Patna, Bihar. We use skin-safe, premium yarns to ensure everlasting softness and vivid color retention.
-          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-              <Gift className="w-6 h-6 text-rose-600 mb-3" />
-              <h3 className="font-bold text-neutral-900 text-sm mb-1">Best Gift Occasions</h3>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                Perfect for birthdays, anniversaries, Valentine's Day, Mother's Day, and thoughtful heartfelt gestures.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-              <Sparkles className="w-6 h-6 text-amber-600 mb-3" />
-              <h3 className="font-bold text-neutral-900 text-sm mb-1">Everlasting Keepsakes</h3>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                Unlike real flowers or cheap plastic trinkets, our crochet creations never wilt or decay over time.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-              <Palette className="w-6 h-6 text-purple-600 mb-3" />
-              <h3 className="font-bold text-neutral-900 text-sm mb-1">Custom Orders</h3>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                Want custom colors or a special combination? Explore our{' '}
-                <Link href="/custom" className="text-rose-600 font-semibold underline">
-                  Custom Orders
-                </Link>{' '}
-                service.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-              <Truck className="w-6 h-6 text-emerald-600 mb-3" />
-              <h3 className="font-bold text-neutral-900 text-sm mb-1">Pan-India Delivery</h3>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                Safe, protective boxed packaging with free standard shipping on all orders over ₹799 across India.
-              </p>
-            </div>
+      {/* Compact Custom Order Card */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div 
+          className="rounded-2xl p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+          style={{ background: 'linear-gradient(135deg, #881337 0%, #4c0519 100%)' }}
+        >
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+              <Sparkles size={14} className="text-rose-300" />
+              Want a custom design or specific character?
+            </h3>
+            <p className="text-xs text-rose-100/90 mt-0.5">
+              Send us a reference photo on WhatsApp and we’ll hand-stitch it for you.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/custom"
+              className="bg-white text-rose-900 font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-rose-50 transition-colors shadow-xs"
+            >
+              Custom Orders
+            </Link>
+            <a
+              href="https://wa.me/918434897767?text=Hi!%20I%20would%20like%20to%20order%20a%20custom%20crochet%20item"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#25D366] text-white font-bold text-xs px-3.5 py-1.5 rounded-full hover:bg-[#20ba59] transition-colors shadow-xs"
+            >
+              WhatsApp
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Category FAQ Accordion (Rendered directly in initial server HTML for crawlers & AEO) */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-center gap-2 mb-6">
-          <HelpCircle className="w-5 h-5 text-rose-600" />
-          <h2 className="text-2xl font-serif font-bold text-neutral-900">
-            Frequently Asked Questions about {category.name}
+      {/* Visual Category Shortcuts (Photos Only, No Long Text) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-sm sm:text-base font-bold text-neutral-900">
+            More Categories
+          </h2>
+          <Link href="/categories" className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+            See all <ArrowRight size={12} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          {allCategories.map(cat => {
+            const thumb = categoryThumbnails[cat.slug] || 'https://wzhxuzxfoayjzrhufyxw.supabase.co/storage/v1/object/public/product-images/products/e146f9cf-704c-4152-802b-a6f63335ca56.webp';
+            return (
+              <Link 
+                key={cat.slug} 
+                href={`/categories/${cat.slug}`} 
+                className="group flex flex-col bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 shadow-xs hover:shadow-md transition-all overflow-hidden"
+              >
+                <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
+                  <Image
+                    src={thumb}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-106 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-2.5 sm:p-3 flex items-center justify-between bg-white">
+                  <span className="font-bold text-xs sm:text-sm text-neutral-900 group-hover:text-rose-700 transition-colors truncate">
+                    {cat.name}
+                  </span>
+                  <ArrowRight size={13} className="text-neutral-400 group-hover:text-rose-600 shrink-0" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Visual Gifts by Occasion (Photos Only, No Long Text) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-sm sm:text-base font-bold text-neutral-900">
+            Shop by Occasion &amp; Budget
           </h2>
         </div>
 
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => (
-            <details
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          {occasionGiftCards.map((card, idx) => (
+            <Link
               key={idx}
-              className="group bg-white rounded-xl border border-neutral-200 p-4 transition-all duration-200 open:border-rose-200 open:shadow-sm"
-              {...(idx === 0 ? { open: true } : {})}
+              href={card.href}
+              className="group flex flex-col bg-white rounded-2xl border border-neutral-200/80 hover:border-rose-300 shadow-xs hover:shadow-md transition-all overflow-hidden"
             >
-              <summary className="flex items-center justify-between font-semibold text-neutral-800 cursor-pointer list-none select-none text-base">
-                <span>{faq.question}</span>
-                <ChevronDown className="w-4 h-4 text-neutral-400 group-open:rotate-180 transition-transform duration-200" />
-              </summary>
-              <p className="mt-3 text-sm text-neutral-600 leading-relaxed border-t border-neutral-100 pt-3">
-                {faq.answer}
-              </p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* Popular Gifts By Occasion & Budget (Internal Crawl Graph) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-xl font-serif font-bold text-neutral-900 mb-6">
-          Shop Crochet Gifts by Occasion & Budget
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link
-            href="/gifts/birthday"
-            className="group p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">
-              Birthday Gifts
-            </p>
-            <p className="text-xs text-neutral-500 mt-1">Unique handmade keepsakes</p>
-            <span className="inline-flex items-center text-xs text-rose-600 font-medium mt-3">
-              Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
-
-          <Link
-            href="/gifts/anniversary"
-            className="group p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">
-              Anniversary Gifts
-            </p>
-            <p className="text-xs text-neutral-500 mt-1">Everlasting romantic blooms</p>
-            <span className="inline-flex items-center text-xs text-rose-600 font-medium mt-3">
-              Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
-
-          <Link
-            href="/gifts/under-499"
-            className="group p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">
-              Gifts Under ₹499
-            </p>
-            <p className="text-xs text-neutral-500 mt-1">Pocket-friendly charms</p>
-            <span className="inline-flex items-center text-xs text-rose-600 font-medium mt-3">
-              Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
-
-          <Link
-            href="/gifts/under-999"
-            className="group p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm group-hover:text-rose-600 transition-colors">
-              Gifts Under ₹999
-            </p>
-            <p className="text-xs text-neutral-500 mt-1">Popular bouquets & plushies</p>
-            <span className="inline-flex items-center text-xs text-rose-600 font-medium mt-3">
-              Explore <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
-        </div>
-      </section>
-
-      {/* Explore Related Crochet Topics (Root SEO Pages Crawl Graph) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h2 className="text-xl font-serif font-bold text-neutral-900 mb-6">
-          Popular Crochet Collections
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link
-            href="/custom-crochet-gifts"
-            className="p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm">Custom Crochet Gifts</p>
-            <p className="text-xs text-neutral-500 mt-1">Tailored for your special ones</p>
-          </Link>
-
-          <Link
-            href="/crochet-flower-bouquets"
-            className="p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm">Crochet Flower Bouquets</p>
-            <p className="text-xs text-neutral-500 mt-1">Everlasting floral arrangements</p>
-          </Link>
-
-          <Link
-            href="/amigurumi-gifts"
-            className="p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm">Amigurumi Gifts</p>
-            <p className="text-xs text-neutral-500 mt-1">Soft cute yarn plushies</p>
-          </Link>
-
-          <Link
-            href="/crochet-plushies"
-            className="p-4 bg-white rounded-xl border border-neutral-200 hover:border-rose-300 hover:shadow-sm transition-all"
-          >
-            <p className="font-bold text-neutral-900 text-sm">Crochet Plushies</p>
-            <p className="text-xs text-neutral-500 mt-1">Handmade cuddly companions</p>
-          </Link>
-        </div>
-      </section>
-
-      {/* Internal Links / Sibling Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-6">
-        <h2 className="text-xl font-serif font-bold text-neutral-900 mb-6">
-          Explore Other Categories
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {allCategories.map(cat => (
-            <Link 
-              key={cat.slug} 
-              href={`/categories/${cat.slug}`} 
-              className="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-rose-300 hover:shadow-md transition-all"
-            >
-              <p className="font-bold text-neutral-900">{cat.name}</p>
-              <p className="text-xs text-neutral-500 mt-0.5">Shop collection</p>
+              <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
+                <Image
+                  src={card.image}
+                  alt={card.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-106 transition-transform duration-300"
+                />
+                <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/90 text-neutral-800 backdrop-blur-md shadow-xs">
+                  {card.badge}
+                </span>
+              </div>
+              <div className="p-2.5 sm:p-3 flex items-center justify-between bg-white">
+                <span className="font-bold text-xs sm:text-sm text-neutral-900 group-hover:text-rose-700 transition-colors truncate">
+                  {card.title}
+                </span>
+                <ArrowRight size={13} className="text-neutral-400 group-hover:text-rose-600 shrink-0" />
+              </div>
             </Link>
           ))}
         </div>

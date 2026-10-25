@@ -164,7 +164,7 @@ router.post('/retry', optionalAuth, validate(retryPaymentSchema), async (req: an
 // GET /status/:orderId
 // Get payment status + timeline (customer)
 // ──────────────────────────────────────────────────
-router.get('/status/:orderId', verifyToken, async (req: any, res: any) => {
+router.get('/status/:orderId', optionalAuth, async (req: any, res: any) => {
   try {
     const { orderId } = req.params;
     const result = await PaymentService.getPaymentStatus(orderId);

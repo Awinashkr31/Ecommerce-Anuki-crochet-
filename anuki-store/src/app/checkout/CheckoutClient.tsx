@@ -12,6 +12,7 @@ import { useAddressStore } from "@/store/addressStore";
 import CartOffers from "@/app/cart/CartOffers";
 import { load } from "@cashfreepayments/cashfree-js";
 import { trackBeginCheckout } from "@/lib/gtm";
+import ClickSuccess from "@/components/animations/ClickSuccess";
 
 export default function CheckoutClient({ settings }: { settings: Record<string, string> }) {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       trackBeginCheckout(subtotal, items);
     }
-  }, [items.length]);
+  }, [items]);
 
   // If cart is empty, redirect to cart
   useEffect(() => {
@@ -577,7 +578,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
                 {items.map(item => (
                   <div key={item.id} className="flex gap-3">
                     <div className="w-12 h-12 bg-neutral-100 rounded-lg overflow-hidden shrink-0 relative">
-                      {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />}
+                      {item.image && <Image src={item.image} alt={item.name} fill sizes="48px" className="object-cover" />}
                     </div>
                     <div className="flex-1">
                       <h4 className="text-xs font-serif text-neutral-800 leading-tight line-clamp-1">{item.name}</h4>
@@ -642,7 +643,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
             <div className="text-[10px] text-neutral-500 font-medium">Total incl. taxes</div>
           </div>
           
-          <button 
+          <ClickSuccess 
             onClick={handlePay}
             disabled={isProcessing || subtotal < minOrderValue}
             className="px-12 py-3.5 bg-[#FFC107] text-black font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(255,193,7,0.5)] hover:bg-[#F3B604] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center min-w-[200px]"
@@ -655,7 +656,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
             ) : (
               paymentMethod === 'cod' ? "Place Order (COD)" : "Pay Securely"
             )}
-          </button>
+          </ClickSuccess>
         </div>
       </div>
 

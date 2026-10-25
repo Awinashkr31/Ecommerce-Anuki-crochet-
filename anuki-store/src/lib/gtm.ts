@@ -1,11 +1,14 @@
 // Google Tag Manager & GA4 E-commerce DataLayer Helper
-// Compliant with GA4 e-commerce schema, currency: INR
+// Compliant with standard GA4 e-commerce schema, currency: INR
 
 declare global {
   interface Window {
     dataLayer?: any[];
   }
 }
+
+// In-memory set to guard against duplicate purchase pushes in the same JS session
+const trackedPurchasesInMemory = new Set<string>();
 
 /**
  * Low-level safe push to window.dataLayer.
@@ -29,16 +32,18 @@ export function pushEcommerce(event: string, ecommerceData: Record<string, any>)
 }
 
 /**
- * 1. view_item — on every product page load
+ * 1. view_item — on product page load
+ * item_id = product slug / SKU, item_name, price, currency: INR, value: price
  */
 export function trackViewItem(product: {
   id: string;
   name: string;
   price: number;
-  category?: string;
-  sku?: string;
+  category?: string | null;
+  sku?: string | null;
+  slug?: string | null;
 }) {
-  if (!product || !product.id) return;
+  if (!product || (!product.id && !product.slug)) return;
   try {
     const itemPrice = Number(product.price) || 0;
     pushEcommerce('view_item', {
@@ -46,7 +51,7 @@ export function trackViewItem(product: {
       value: itemPrice,
       items: [
         {
-          item_id: product.sku || product.id,
+          item_id: product.slug || product.sku || product.id,
           item_name: product.name,
           item_category: product.category || 'Crochet Gifts',
           price: itemPrice,
@@ -60,7 +65,7 @@ export function trackViewItem(product: {
 }
 
 /**
- * 2. view_item_list — on category pages and /products page
+ * 2. view_item_list — on category and /products listing views
  */
 export function trackViewItemList(
   listName: string,
@@ -68,7 +73,9 @@ export function trackViewItemList(
     id: string;
     name: string;
     price: number;
-    category?: string;
+    category?: string | null;
+    slug?: string | null;
+    sku?: string | null;
   }>
 ) {
   if (!products || products.length === 0) return;
@@ -76,7 +83,7 @@ export function trackViewItemList(
     pushEcommerce('view_item_list', {
       item_list_name: listName || 'Product List',
       items: products.slice(0, 30).map((p, idx) => ({
-        item_id: p.id,
+        item_id: p.slug || p.sku || p.id,
         item_name: p.name,
         item_category: p.category || listName,
         price: Number(p.price) || 0,
@@ -89,7 +96,7 @@ export function trackViewItemList(
 }
 
 /**
- * 3. add_to_cart — when user adds product (detail or quick-add)
+ * 3. add_to_cart — on cart add
  */
 export function trackAddToCart(item: {
   id: string;
@@ -97,7 +104,9 @@ export function trackAddToCart(item: {
   name: string;
   price: number;
   quantity?: number;
-  category?: string;
+  category?: string | null;
+  slug?: string | null;
+  sku?: string | null;
 }) {
   if (!item || !item.name) return;
   try {
@@ -108,7 +117,7 @@ export function trackAddToCart(item: {
       value: price * qty,
       items: [
         {
-          item_id: item.productId || item.id,
+          item_id: item.slug || item.sku || item.productId || item.id,
           item_name: item.name,
           item_category: item.category || 'Crochet Gifts',
           price,
@@ -122,7 +131,7 @@ export function trackAddToCart(item: {
 }
 
 /**
- * 4. remove_from_cart — when item is removed from cart
+ * 4. remove_from_cart — on cart remove
  */
 export function trackRemoveFromCart(item: {
   id: string;
@@ -130,7 +139,9 @@ export function trackRemoveFromCart(item: {
   name: string;
   price: number;
   quantity?: number;
-  category?: string;
+  category?: string | null;
+  slug?: string | null;
+  sku?: string | null;
 }) {
   if (!item || !item.name) return;
   try {
@@ -141,7 +152,7 @@ export function trackRemoveFromCart(item: {
       value: price * qty,
       items: [
         {
-          item_id: item.productId || item.id,
+          item_id: item.slug || item.sku || item.productId || item.id,
           item_name: item.name,
           item_category: item.category || 'Crochet Gifts',
           price,
@@ -155,7 +166,7 @@ export function trackRemoveFromCart(item: {
 }
 
 /**
- * 5. view_cart — when cart page or drawer is viewed with items
+ * 5. view_cart — on cart page view
  */
 export function trackViewCart(
   total: number,
@@ -165,7 +176,9 @@ export function trackViewCart(
     name: string;
     price: number;
     quantity: number;
-    category?: string;
+    category?: string | null;
+    slug?: string | null;
+    sku?: string | null;
   }>
 ) {
   if (!items || items.length === 0) return;
@@ -174,7 +187,7 @@ export function trackViewCart(
       currency: 'INR',
       value: Number(total) || 0,
       items: items.map((item, idx) => ({
-        item_id: item.productId || item.id,
+        item_id: item.slug || item.sku || item.productId || item.id,
         item_name: item.name,
         item_category: item.category || 'Crochet Gifts',
         price: Number(item.price) || 0,
@@ -188,7 +201,7 @@ export function trackViewCart(
 }
 
 /**
- * 6. begin_checkout — when checkout starts
+ * 6. begin_checkout — on checkout start
  */
 export function trackBeginCheckout(
   total: number,
@@ -198,7 +211,9 @@ export function trackBeginCheckout(
     name: string;
     price: number;
     quantity: number;
-    category?: string;
+    category?: string | null;
+    slug?: string | null;
+    sku?: string | null;
   }>
 ) {
   if (!items || items.length === 0) return;
@@ -207,7 +222,7 @@ export function trackBeginCheckout(
       currency: 'INR',
       value: Number(total) || 0,
       items: items.map((item, idx) => ({
-        item_id: item.productId || item.id,
+        item_id: item.slug || item.sku || item.productId || item.id,
         item_name: item.name,
         item_category: item.category || 'Crochet Gifts',
         price: Number(item.price) || 0,
@@ -221,8 +236,9 @@ export function trackBeginCheckout(
 }
 
 /**
- * 7. purchase — ONLY on order-success / thank-you page
- * Guaranteed to fire EXACTLY ONCE per order ID using localStorage deduplication.
+ * 7. purchase — on order-success / thank-you page ONLY
+ * Guaranteed to fire EXACTLY ONCE per order ID using dual in-memory + localStorage deduplication.
+ * Prevents re-firing on page refresh, polling cycles, or back-navigation.
  */
 export function trackPurchase(order: {
   id: string;
@@ -235,16 +251,24 @@ export function trackPurchase(order: {
     name: string;
     price: number;
     quantity: number;
-    category?: string;
+    category?: string | null;
+    slug?: string | null;
+    sku?: string | null;
   }>;
 }): boolean {
   if (typeof window === 'undefined') return false;
   if (!order || !order.id) return false;
 
+  const orderIdStr = String(order.id);
   const STORAGE_KEY = 'anuki_ga4_purchases_tracked';
 
   try {
-    // Deduplication check via localStorage
+    // 1. Check in-memory guard
+    if (trackedPurchasesInMemory.has(orderIdStr)) {
+      return false;
+    }
+
+    // 2. Check localStorage guard (persists across page reloads & browser back navigation)
     let trackedIds: string[] = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -255,8 +279,8 @@ export function trackPurchase(order: {
       trackedIds = [];
     }
 
-    if (Array.isArray(trackedIds) && trackedIds.includes(order.id)) {
-      // Already tracked for this order — skip
+    if (Array.isArray(trackedIds) && trackedIds.includes(orderIdStr)) {
+      trackedPurchasesInMemory.add(orderIdStr);
       return false;
     }
 
@@ -265,13 +289,13 @@ export function trackPurchase(order: {
     const tax = Number(order.tax) || 0;
 
     pushEcommerce('purchase', {
-      transaction_id: String(order.id),
+      transaction_id: orderIdStr,
       value,
       shipping,
       tax,
       currency: 'INR',
       items: (order.items || []).map((item, idx) => ({
-        item_id: item.productId || item.id || `item-${idx + 1}`,
+        item_id: item.slug || item.sku || item.productId || item.id || `item-${idx + 1}`,
         item_name: item.name,
         item_category: item.category || 'Crochet Gifts',
         price: Number(item.price) || 0,
@@ -280,8 +304,9 @@ export function trackPurchase(order: {
       })),
     });
 
-    // Mark as tracked
-    trackedIds.push(order.id);
+    // Mark as tracked immediately in both guards
+    trackedPurchasesInMemory.add(orderIdStr);
+    trackedIds.push(orderIdStr);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(trackedIds));
     } catch {
@@ -294,3 +319,4 @@ export function trackPurchase(order: {
     return false;
   }
 }
+

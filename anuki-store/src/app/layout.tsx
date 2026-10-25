@@ -13,6 +13,7 @@ import { prisma } from '@/lib/prisma';
 import { unstable_cache } from 'next/cache';
 import { DevServiceWorkerCleaner } from '@/components/DevServiceWorkerCleaner';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import SalePing from "@/components/animations/SalePing";
 
 const getGlobalLayoutData = unstable_cache(
   async () => {
@@ -234,7 +235,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 "closes": "18:00"
               },
               "sameAs": [
-                "https://instagram.com/anukicrochet",
+                "https://instagram.com/anuki_crochet",
                 "https://facebook.com/anukicrochet",
                 "https://pinterest.com/anukicrochet"
               ],
@@ -256,6 +257,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 {children}
               </div>
               <BottomNav />
+              <SalePing />
             </AuthProvider>
           </SWRProvider>
         </AnalyticsProvider>

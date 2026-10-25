@@ -14,6 +14,7 @@ router.get('/', async (req: any, res: any) => {
         id: true,
         title: true,
         slug: true,
+        published: true,
         createdAt: true,
         author: { select: { fullName: true } }
       } // Exclude heavy content for list view

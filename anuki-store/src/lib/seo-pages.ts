@@ -471,11 +471,11 @@ export const SEO_PAGES: GiftPageConfig[] = [
   },
   {
     slug: 'custom-crochet-bouquet',
-    title: 'Custom Crochet Bouquet | Bespoke Handmade Flowers',
-    description: 'Commission a custom crochet bouquet. Bespoke handmade flower arrangements crafted exactly to your specifications in India.',
-    ogDescription: 'Commission a custom crochet bouquet. Bespoke handmade flower arrangements crafted exactly to your specifications.',
+    title: 'Custom Crochet Bouquet | Custom Handmade Flowers',
+    description: 'Commission a custom crochet bouquet. Custom handmade flower arrangements crafted exactly to your specifications in India.',
+    ogDescription: 'Commission a custom crochet bouquet. Custom handmade flower arrangements crafted exactly to your specifications.',
     hero: {
-      badge: '🎨 Bespoke Crafting',
+      badge: '🎨 Custom Crafting',
       heading: 'Custom Crochet Bouquets',
       subheading: 'Have a specific vision? We can bring your dream floral arrangement to life in yarn.',
     },
@@ -692,12 +692,12 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'custom-crochet-india',
     title: 'Custom Crochet India | Personalized Handmade Crochet Orders',
-    description: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, amigurumi gifts, and bespoke crochet orders delivered across India.',
-    ogDescription: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, and bespoke crochet gifts.',
+    description: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, amigurumi gifts, and custom crochet orders delivered across India.',
+    ogDescription: 'Best custom crochet in India. Handcrafted personalized bouquets, character plushies, and custom crochet gifts.',
     hero: {
       badge: '✨ Pan-India Custom Orders',
       heading: 'Custom Crochet India',
-      subheading: 'Turn your imagination into handcrafted art. Commission custom crochet flowers, plushies, and bespoke gifts in India.',
+      subheading: 'Turn your imagination into handcrafted art. Commission custom crochet flowers, plushies, and custom gifts in India.',
     },
     productFilter: { type: 'category', slugs: ['flower-bouquets', 'toys', 'keychains'] },
     orderBy: 'price_desc',
@@ -709,12 +709,12 @@ export const SEO_PAGES: GiftPageConfig[] = [
         heading: 'How to Place Custom Crochet Orders in India',
         level: 'h2',
         paragraphs: [
-          'Looking for custom crochet in India? Anuki Crochet is India\'s favorite destination for bespoke crochet gifts. Whether you need a customized crochet bridal bouquet matching your lehenga, a personalized amigurumi plushie of your pet or favorite anime character (like Pikachu or Naruto), or custom name keychains, we handcraft each piece with precision.',
+          'Looking for custom crochet in India? Anuki Crochet is India\'s favorite destination for custom crochet gifts. Whether you need a customized crochet bridal bouquet matching your lehenga, a personalized amigurumi plushie of your pet or favorite anime character (like Pikachu or Naruto), or custom name keychains, we handcraft each piece with precision.',
           'Simply head over to our dedicated Custom Orders page (/custom) or message us on WhatsApp with reference photos, color choices, and dimensions. We ship custom crochet orders safely to Mumbai, Delhi NCR, Bangalore, Kolkata, Hyderabad, Chennai, Pune, Patna, and all across India.'
         ]
       },
       {
-        heading: 'Affordable Bespoke Crochet Gifts in India',
+        heading: 'Affordable Custom Crochet Gifts in India',
         level: 'h2',
         paragraphs: [
           'Our custom crochet orders start from just ₹299. Every order includes direct artisan consultation, premium yarn crafting, and protective gift packaging so your one-of-a-kind handmade treasure arrives in pristine condition.'
@@ -1141,11 +1141,11 @@ export const SEO_PAGES: GiftPageConfig[] = [
   },
   {
     slug: 'custom-crochet-plushie',
-    title: 'Custom Crochet Plushie | Bespoke Amigurumi Toys',
-    description: 'Commission a custom crochet plushie. Turn your pets, characters, or drawings into bespoke, handmade amigurumi toys.',
-    ogDescription: 'Commission a custom crochet plushie. Turn your pets, characters, or drawings into bespoke, handmade amigurumi toys.',
+    title: 'Custom Crochet Plushie | Custom Amigurumi Toys',
+    description: 'Commission a custom crochet plushie. Turn your pets, characters, or drawings into custom, handmade amigurumi toys.',
+    ogDescription: 'Commission a custom crochet plushie. Turn your pets, characters, or drawings into custom, handmade amigurumi toys.',
     hero: {
-      badge: '🎨 Bespoke Crafting',
+      badge: '🎨 Custom Crafting',
       heading: 'Custom Crochet Plushies',
       subheading: 'We can bring your ideas to life! Commission a unique, handcrafted amigurumi.',
     },
@@ -1159,7 +1159,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
         heading: 'From Idea to Reality',
         level: 'h2',
         paragraphs: [
-          'Want a crochet version of your pet dog or a specific video game character? A custom crochet plushie commission allows our artisans to design and craft a bespoke toy just for you.'
+          'Want a crochet version of your pet dog or a specific video game character? A custom crochet plushie commission allows our artisans to design and craft a custom toy just for you.'
         ]
       }
     ],
@@ -1253,7 +1253,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
     description: 'Order custom crochet gifts online. Unique, personalized handmade crochet bouquets, plushies, and keychains crafted just for you.',
     ogDescription: 'Order custom crochet gifts online. Unique, personalized handmade crochet bouquets, plushies, and keychains.',
     hero: {
-      badge: '🎨 Bespoke Gifting',
+      badge: '🎨 Custom Gifting',
       heading: 'Custom Crochet Gifts',
       subheading: 'Turn your imagination into reality. Order a one-of-a-kind handmade gift.',
     },
@@ -1301,9 +1301,9 @@ export const SEO_PAGES: GiftPageConfig[] = [
   },
   {
     slug: 'custom-crochet',
-    title: 'Custom Crochet | Commission Bespoke Handmade Items',
-    description: 'Looking for custom crochet? Commission our artisans for bespoke handmade crochet flowers, toys, and unique gifts in India.',
-    ogDescription: 'Looking for custom crochet? Commission our artisans for bespoke handmade crochet flowers, toys, and unique gifts.',
+    title: 'Custom Crochet | Commission Custom Handmade Items',
+    description: 'Looking for custom crochet? Commission our artisans for custom handmade crochet flowers, toys, and unique gifts in India.',
+    ogDescription: 'Looking for custom crochet? Commission our artisans for custom handmade crochet flowers, toys, and unique gifts.',
     hero: {
       badge: '🧶 Artisan Crafting',
       heading: 'Custom Crochet Commissions',
@@ -1316,10 +1316,10 @@ export const SEO_PAGES: GiftPageConfig[] = [
     itemListName: 'Custom Crochet Collection',
     seoArticle: [
       {
-        heading: 'The Art of Bespoke Crochet',
+        heading: 'The Art of Custom Crochet',
         level: 'h2',
         paragraphs: [
-          'Custom crochet is where our artisans truly shine. Whether it\'s recreating a beloved pet in yarn or crafting a floral arrangement to match a wedding theme, our bespoke service delivers museum-quality results.'
+          'Custom crochet is where our artisans truly shine. Whether it\'s recreating a beloved pet in yarn or crafting a floral arrangement to match a wedding theme, our custom service delivers museum-quality results.'
         ]
       }
     ],
@@ -1432,7 +1432,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'custom-crochet-gifts-for-couples',
     title: 'Custom Crochet Gifts for Couples | Personalized Pair Gifts',
-    description: 'Find custom crochet gifts for couples. Personalized matching keychains, anniversary bouquets, and bespoke couple presents.',
+    description: 'Find custom crochet gifts for couples. Personalized matching keychains, anniversary bouquets, and custom couple presents.',
     ogDescription: 'Find custom crochet gifts for couples. Personalized matching keychains and anniversary bouquets.',
     hero: {
       badge: '💕 Couple Goals',
@@ -1457,9 +1457,9 @@ export const SEO_PAGES: GiftPageConfig[] = [
   },
   {
     slug: 'custom-crochet-wedding-gifts',
-    title: 'Custom Crochet Wedding Gifts | Bespoke Bridal Flowers',
-    description: 'Order custom crochet wedding gifts. Bespoke bridal bouquets, forever-lasting wedding decor, and personalized couple gifts.',
-    ogDescription: 'Order custom crochet wedding gifts. Bespoke bridal bouquets, forever-lasting wedding decor, and personalized couple gifts.',
+    title: 'Custom Crochet Wedding Gifts | Custom Bridal Flowers',
+    description: 'Order custom crochet wedding gifts. Custom bridal bouquets, forever-lasting wedding decor, and personalized couple gifts.',
+    ogDescription: 'Order custom crochet wedding gifts. Custom bridal bouquets, forever-lasting wedding decor, and personalized couple gifts.',
     hero: {
       badge: '💍 Wedding Specials',
       heading: 'Custom Crochet Wedding Gifts',
@@ -1484,8 +1484,8 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'custom-crochet-baby-gifts',
     title: 'Custom Crochet Baby Gifts | Personalized Nursery Toys',
-    description: 'Shop custom crochet baby gifts. Personalized safe amigurumi toys, soft rattles, and bespoke baby shower presents.',
-    ogDescription: 'Shop custom crochet baby gifts. Personalized safe amigurumi toys and bespoke baby shower presents.',
+    description: 'Shop custom crochet baby gifts. Personalized safe amigurumi toys, soft rattles, and custom baby shower presents.',
+    ogDescription: 'Shop custom crochet baby gifts. Personalized safe amigurumi toys and custom baby shower presents.',
     hero: {
       badge: '🍼 Baby Shower',
       heading: 'Custom Crochet Baby Gifts',
@@ -1535,9 +1535,9 @@ export const SEO_PAGES: GiftPageConfig[] = [
   },
   {
     slug: 'design-your-crochet-gift',
-    title: 'Design Your Crochet Gift | Create Bespoke Handmade Items',
-    description: 'Design your crochet gift from scratch. Work with our artisans to create a completely bespoke handmade toy or bouquet.',
-    ogDescription: 'Design your crochet gift from scratch. Work with our artisans to create a completely bespoke handmade toy.',
+    title: 'Design Your Crochet Gift | Create Custom Handmade Items',
+    description: 'Design your crochet gift from scratch. Work with our artisans to create a completely custom handmade toy or bouquet.',
+    ogDescription: 'Design your crochet gift from scratch. Work with our artisans to create a completely custom handmade toy.',
     hero: {
       badge: '✍️ Be The Designer',
       heading: 'Design Your Crochet Gift',
@@ -1562,12 +1562,12 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'custom-order-process',
     title: 'Custom Crochet Order Process | How to Commission Us',
-    description: 'Learn about our custom crochet order process. Step-by-step guide on how to commission bespoke handmade gifts from Anuki Crochet.',
-    ogDescription: 'Learn about our custom crochet order process. Step-by-step guide on how to commission bespoke handmade gifts.',
+    description: 'Learn about our custom crochet order process. Step-by-step guide on how to commission custom handmade gifts from Anuki Crochet.',
+    ogDescription: 'Learn about our custom crochet order process. Step-by-step guide on how to commission custom handmade gifts.',
     hero: {
       badge: 'ℹ️ How It Works',
       heading: 'Our Custom Order Process',
-      subheading: 'Everything you need to know about commissioning a bespoke crochet masterpiece.',
+      subheading: 'Everything you need to know about commissioning a custom crochet masterpiece.',
     },
     productFilter: { type: 'all' },
     orderBy: 'price_asc',
@@ -1618,7 +1618,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'corporate-gifts',
     title: 'Handmade Corporate Gifts | Unique Employee Gifting',
-    description: 'Shop handmade corporate gifts. Elevate your employee appreciation and client gifting with unique, bespoke crochet items.',
+    description: 'Shop handmade corporate gifts. Elevate your employee appreciation and client gifting with unique, custom crochet items.',
     ogDescription: 'Shop handmade corporate gifts. Elevate your employee appreciation and client gifting with unique crochet items.',
     hero: {
       badge: '🏢 Corporate Gifting',
@@ -1701,7 +1701,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
     hero: {
       badge: '💐 For The Guests',
       heading: 'Crochet Wedding Favors',
-      subheading: 'Bespoke handmade favors that match your wedding aesthetic perfectly.',
+      subheading: 'Custom handmade favors that match your wedding aesthetic perfectly.',
     },
     productFilter: { type: 'category', slugs: ['keychains', 'flower-bouquets'] },
     orderBy: 'price_asc',
@@ -1774,8 +1774,8 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'bridal-shower-favors',
     title: 'Bridal Shower Favors | Elegant Handmade Keepsakes',
-    description: 'Order bridal shower favors. Elegant, bespoke crochet flowers and keychains to thank your bridal shower guests.',
-    ogDescription: 'Order bridal shower favors. Elegant, bespoke crochet flowers and keychains.',
+    description: 'Order bridal shower favors. Elegant, custom crochet flowers and keychains to thank your bridal shower guests.',
+    ogDescription: 'Order bridal shower favors. Elegant, custom crochet flowers and keychains.',
     hero: {
       badge: '👰 Bridal Shower',
       heading: 'Bridal Shower Favors',
@@ -1852,8 +1852,8 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'client-gifts',
     title: 'Client Appreciation Gifts | Premium Handmade Business Gifts',
-    description: 'Find the perfect client appreciation gifts. Premium, bespoke handmade crochet items that leave a lasting impression on your VIP clients.',
-    ogDescription: 'Find the perfect client appreciation gifts. Premium, bespoke handmade crochet items.',
+    description: 'Find the perfect client appreciation gifts. Premium, custom handmade crochet items that leave a lasting impression on your VIP clients.',
+    ogDescription: 'Find the perfect client appreciation gifts. Premium, custom handmade crochet items.',
     hero: {
       badge: '🤝 VIP Clients',
       heading: 'Client Appreciation Gifts',
@@ -1869,7 +1869,7 @@ export const SEO_PAGES: GiftPageConfig[] = [
         heading: 'Gifting with Intention',
         level: 'h2',
         paragraphs: [
-          'When thanking your most valuable clients, generic gifts fall flat. A bespoke, handmade crochet arrangement demonstrates care, intention, and a high level of quality.'
+          'When thanking your most valuable clients, generic gifts fall flat. A custom, handmade crochet arrangement demonstrates care, intention, and a high level of quality.'
         ]
       }
     ],
@@ -2350,8 +2350,8 @@ export const SEO_PAGES: GiftPageConfig[] = [
   {
     slug: 'handmade-gifts-india',
     title: 'Handmade Gifts India | Premium Artisanal Crochet',
-    description: 'Buy premium handmade gifts in India. We ship bespoke, artisanal crochet flowers, toys, and custom gifts nationwide.',
-    ogDescription: 'Buy premium handmade gifts in India. We ship bespoke, artisanal crochet flowers, toys, and custom gifts nationwide.',
+    description: 'Buy premium handmade gifts in India. We ship custom, artisanal crochet flowers, toys, and custom gifts nationwide.',
+    ogDescription: 'Buy premium handmade gifts in India. We ship custom, artisanal crochet flowers, toys, and custom gifts nationwide.',
     hero: {
       badge: '🇮🇳 Made in India',
       heading: 'Handmade Gifts in India',
@@ -2381,10 +2381,11 @@ export const SEO_PAGES: GiftPageConfig[] = [
 
 /** Look up an SEO page config by slug */
 export function getSeoPageBySlug(slug: string): GiftPageConfig | undefined {
+  if (slug.startsWith('custom-') || slug === 'custom') return undefined;
   return SEO_PAGES.find((p) => p.slug === slug);
 }
 
 /** Get all valid SEO page slugs (for generateStaticParams) */
 export function getAllSeoSlugs(): string[] {
-  return SEO_PAGES.map((p) => p.slug);
+  return SEO_PAGES.filter((p) => !p.slug.startsWith('custom-') && p.slug !== 'custom').map((p) => p.slug);
 }

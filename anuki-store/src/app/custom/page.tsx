@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: {
     absolute: 'Custom Crochet Orders India | Personalized Handmade Gifts | Anuki Crochet'
   },
-  description: 'Order custom crochet gifts in India. Get personalized handmade plushies, custom crochet bouquets, amigurumi characters, and bespoke crochet gifts delivered across India. Place your custom crochet order today!',
+  description: 'Order custom crochet gifts in India. Get personalized handmade plushies, custom crochet bouquets, amigurumi characters, and custom crochet gifts delivered across India. Place your custom crochet order today!',
   keywords: [
     'custom crochet india',
     'custom crochet orders',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'custom crochet bouquet india',
     'custom crochet plushie',
     'custom crochet order online',
-    'bespoke crochet gifts',
+    'custom crochet gifts',
     'personalized crochet plushie india',
     'handmade custom gifts online india',
     'crochet custom design india',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Custom Crochet Orders India — Personalized Handmade Gifts | Anuki Crochet',
-    description: 'Order custom crochet gifts in India. Personalized plushies, custom bouquets, amigurumi characters & bespoke handmade gifts delivered pan-India.',
+    description: 'Order custom crochet gifts in India. Personalized plushies, custom bouquets, amigurumi characters & custom handmade gifts delivered pan-India.',
     url: 'https://www.anukicrochet.in/custom',
     siteName: 'Anuki Crochet',
     locale: 'en_IN',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Custom Crochet Orders India — Personalized Handmade Gifts',
-    description: 'Order custom crochet gifts in India. Personalized plushies, custom bouquets, amigurumi characters & bespoke handmade gifts.',
+    description: 'Order custom crochet gifts in India. Personalized plushies, custom bouquets, amigurumi characters & custom handmade gifts.',
     images: ['https://www.anukicrochet.in/logo.png'],
   },
   robots: {
@@ -70,7 +70,7 @@ export default function CustomPage() {
           url: 'https://www.anukicrochet.in',
           logo: 'https://www.anukicrochet.in/logo.png',
         },
-        description: 'Order custom crochet gifts online in India. We handcraft personalized crochet plushies, custom crochet bouquets, amigurumi characters, keychains, and bespoke handmade gifts. Custom crochet orders delivered across India.',
+        description: 'Order custom crochet gifts online in India. We handcraft personalized crochet plushies, custom crochet bouquets, amigurumi characters, keychains, and custom handmade gifts. Custom crochet orders delivered across India.',
         areaServed: {
           '@type': 'Country',
           name: 'India',
@@ -145,7 +145,7 @@ export default function CustomPage() {
             name: 'Can you recreate a specific character, pet, or custom plushie?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes! We specialize in custom crochet character plushies, amigurumi pets, and bespoke designs you provide reference images for.',
+              text: 'Yes! We specialize in custom crochet character plushies, amigurumi pets, and custom designs you provide reference images for.',
             },
           },
           {

@@ -72,3 +72,113 @@ body {
   background: transparent !important;
   -webkit-appearance: none !important;
 }
+
+/* ==========================================================================
+   Tasteful Animation System (GPU-accelerated, Zero CLS, Vanilla CSS + JS)
+   ========================================================================== */
+
+/* Hero Reveal Animations (Opacity & Transform ONLY) */
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-hero-headline {
+  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.anim-hero-subtext {
+  opacity: 0;
+  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+  will-change: transform, opacity;
+}
+
+.anim-hero-cta {
+  opacity: 0;
+  animation: heroReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.24s forwards;
+  will-change: transform, opacity;
+}
+
+/* Click Success Micro-burst */
+@keyframes clickBurstRing {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.anim-click-burst {
+  animation: clickBurstRing 0.65s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.anim-check-pop {
+  animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Cursor Tour Pointer Pulse */
+@keyframes pointerPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+.anim-pointer-pulse {
+  animation: pointerPulse 1.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* STRICT Prefers-Reduced-Motion Fallbacks */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .anim-hero-headline,
+  .anim-hero-subtext,
+  .anim-hero-cta,
+  .anim-click-burst,
+  .anim-check-pop,
+  .anim-pointer-pulse {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+

@@ -1,5 +1,6 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 import { expandProductsByColor } from '../../utils/productUtils';
@@ -14,8 +15,20 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
   const searchParams = useSearchParams();
   const initialCategory = searchParams?.get("category");
   const initialIsMadeToOrder = searchParams?.get("isMadeToOrder") === "true";
+  const targetProductParam = searchParams?.get("product");
 
   const products = useMemo(() => expandProductsByColor(initialProducts), [initialProducts]);
+
+  // Target product prioritized ordering
+  const targetProduct = useMemo(() => {
+    if (!targetProductParam) return null;
+    const clean = targetProductParam.toLowerCase().trim();
+    return products.find(p => 
+      p.slug?.toLowerCase() === clean || 
+      p.id?.toLowerCase() === clean || 
+      p.originalId?.toLowerCase() === clean
+    ) || null;
+  }, [products, targetProductParam]);
 
   // Filters State
   const initialSearch = searchParams?.get("search") || searchParams?.get("query") || "";
@@ -41,6 +54,8 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
         listName,
         initialProducts.map((p) => ({
           id: p.id,
+          slug: p.slug,
+          sku: p.sku,
           name: p.name,
           price: Number(p.salePrice || p.basePrice || 0),
           category: p.category?.name || "All Products",
@@ -81,9 +96,57 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
     else if (sort === "price-high") result.sort((a, b) => (b.salePrice || b.basePrice) - (a.salePrice || a.basePrice));
     else if (sort === "bestselling") result.sort((a, b) => (a.bestseller === b.bestseller ? 0 : a.bestseller ? -1 : 1));
     else if (sort === "newest") result.sort((a, b) => (b.id > a.id ? 1 : -1)); // Mocking newest with ID string compare
+    else if (sort === "relevance" && targetProduct) {
+      const isTarget = (p: Product) => (
+        p.id === targetProduct.id || 
+        p.slug === targetProduct.slug || 
+        (p.originalId && targetProduct.originalId && p.originalId === targetProduct.originalId)
+      );
+      const targetCategorySlug = targetProduct.category?.slug?.toLowerCase();
+      const targetCategoryName = targetProduct.category?.name?.toLowerCase();
+      const isSameCategory = (p: Product) => {
+        if (!targetCategorySlug && !targetCategoryName) return false;
+        return (
+          (targetCategorySlug && p.category?.slug?.toLowerCase() === targetCategorySlug) ||
+          (targetCategoryName && p.category?.name?.toLowerCase() === targetCategoryName)
+        );
+      };
+
+      const targetList = result.filter(isTarget);
+      const sameCategoryList = result.filter(p => !isTarget(p) && isSameCategory(p));
+      const otherCategoriesList = result.filter(p => !isTarget(p) && !isSameCategory(p));
+
+      result = [...targetList, ...sameCategoryList, ...otherCategoriesList];
+    }
 
     return result;
-  }, [products, customizableOnly, inStockOnly, categoryFilter, colorFilter, sizeFilter, search, sort]);
+  }, [products, customizableOnly, inStockOnly, categoryFilter, colorFilter, sizeFilter, search, sort, targetProduct]);
+
+  const isTargetPrioritized = Boolean(
+    targetProduct && 
+    categoryFilter === "all" && 
+    !search.trim() && 
+    sort === "relevance"
+  );
+
+  const sameCategoryCount = useMemo(() => {
+    if (!isTargetPrioritized || !targetProduct) return 0;
+    const isTarget = (p: Product) => (
+      p.id === targetProduct.id || 
+      p.slug === targetProduct.slug || 
+      (p.originalId && targetProduct.originalId && p.originalId === targetProduct.originalId)
+    );
+    const targetCategorySlug = targetProduct.category?.slug?.toLowerCase();
+    const targetCategoryName = targetProduct.category?.name?.toLowerCase();
+    const isSameCategory = (p: Product) => {
+      if (!targetCategorySlug && !targetCategoryName) return false;
+      return (
+        (targetCategorySlug && p.category?.slug?.toLowerCase() === targetCategorySlug) ||
+        (targetCategoryName && p.category?.name?.toLowerCase() === targetCategoryName)
+      );
+    };
+    return filteredProducts.filter(p => isTarget(p) || isSameCategory(p)).length;
+  }, [isTargetPrioritized, targetProduct, filteredProducts]);
 
   const handleResetFilters = () => {
     setCategoryFilter("all");
@@ -145,11 +208,52 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
           {/* Right Product Grid */}
           <div className="lg:col-span-9">
+            {isTargetPrioritized && targetProduct && (
+              <div className="mb-4 p-3.5 sm:p-4 bg-gradient-to-r from-rose-50/95 via-pink-50/70 to-rose-50/95 border border-rose-200/90 rounded-2xl flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-neutral-800 font-semibold truncate">
+                      Showing <span className="text-rose-900 font-bold">{targetProduct.category?.name || "Selected Category"}</span> first
+                    </p>
+                    <p className="text-[11px] text-neutral-500 truncate">
+                      Starting with <span className="font-semibold text-neutral-900">{targetProduct.name}</span>, followed by all other collections below
+                    </p>
+                  </div>
+                </div>
+                <Link 
+                  href="/products"
+                  className="shrink-0 text-xs font-bold text-rose-800 bg-white hover:bg-rose-100/60 px-3.5 py-1.5 rounded-full border border-rose-200 transition-colors shadow-2xs"
+                >
+                  Show All
+                </Link>
+              </div>
+            )}
+
             {filteredProducts.length > 0 ? (
               <div className="w-full">
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 mt-2">
-                  {filteredProducts.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                  {filteredProducts.map((product, index) => (
+                    <React.Fragment key={product.id}>
+                      {sameCategoryCount > 0 && index === sameCategoryCount && (
+                        <div className="col-span-2 sm:col-span-3 xl:col-span-4 pt-6 pb-2 border-t border-neutral-200 mt-2 mb-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400">
+                                More Collections
+                              </span>
+                              <h3 className="text-base sm:text-lg font-serif font-bold text-neutral-900">
+                                Explore Other Handcrafted Categories
+                              </h3>
+                            </div>
+                            <span className="text-xs text-neutral-400 font-medium hidden sm:inline">
+                              100% Handcrafted
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <ProductCard product={product} />
+                    </React.Fragment>
                   ))}
                 </div>
                 

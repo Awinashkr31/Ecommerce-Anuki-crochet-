@@ -50,10 +50,10 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 src={mainImage}
                 alt={images[activeIndex]?.altText || altText}
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                 className="object-cover transition-transform duration-500"
-                priority
-                unoptimized
+                priority={activeIndex === 0}
+                fetchPriority={activeIndex === 0 ? "high" : "auto"}
               />
           </motion.div>
         </AnimatePresence>
@@ -102,8 +102,8 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 alt={img.altText || altText}
                 fill
                 sizes="64px"
+                loading="lazy"
                 className="object-cover"
-                unoptimized
               />
             </button>
           ))}

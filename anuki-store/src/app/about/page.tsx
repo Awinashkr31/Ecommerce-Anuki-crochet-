@@ -30,10 +30,10 @@ export default function AboutPage() {
       '@type': 'Person',
       name: 'Anuki',
       jobTitle: 'Founder & Master Artisan',
-      description: 'An expert crochet artisan crafting amigurumi plushies, floral bouquets, and bespoke handmade gifts based in Patna, Bihar.',
+      description: 'An expert crochet artisan crafting amigurumi plushies, floral bouquets, and custom handmade gifts based in Patna, Bihar.',
       url: 'https://www.anukicrochet.in/about',
       sameAs: [
-        'https://instagram.com/anukicrochet',
+        'https://instagram.com/anuki_crochet',
         'https://pinterest.com/anukicrochet'
       ]
     }
@@ -66,7 +66,7 @@ export default function AboutPage() {
                 {/* Fallback image */}
                 <Image 
                   src="https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=800" 
-                  alt="Anuki crocheting a bespoke bouquet" 
+                  alt="Anuki crocheting a custom bouquet" 
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"

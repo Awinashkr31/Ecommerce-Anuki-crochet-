@@ -111,7 +111,7 @@ export default async function ContactPage() {
       availableLanguage: ['English', 'Hindi']
     },
     sameAs: [
-      'https://instagram.com/anukicrochet',
+      'https://instagram.com/anuki_crochet',
       'https://facebook.com/anukicrochet',
       'https://pinterest.com/anukicrochet'
     ]
@@ -176,7 +176,7 @@ export default async function ContactPage() {
                   <svg className="w-5 h-5 text-rose-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                   <div>
                     <strong className="block text-neutral-900">Instagram:</strong>
-                    <a href="https://instagram.com/anukicrochet" target="_blank" rel="noopener noreferrer" className="text-rose-600 hover:underline">@anukicrochet</a>
+                    <a href="https://instagram.com/anuki_crochet" target="_blank" rel="noopener noreferrer" className="text-rose-600 hover:underline">@anuki_crochet</a>
                   </div>
                 </div>
               </div>

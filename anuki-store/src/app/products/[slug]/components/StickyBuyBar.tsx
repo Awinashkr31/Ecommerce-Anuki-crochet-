@@ -2,6 +2,7 @@
 import { ShoppingCart, Zap, Minus, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "../../../../store/cartStore";
+import ClickSuccess from "@/components/animations/ClickSuccess";
 
 export default function StickyBuyBar({ 
   product, 
@@ -89,11 +90,12 @@ export default function StickyBuyBar({
             )}
           </Link>
 
-          {/* Add to Bag Button */}
-          <button 
+          {/* Add to Bag Button with Click Success */}
+          <ClickSuccess 
             onClick={handleAddToCart}
             disabled={!inStock || isAddingToCart}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#8c3a44] text-white rounded-full font-bold text-[15px] shadow-[0_8px_16px_-8px_rgba(140,58,68,0.4)] active:scale-[0.98] transition-all disabled:opacity-50 hover:bg-[#7a323b]"
+            successText="Added!"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#8c3a44] text-white rounded-full font-bold text-[15px] shadow-[0_8px_16px_-8px_rgba(140,58,68,0.4)] active:scale-[0.98] transition-all disabled:opacity-50 hover:bg-[#7a323b] h-full"
           >
             {isAddingToCart ? (
               <Loader2 className="animate-spin" size={18} />
@@ -101,7 +103,7 @@ export default function StickyBuyBar({
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
             )}
             Add to Bag
-          </button>
+          </ClickSuccess>
         </>
       )}
     </>

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MapPin, X, Minus, Plus, Tag, ShieldCheck, Truck, CheckCircle2, ArrowLeft } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AddressModal from "@/components/AddressModal";
 import { useAddressStore } from "@/store/addressStore";
 import CartRecommendations from "./CartRecommendations";
@@ -15,6 +15,8 @@ import CartOffers from "./CartOffers";
 import { MobileLoginSheet } from "@/components/MobileLoginSheet";
 import useSWR from 'swr';
 import { trackViewCart } from "@/lib/gtm";
+import PriceRoll from "@/components/animations/PriceRoll";
+import ClickSuccess from "@/components/animations/ClickSuccess";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartClient({ crossSellProducts = [] }: { crossSellProducts?: any[] }) {
@@ -23,6 +25,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   const [isGiftPacked, setIsGiftPacked] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isLoginSheetOpen, setIsLoginSheetOpen] = useState(false);
+  const hasTrackedViewCart = useRef(false);
 
   const { profile } = useAuthStore();
   const { selectedAddress, setSelectedAddress, fetchAddressesOnce, hydrate } = useAddressStore();
@@ -86,10 +89,11 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
   // GA4 view_cart event
   useEffect(() => {
-    if (items && items.length > 0) {
+    if (items && items.length > 0 && !hasTrackedViewCart.current) {
+      hasTrackedViewCart.current = true;
       trackViewCart(subtotal, items);
     }
-  }, [items.length]);
+  }, [items, subtotal]);
 
   return (
     <div className="min-h-screen bg-[#fff8f7] pb-28 lg:pb-8 pt-0 lg:pt-6 px-0 lg:px-4">
@@ -194,7 +198,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                       {/* Image */}
                       <div className="w-24 h-28 bg-[#FBF8F5] rounded-xl overflow-hidden relative shrink-0">
                         {item.image ? (
-                          <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized />
+                          <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
                         ) : (
                           <div className="w-full h-full bg-[#efdfde]" />
                         )}
@@ -317,7 +321,7 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
                   <div className="flex justify-between pt-3.5 mt-2 border-t border-[#EFE5DE] border-dashed text-lg font-bold text-[#221a1a]">
                     <span>Grand Total</span>
-                    <span>₹{totalAmount}</span>
+                    <PriceRoll value={totalAmount} />
                   </div>
                 </div>
 
@@ -326,13 +330,13 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
                   You&apos;re saving ₹{Math.round(discounts + appliedDiscount)} on this lovely order!
                 </div>
 
-                <button 
+                <ClickSuccess 
                   onClick={handlePlaceOrder}
                   className="hidden lg:flex w-full mt-5 bg-[#be4b5c] text-white font-bold text-base py-3.5 rounded-full shadow-[0_8px_20px_-4px_rgba(190,75,92,0.3)] active:scale-[0.98] transition-all items-center justify-center gap-2 hover:bg-[#9e3345]"
                 >
                   <ShieldCheck size={18} />
                   Proceed to Checkout
-                </button>
+                </ClickSuccess>
               </div>
 
               {/* Trust Badges */}
@@ -367,20 +371,22 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#EFE5DE] py-3.5 px-4 pb-safe flex items-center justify-between z-50 shadow-[0_-6px_20px_-2px_rgba(45,26,23,0.08)]">
           <div>
             <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-xl font-bold text-[#221a1a] tracking-tight">₹{totalAmount}</span>
+              <span className="text-xl font-bold text-[#221a1a] tracking-tight">
+                <PriceRoll value={totalAmount} />
+              </span>
             </div>
             <div className="text-[10px] font-bold text-[#486551] bg-[#EAF0EA] px-2 py-0.5 rounded-full mt-1 inline-block">
               {deliveryCharge === 0 ? 'Free Shipping' : '+ Delivery'}
             </div>
           </div>
           
-          <button 
+          <ClickSuccess 
             onClick={handlePlaceOrder}
             className="bg-[#be4b5c] text-white font-bold text-sm px-6 py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_12px_rgba(190,75,92,0.3)] flex items-center gap-2 hover:bg-[#9e3345]"
           >
             Checkout
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
+          </ClickSuccess>
         </div>
       )}
 

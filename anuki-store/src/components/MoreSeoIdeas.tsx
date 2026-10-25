@@ -27,10 +27,10 @@ export default function MoreSeoIdeas({
   // If we have fewer than 4 links, pad with custom page
   if (linksToShow.length < 4) {
     linksToShow.push({
-      href: '/custom-crochet-bouquet',
-      title: 'Custom Bouquets',
-      badge: '🎨',
-      desc: 'Bespoke Handmade Flowers',
+      href: '/custom',
+      title: 'Custom Orders',
+      badge: '✨',
+      desc: 'Handmade Custom Orders',
     });
   }
 

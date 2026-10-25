@@ -424,7 +424,12 @@ export class PaymentService {
               include: {
                 variant: {
                   include: {
-                    product: { include: { images: { take: 1, orderBy: { order: 'asc' } } } }
+                    product: { 
+                      include: { 
+                        category: true,
+                        images: { take: 1, orderBy: { order: 'asc' } } 
+                      } 
+                    }
                   }
                 }
               }

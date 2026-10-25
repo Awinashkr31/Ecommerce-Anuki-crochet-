@@ -79,11 +79,12 @@ export default function CartRecommendations({ products = [] }: { products: any[]
                       src={product.images[0].url} 
                       alt={product.name} 
                       fill 
+                      loading="lazy"
+                      sizes="170px"
                       className="object-cover" 
-                      unoptimized 
                     />
                   ) : (
-                    <Image src="/logo.png" alt="Anuki" fill className="object-cover" unoptimized />
+                    <Image src="/logo.png" alt="Anuki" fill loading="lazy" sizes="170px" className="object-cover" />
                   )}
                 </Link>
                 
@@ -118,7 +119,10 @@ export default function CartRecommendations({ products = [] }: { products: any[]
                           quantity: 1,
                           image: product.images?.[0]?.url || "/logo.png",
                           variantId: product.variants?.[0]?.id,
-                          variantText: product.variants?.[0]?.name
+                          variantText: product.variants?.[0]?.name,
+                          slug: product.slug,
+                          sku: product.sku,
+                          category: product.category?.name || 'Crochet Gifts',
                         });
                         toast.success(`${product.name} added to bag!`, { icon: '🛍️' });
                       }}

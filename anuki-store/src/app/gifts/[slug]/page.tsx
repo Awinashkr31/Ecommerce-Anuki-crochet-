@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { ProductCard } from '@/components/ProductCard';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
+import TrackViewItemList from '@/components/TrackViewItemList';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -274,18 +275,13 @@ export default async function GiftPage({ params }: PageProps) {
           <p className="text-neutral-600 max-w-2xl mx-auto leading-relaxed">
             {page.hero.subheading}
           </p>
-          {dbSeo?.introContent && (
-            <div className="mt-6 max-w-3xl mx-auto p-5 bg-[#FAF7F5] border border-rose-100 rounded-2xl text-sm text-neutral-700 leading-relaxed text-left shadow-sm">
-              <p className="font-semibold text-rose-800 mb-1">About This Collection</p>
-              <p>{dbSeo.introContent}</p>
-            </div>
-          )}
         </div>
       </section>
 
       {/* Product Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="sr-only">{page.gridLabel}</h2>
+        <TrackViewItemList listName={page.itemListName || page.hero.heading} products={products} />
         {products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
             {products.map((product) => (
@@ -304,6 +300,19 @@ export default async function GiftPage({ params }: PageProps) {
 
       {/* SEO Content Article */}
       <SeoArticle sections={page.seoArticle} />
+
+      {/* About This Collection */}
+      {dbSeo?.introContent && (
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <div className="p-6 sm:p-7 bg-white border border-rose-100 rounded-2xl text-sm text-neutral-700 leading-relaxed shadow-xs">
+            <h2 className="font-bold text-base sm:text-lg text-rose-900 mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" />
+              About This Collection
+            </h2>
+            <p className="text-neutral-600 leading-relaxed whitespace-pre-line">{dbSeo.introContent}</p>
+          </div>
+        </section>
+      )}
 
       {/* Cross-links */}
       <MoreGiftIdeas currentSlug={page.slug} relatedSlugs={page.relatedSlugs} />

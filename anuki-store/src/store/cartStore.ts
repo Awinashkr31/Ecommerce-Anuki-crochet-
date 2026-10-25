@@ -5,13 +5,16 @@ import { trackAddToCart, trackRemoveFromCart } from '@/lib/gtm';
 export interface CartItem {
   id: string; // unique cart item id (usually variantId + customizations hash)
   productId: string;
-  variantId: string;
+  variantId?: string;
   name: string;
   price: number;
   quantity: number;
   image?: string;
   customization?: string;
   variantText?: string;
+  slug?: string | null;
+  sku?: string | null;
+  category?: string | null;
 }
 
 interface CartState {
@@ -44,6 +47,9 @@ export const useCartStore = create<CartState>()(
             name: item.name,
             price: item.price,
             quantity: item.quantity,
+            slug: item.slug,
+            sku: item.sku,
+            category: item.category,
           });
         } catch {
           // ignore error
@@ -71,6 +77,9 @@ export const useCartStore = create<CartState>()(
               name: item.name,
               price: item.price,
               quantity: item.quantity,
+              slug: item.slug,
+              sku: item.sku,
+              category: item.category,
             });
           }
         } catch {
@@ -81,12 +90,46 @@ export const useCartStore = create<CartState>()(
           appliedCoupon: null,
         }));
       },
-      updateQuantity: (id, quantity) => set((state) => ({
-        items: state.items.map((i) =>
-          i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i
-        ),
-        appliedCoupon: null,
-      })),
+      updateQuantity: (id, quantity) => {
+        try {
+          const item = get().items.find((i) => i.id === id);
+          if (item) {
+            const newQty = Math.max(1, quantity);
+            const diff = newQty - item.quantity;
+            if (diff > 0) {
+              trackAddToCart({
+                id: item.id,
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: diff,
+                slug: item.slug,
+                sku: item.sku,
+                category: item.category,
+              });
+            } else if (diff < 0) {
+              trackRemoveFromCart({
+                id: item.id,
+                productId: item.productId,
+                name: item.name,
+                price: item.price,
+                quantity: Math.abs(diff),
+                slug: item.slug,
+                sku: item.sku,
+                category: item.category,
+              });
+            }
+          }
+        } catch {
+          // ignore error
+        }
+        return set((state) => ({
+          items: state.items.map((i) =>
+            i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i
+          ),
+          appliedCoupon: null,
+        }));
+      },
       mergeCart: (serverItems: CartItem[]) => set((state) => {
         const merged = [...serverItems];
         state.items.forEach(localItem => {

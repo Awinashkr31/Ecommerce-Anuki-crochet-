@@ -1,22 +1,46 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
+import BlogMarkdown from '@/components/BlogMarkdown';
+import ScrollFadeImage from '@/components/animations/ScrollFadeImage';
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
 
 type Props = {
   params: Promise<{ slug: string }>
 };
 
-import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
+export async function generateStaticParams() {
+  try {
+    const posts = await prisma.post.findMany({
+      where: { published: true, noIndex: false },
+      select: { slug: true }
+    });
+    return posts.map(p => ({ slug: p.slug }));
+  } catch (err) {
+    console.error('Failed to fetch posts for generateStaticParams:', err);
+    return [];
+  }
+}
+
+export const dynamicParams = true;
+export const revalidate = 86400;
 
 async function getPost(slug: string) {
   const post = await prisma.post.findUnique({
-    where: { slug }
+    where: { slug },
+    include: {
+      author: {
+        select: { fullName: true }
+      }
+    }
   });
-  
+
   if (!post) {
     notFound();
   }
+
+  const authorName = post.author?.fullName || 'Anuki';
 
   return {
     title: post.title,
@@ -24,8 +48,9 @@ async function getPost(slug: string) {
     content: post.content,
     excerpt: post.excerpt || '',
     date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-    author: "Anuki",
-    imageUrl: post.imageUrl || "https://www.anukicrochet.in/crochet-care.jpg",
+    isoDate: new Date(post.createdAt).toISOString(),
+    author: authorName,
+    imageUrl: post.imageUrl || 'https://www.anukicrochet.in/crochet-care.jpg',
     seoTitle: post.seoTitle,
     seoDesc: post.seoDesc,
     canonicalUrl: post.canonicalUrl,
@@ -81,14 +106,14 @@ export default async function BlogPostPage({ params }: Props) {
     headline: post.title,
     description: post.excerpt,
     image: post.imageUrl,
-    datePublished: new Date(post.date).toISOString(),
+    datePublished: post.isoDate,
     author: {
       '@type': 'Person',
-      name: 'Anuki',
-      description: 'Founder and lead artisan at Anuki Crochet with over 10 years of experience in crafting bespoke crochet items.',
+      name: post.author,
+      description: 'Founder and lead artisan at Anuki Crochet with over 10 years of experience in crafting custom crochet items.',
       url: 'https://www.anukicrochet.in/about',
       sameAs: [
-        'https://instagram.com/anukicrochet',
+        'https://instagram.com/anuki_crochet',
         'https://pinterest.com/anukicrochet'
       ]
     },
@@ -154,7 +179,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-4 pb-2 border-b border-[#EFE5DE]">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-[#EAF0EA] text-[#3F5F49] flex items-center justify-center font-serif font-bold text-lg">
-                A
+                {post.author ? post.author.charAt(0).toUpperCase() : 'A'}
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold text-[#221a1a]">By {post.author}</p>
@@ -172,13 +197,17 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Hero Visual */}
         <figure className="mb-12">
-          <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-sm bg-[#faeaea] border border-[#EFE5DE]">
-            {post.imageUrl ? (
-              <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[#6E6363] font-serif">Studio Photography</div>
-            )}
-          </div>
+          {post.imageUrl ? (
+            <ScrollFadeImage 
+              src={post.imageUrl} 
+              alt={post.title} 
+              className="aspect-video w-full rounded-3xl shadow-sm bg-[#faeaea] border border-[#EFE5DE]" 
+            />
+          ) : (
+            <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-sm bg-[#faeaea] border border-[#EFE5DE] flex items-center justify-center text-[#6E6363] font-serif">
+              Studio Photography
+            </div>
+          )}
           <figcaption className="text-center text-xs text-[#6E6363] mt-3 italic max-w-xl mx-auto">
             Photography from our Bengaluru studio: Crafting everlasting memories loop by loop.
           </figcaption>
@@ -186,12 +215,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Distraction-Free Article Body */}
         <article className="prose prose-lg max-w-none prose-p:text-[#564243] prose-headings:font-serif prose-headings:text-[#221a1a] prose-a:text-[#9e3345] prose-strong:text-[#221a1a]">
-          <div className="whitespace-pre-wrap leading-relaxed tracking-wide">
-            {/* We're simulating a drop cap for the first letter if possible, otherwise standard text */}
-            <span className="first-letter:float-left first-letter:text-6xl first-letter:pr-2 first-letter:font-serif first-letter:text-[#be4b5c] first-letter:mt-1">
-              {post.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-            </span>
-          </div>
+          <BlogMarkdown content={post.content} />
           
           <blockquote className="my-10 pl-6 border-l-4 border-[#be4b5c] italic text-[#6E6363] bg-[#FBF8F5] p-6 rounded-r-2xl text-xl font-serif">
             "A crochet bouquet is not just an arrangement of stitches—it is a timestamp of love woven loop by loop that will never brown, wilt, or fade on your mantelpiece."
@@ -227,7 +251,7 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Artisan Author Bio */}
         <div className="mt-12 bg-[#FBF8F5] rounded-3xl p-8 border border-[#EFE5DE] flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left shadow-sm">
           <div className="w-24 h-24 bg-[#EAF0EA] rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-[#3F5F49] font-serif font-bold text-4xl border-4 border-white shadow-sm">
-            A
+            {post.author ? post.author.charAt(0).toUpperCase() : 'A'}
           </div>
           <div className="space-y-3">
             <h3 className="text-xl font-bold font-serif text-[#221a1a]">Written by {post.author}</h3>
@@ -309,7 +333,7 @@ export default async function BlogPostPage({ params }: Props) {
             <span>•</span>
             <Link href="/gifts/under-999" className="underline hover:text-[#9e3345]">Gifts Under ₹999</Link>
             <span>•</span>
-            <Link href="/custom-crochet-gifts" className="underline hover:text-[#9e3345]">Custom Crochet Gifts</Link>
+            <Link href="/custom" className="underline hover:text-[#9e3345]">Custom Crochet Gifts</Link>
           </div>
         </section>
 
@@ -324,7 +348,7 @@ export default async function BlogPostPage({ params }: Props) {
               Get monthly free patterns and cozy studio notes delivered to your inbox.
             </p>
           </div>
-          <form className="pt-2 flex flex-col sm:flex-row gap-3 max-w-sm mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form className="pt-2 flex flex-col sm:flex-row gap-3 max-w-sm mx-auto" action="#">
             <input className="flex-grow px-4 py-3 rounded-full bg-white text-[#221a1a] placeholder:text-[#6E6363] text-sm border border-[#EFE5DE] focus:outline-none focus:ring-2 focus:ring-[#9e3345]" placeholder="Email address" required type="email" />
             <button className="px-6 py-3 rounded-full bg-[#9e3345] text-white text-sm font-bold tracking-wide hover:bg-[#8C2F3D] active:scale-95 transition-all shadow-sm" type="button">
               Subscribe

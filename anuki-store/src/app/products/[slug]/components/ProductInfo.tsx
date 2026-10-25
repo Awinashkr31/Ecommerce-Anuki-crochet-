@@ -2,6 +2,7 @@
 import { Star, Share2 } from "lucide-react";
 import useSWR from "swr";
 import { apiGet } from "@/lib/api";
+import PriceRoll from "@/components/animations/PriceRoll";
 
 export default function ProductInfo({ 
   product, 
@@ -67,7 +68,7 @@ export default function ProductInfo({
       <div className="space-y-1">
         <div className="flex items-end gap-2">
           <span className="text-3xl font-black text-[#8c3a44]">
-            ₹{displayPrice}
+            <PriceRoll value={displayPrice} />
           </span>
           {originalPrice && (
             <span className="text-sm font-semibold text-neutral-500 line-through mb-1.5">

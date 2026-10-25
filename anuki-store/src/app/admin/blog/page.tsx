@@ -12,12 +12,12 @@ interface Post {
   slug: string;
   published: boolean;
   createdAt: string;
-  author: { name: string };
+  author?: { fullName?: string; name?: string };
 }
 
 export default function AdminBlogPage() {
   const fetcher = (url: string) => apiGet<Post[]>(url);
-  const { data: posts = [], isLoading: loading, mutate } = useSWR('/posts', fetcher, { revalidateOnFocus: true });
+  const { data: posts = [], isLoading: loading, mutate } = useSWR('/posts/admin/all', fetcher, { revalidateOnFocus: true });
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post?')) return;
@@ -67,7 +67,7 @@ export default function AdminBlogPage() {
               {posts.map(post => (
                 <tr key={post.id} className="hover:bg-neutral-50/80 transition-colors group">
                   <td className="px-6 py-4 font-bold text-sm">{post.title}</td>
-                  <td className="px-6 py-4 text-sm text-neutral-600">{post.author?.name || 'Unknown'}</td>
+                  <td className="px-6 py-4 text-sm text-neutral-600">{post.author?.fullName || post.author?.name || 'Unknown'}</td>
                   <td className="px-6 py-4 text-sm text-neutral-500">{new Date(post.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${post.published ? 'bg-emerald-100 text-emerald-800' : 'bg-neutral-200 text-neutral-700'}`}>

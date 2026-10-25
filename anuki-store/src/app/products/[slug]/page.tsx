@@ -175,11 +175,14 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   const otherProducts = allProducts.filter(p => p.id !== product?.id);
+  const sameCat = otherProducts.filter(p => p.categoryId === product?.categoryId || p.category?.slug === product?.category?.slug);
+  const diffCat = otherProducts.filter(p => p.categoryId !== product?.categoryId && p.category?.slug !== product?.category?.slug);
 
-  // Basic random shuffle
-  const shuffled = otherProducts.sort(() => 0.5 - Math.random());
-  const youMayAlsoLike = shuffled.slice(0, 8);
-  const completeTheGift = shuffled.slice(8, 12);
+  const youMayAlsoLike = [
+    ...sameCat.sort(() => 0.5 - Math.random()),
+    ...diffCat.sort(() => 0.5 - Math.random())
+  ].slice(0, 8);
+  const completeTheGift = (diffCat.length >= 4 ? diffCat : otherProducts).sort(() => 0.5 - Math.random()).slice(0, 4);
 
   if (!product || product.status !== 'PUBLISHED') {
     return (

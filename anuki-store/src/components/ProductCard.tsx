@@ -2,8 +2,10 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Image from "next/image";
-import { ShoppingBag, Star } from "lucide-react";
+import { ShoppingBag, Star, Check, Plus, Minus } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import React, { useState, useEffect } from "react";
@@ -20,6 +22,7 @@ export interface Product {
   isMadeToOrder: boolean;
   images: { url: string; altText: string }[];
   category?: { name: string; slug?: string };
+  sku?: string | null;
   variants?: { id?: string; name?: string; color?: string; size?: string; imageUrls?: string[]; stock: number; [key: string]: unknown }[];
   bestseller?: boolean;
   isNew?: boolean;
@@ -28,11 +31,74 @@ export interface Product {
   originalId?: string;
 }
 
-const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Product, hideAddToCart?: boolean }) => {
+const ProductCardComponent = ({ product, hideAddToCart = false, href }: { product: Product, hideAddToCart?: boolean, href?: string }) => {
+  const router = useRouter();
   const { profile } = useAuthStore();
   const isB2B = profile?.role === 'B2B_CUSTOMER';
   const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
   const setIsOpen = useCartStore((state) => state.setIsOpen);
+  const cartItems = useCartStore((state) => state.items);
+  const [isJustAdded, setIsJustAdded] = useState(false);
+
+  const productCartItems = cartItems.filter((i) => i.productId === product.id);
+  const inCartCount = productCartItems.reduce((acc, i) => acc + i.quantity, 0);
+  const primaryCartItem = productCartItems[0];
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
+    const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
+
+    addItem({
+      id: variant ? variant.id || product.id : product.id,
+      productId: product.id,
+      variantId: variant ? variant.id || product.id : product.id,
+      name: product.name,
+      price: price,
+      quantity: 1,
+      image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
+      variantText: variant ? (variant.color || variant.name) : undefined,
+      slug: product.slug,
+      sku: product.sku,
+      category: product.category?.name || "Crochet Gifts",
+    });
+
+    setIsJustAdded(true);
+    toast.success("Added to Bag!");
+    setTimeout(() => {
+      setIsJustAdded(false);
+    }, 1400);
+  };
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (primaryCartItem) {
+      updateQuantity(primaryCartItem.id, primaryCartItem.quantity + 1);
+    } else {
+      handleAddToCart(e);
+    }
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!primaryCartItem) return;
+    if (primaryCartItem.quantity <= 1) {
+      removeItem(primaryCartItem.id);
+    } else {
+      updateQuantity(primaryCartItem.id, primaryCartItem.quantity - 1);
+    }
+  };
+
+  const handleOpenCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push("/cart");
+  };
 
   const primaryImage = product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600";
   
@@ -176,29 +242,32 @@ const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Pro
         </div>
 
         {/* Images */}
-        <Link href={`/products/${product.slug}`} prefetch={false} scroll={true} className="relative block w-full h-full">
+        <Link href={href || `/products/${product.slug}`} prefetch={false} scroll={true} className="relative block w-full h-full">
           {product.images && product.images.length > 0 ? (
-            product.images.slice(0, 4).map((img, idx) => (
-              <Image 
-                key={idx}
-                src={img.url} 
-                alt={img.altText || product.name} 
-                fill
-                className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
-                  idx === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                unoptimized
-              />
-            ))
+            product.images.slice(0, 4).map((img, idx) => {
+              if (idx !== 0 && idx !== currentImageIndex) return null;
+              return (
+                <Image 
+                  key={idx}
+                  src={img.url} 
+                  alt={img.altText || product.name} 
+                  fill
+                  loading="lazy"
+                  className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
+                    idx === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                  }`}
+                  sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 250px"
+                />
+              );
+            })
           ) : (
             <Image 
               src={primaryImage} 
               alt={product.name} 
               fill
+              loading="lazy"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              unoptimized
+              sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 250px"
             />
           )}
         </Link>
@@ -220,7 +289,7 @@ const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Pro
           )}
         </div>
         
-        <Link href={`/products/${product.slug}`} prefetch={false} scroll={true} className="text-neutral-900 font-bold hover:text-[#8c3a44] transition-colors line-clamp-2 text-sm leading-tight mb-2">
+        <Link href={href || `/products/${product.slug}`} prefetch={false} scroll={true} className="text-neutral-900 font-bold hover:text-[#8c3a44] transition-colors line-clamp-2 text-sm leading-tight mb-2">
           {product.name}
         </Link>
         
@@ -250,29 +319,77 @@ const ProductCardComponent = ({ product, hideAddToCart = false }: { product: Pro
         </div>
 
         {!hideAddToCart && (
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const price = isB2B && product.wholesalePrice ? product.wholesalePrice : (product.salePrice || product.basePrice);
-              const variant = product.variants && product.variants.length > 0 ? product.variants[0] : null;
-              
-              addItem({
-                id: variant ? variant.id || product.id : product.id,
-                productId: product.id,
-                variantId: variant ? variant.id || product.id : product.id,
-                name: product.name,
-                price: price,
-                quantity: 1,
-                image: product.images?.[0]?.url || "https://images.unsplash.com/photo-1606228281437-dc2a9e3e020f?auto=format&fit=crop&q=80&w=600",
-                variantText: variant ? (variant.color || variant.name) : undefined
-              });
-              setIsOpen(true);
-            }}
-            className="w-full bg-[#8c3a44] text-white font-bold text-xs py-2 rounded-full flex items-center justify-center hover:bg-[#7a323b] transition-colors active:scale-[0.98] shadow-sm"
-          >
-            <ShoppingBag size={14} strokeWidth={2.5} className="mr-1.5 mb-0.5" /> Add to Bag
-          </button>
+          <div className="w-full">
+            {isJustAdded ? (
+              <div className="w-full flex items-center gap-1.5 animate-in zoom-in-95 duration-200">
+                <div className="flex-1 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm gap-1.5">
+                  <Check size={14} strokeWidth={3} className="animate-in zoom-in-75 duration-200" />
+                  <span>Added to Bag!</span>
+                </div>
+                <Link
+                  href="/cart"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-8 h-8 rounded-full bg-[#8c3a44] hover:bg-[#7a323b] text-white flex items-center justify-center shrink-0 shadow-2xs active:scale-90 transition-all cursor-pointer"
+                  title="View Bag"
+                  aria-label="View Cart Bag"
+                >
+                  <ShoppingBag size={14} strokeWidth={2.5} />
+                </Link>
+              </div>
+            ) : inCartCount > 0 ? (
+              <div 
+                className="w-full flex items-center gap-1.5 animate-in fade-in duration-200"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                {/* - Count + Stepper Pill */}
+                <div className="flex-1 h-8 bg-emerald-50 border border-emerald-300 text-emerald-950 rounded-full flex items-center justify-between px-1.5 shadow-2xs select-none">
+                  <button
+                    type="button"
+                    onClick={handleDecrement}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-emerald-800 hover:bg-emerald-200/80 active:scale-90 transition-all cursor-pointer"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus size={13} strokeWidth={3} />
+                  </button>
+
+                  <span className="text-xs font-black tracking-tight text-emerald-950 px-1">
+                    {inCartCount}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleIncrement}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-emerald-800 hover:bg-emerald-200/80 active:scale-90 transition-all cursor-pointer"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus size={13} strokeWidth={3} />
+                  </button>
+                </div>
+
+                {/* Side Cart Icon Button */}
+                <Link
+                  href="/cart"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-8 h-8 rounded-full bg-[#8c3a44] hover:bg-[#7a323b] text-white flex items-center justify-center shrink-0 shadow-2xs active:scale-90 transition-all cursor-pointer"
+                  title="View Bag"
+                  aria-label="View Cart Bag"
+                >
+                  <ShoppingBag size={14} strokeWidth={2.5} />
+                </Link>
+              </div>
+            ) : (
+              <button 
+                type="button"
+                onClick={handleAddToCart}
+                className="w-full font-bold text-xs py-2 rounded-full flex items-center justify-center transition-all duration-300 active:scale-[0.98] shadow-sm bg-[#8c3a44] text-white hover:bg-[#7a323b]"
+              >
+                <ShoppingBag size={14} strokeWidth={2.5} className="mr-1.5 mb-0.5" /> Add to Bag
+              </button>
+            )}
+          </div>
         )}
       </div>
     </motion.div>
