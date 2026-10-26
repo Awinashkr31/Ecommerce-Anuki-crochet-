@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
@@ -19,11 +17,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Cart cleared' });
     }
 
-    // Upsert the abandoned cart
+    // Upsert the abandoned cart using the unique index on userId
     const cart = await prisma.abandonedCart.upsert({
       where: { userId },
       update: { items },
       create: { userId, items },
+      select: { id: true, userId: true, items: true },
     });
 
     return NextResponse.json({ success: true, cart });

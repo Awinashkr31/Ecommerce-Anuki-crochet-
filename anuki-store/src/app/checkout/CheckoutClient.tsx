@@ -5,30 +5,34 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost } from "@/lib/api";
 import { ArrowLeft, MapPin, Truck, ShieldCheck, Circle, CheckCircle2, Loader2, User } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import AddressModal from "@/components/AddressModal";
 import { useAddressStore } from "@/store/addressStore";
 import CartOffers from "@/app/cart/CartOffers";
-import { load } from "@cashfreepayments/cashfree-js";
 import { trackBeginCheckout } from "@/lib/gtm";
 import ClickSuccess from "@/components/animations/ClickSuccess";
+import CheckoutSkeleton from "./components/CheckoutSkeleton";
 
 export default function CheckoutClient({ settings }: { settings: Record<string, string> }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlAddressId = searchParams?.get('addressId');
   const { items, clearCart, appliedCoupon } = useCartStore();
-  const { profile, isLoading } = useAuthStore();
+  const { profile } = useAuthStore();
   const isGuest = !profile;
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const { selectedAddress, setSelectedAddress, fetchAddressesOnce, addresses, hydrate } = useAddressStore();
   const processingRef = useRef(false); // Double-click protection
-  const cashfreeRef = useRef<any>(null); // Cache preloaded SDK
+  const cashfreeRef = useRef<any>(null); // Cache lazily loaded SDK
   const hasTrackedBeginCheckout = useRef(false);
   const [paymentStep, setPaymentStep] = useState<string | null>(null); // For animated overlay
+
+  // Loading state & bounded timeout
+  const [isReady, setIsReady] = useState(false);
+  const [loadTimedOut, setLoadTimedOut] = useState(false);
 
   // Guest checkout fields
   const [guestName, setGuestName] = useState('');
@@ -40,10 +44,91 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
   const [guestPincode, setGuestPincode] = useState('');
   const [guestLandmark, setGuestLandmark] = useState('');
 
-  // Hydrate from localStorage on mount
+  // 1 & 2: PARALLEL DATA LOADING & EMPTY-CART GUARD WITH 3-SECOND TIMEOUT
+  const loadCheckoutData = useCallback(async () => {
+    setLoadTimedOut(false);
+
+    // 1. Cart validation promise with a hard 3-second timeout
+    const cartPromise = new Promise<{ valid: boolean; itemCount: number }>((resolve) => {
+      // Check immediately if already hydrated
+      const isHydrated = useCartStore.persist?.hasHydrated?.() ?? true;
+      const initialItems = useCartStore.getState().items;
+      if (isHydrated) {
+        resolve({ valid: (initialItems?.length ?? 0) > 0, itemCount: initialItems?.length ?? 0 });
+        return;
+      }
+
+      // If not yet hydrated, wait for hydration or 3-second timeout
+      let settled = false;
+      const timeoutId = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          const currentItems = useCartStore.getState().items;
+          resolve({ valid: (currentItems?.length ?? 0) > 0, itemCount: currentItems?.length ?? 0 });
+        }
+      }, 3000);
+
+      const unsub = useCartStore.persist?.onFinishHydration?.(() => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeoutId);
+          const currentItems = useCartStore.getState().items;
+          resolve({ valid: (currentItems?.length ?? 0) > 0, itemCount: currentItems?.length ?? 0 });
+        }
+      });
+    });
+
+    // 2. Saved delivery address promise (runs concurrently, no waterfall waiting on auth)
+    const addressPromise = (async () => {
+      hydrate();
+      const cachedProfile = typeof window !== 'undefined' ? sessionStorage.getItem('auth_profile_cache') : null;
+      if (cachedProfile || profile) {
+        await fetchAddressesOnce().catch(() => null);
+      }
+      return true;
+    })();
+
+    // 3. Shipping rules & payment methods promise
+    const settingsPromise = Promise.resolve(settings);
+
+    // Run parallel data loading
+    const [cartResult] = await Promise.all([
+      cartPromise,
+      addressPromise,
+      settingsPromise,
+    ]);
+
+    // Empty-cart guard: redirect immediately if cart is empty or unresolved
+    if (!cartResult.valid || cartResult.itemCount === 0) {
+      toast.error("Your cart is empty");
+      router.replace('/cart');
+      return;
+    }
+
+    setIsReady(true);
+  }, [hydrate, fetchAddressesOnce, profile, settings, router]);
+
+  // Execute parallel loading on mount + 5-second bounded loader timeout safeguard
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+    loadCheckoutData();
+
+    const boundedTimeout = setTimeout(() => {
+      setIsReady((current) => {
+        if (!current) setLoadTimedOut(true);
+        return current;
+      });
+    }, 5000);
+
+    return () => clearTimeout(boundedTimeout);
+  }, [loadCheckoutData]);
+
+  // Reactive empty cart guard during active session
+  useEffect(() => {
+    if (isReady && items.length === 0 && !isProcessing) {
+      toast.error("Your cart is empty");
+      router.replace('/cart');
+    }
+  }, [items.length, isReady, isProcessing, router]);
 
   // GA4 begin_checkout event
   useEffect(() => {
@@ -53,14 +138,6 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
       trackBeginCheckout(subtotal, items);
     }
   }, [items]);
-
-  // If cart is empty, redirect to cart
-  useEffect(() => {
-    if (isLoading) return;
-    if (items.length === 0 && !isProcessing) {
-      router.replace('/cart');
-    }
-  }, [items.length, router, isProcessing, isLoading]);
 
   // Auto-fill city/state from pincode for guest users
   useEffect(() => {
@@ -82,7 +159,7 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     fetchPincodeDetails();
   }, [guestPincode]);
 
-  // Fetch addresses once (uses cached store, no duplicate API call)
+  // Background address fetch once user profile updates
   useEffect(() => {
     if (profile) {
       fetchAddressesOnce();
@@ -108,23 +185,15 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
     }
   }, [isProcessing]);
 
-  // Preload Cashfree SDK so it's ready instantly when user clicks pay
-  useEffect(() => {
-    load({
-      mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
-    }).then((sdk: any) => {
-      cashfreeRef.current = sdk;
-    }).catch(console.error);
-  }, []);
-
-  if (items.length === 0) {
-    return null;
+  // Show bounded skeleton while data is resolving; after 5s show retry option
+  if (!isReady || items.length === 0) {
+    return <CheckoutSkeleton showRetry={loadTimedOut} onRetry={loadCheckoutData} />;
   }
 
   const minOrderValue = Number(settings?.['min_order_value']) || 0;
-  const freeDeliveryThreshold = Number(settings?.['free_delivery_threshold']) || 0;
-  const deliveryCharge = Number(settings?.['delivery_charge']) || 0;
-  const codExtraChargeConfig = Number(settings?.['cod_extra_charge']) || 0;
+  const freeDeliveryThreshold = Number(settings?.['free_delivery_threshold']) || 799;
+  const deliveryCharge = Number(settings?.['delivery_charge']) || 50;
+  const codExtraChargeConfig = Number(settings?.['cod_extra_charge']) || 40;
   const codPaymentStatus = settings?.['cod_payment_status'] || 'active';
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -258,9 +327,10 @@ export default function CheckoutClient({ settings }: { settings: Record<string, 
 
       setPaymentStep('gateway');
 
-      // Use cached SDK or load fresh
+      // Use cached SDK or load lazily on demand
       let cashfree = cashfreeRef.current;
       if (!cashfree) {
+        const { load } = await import("@cashfreepayments/cashfree-js");
         cashfree = await load({
           mode: process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === "production" ? "production" : "sandbox",
         });

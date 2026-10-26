@@ -51,6 +51,8 @@ model Address {
   landmark  String?
   phone     String
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Wallet {

@@ -10,6 +10,18 @@ router.get('/', verifyToken, async (req: any, res: any) => {
   try {
     const addresses = await prisma.address.findMany({
       where: { userId: req.user.userId },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        street: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        country: true,
+        landmark: true,
+        isDefault: true,
+      },
       orderBy: { createdAt: 'desc' }
     });
     res.json(addresses);
@@ -68,9 +80,10 @@ router.put('/:id', verifyToken, async (req: any, res: any) => {
     const { fullName, phone, pincode, city, state, address, landmark, isDefault } = req.body;
 
     const addressToUpdate = await prisma.address.findUnique({
-      where: { id, userId: req.user.userId }
+      where: { id },
+      select: { id: true, userId: true }
     });
-    if (!addressToUpdate) return res.status(404).json({ error: 'Address not found' });
+    if (!addressToUpdate || addressToUpdate.userId !== req.user.userId) return res.status(404).json({ error: 'Address not found' });
 
     // If making default, unset others
     if (isDefault) {
@@ -104,7 +117,10 @@ router.put('/:id', verifyToken, async (req: any, res: any) => {
 router.delete('/:id', verifyToken, async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const addressRecord = await prisma.address.findUnique({ where: { id } });
+    const addressRecord = await prisma.address.findUnique({
+      where: { id },
+      select: { id: true, userId: true }
+    });
     
     if (!addressRecord || addressRecord.userId !== req.user.userId) {
       return res.status(404).json({ error: 'Address not found' });

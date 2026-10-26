@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import BreadcrumbSchema from '@/components/BreadcrumbSchema';
 import BlogMarkdown from '@/components/BlogMarkdown';
-import ScrollFadeImage from '@/components/animations/ScrollFadeImage';
+import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
@@ -27,35 +27,40 @@ export const dynamicParams = true;
 export const revalidate = 86400;
 
 async function getPost(slug: string) {
-  const post = await prisma.post.findUnique({
-    where: { slug },
-    include: {
-      author: {
-        select: { fullName: true }
+  try {
+    const post = await prisma.post.findUnique({
+      where: { slug },
+      include: {
+        author: {
+          select: { fullName: true }
+        }
       }
+    });
+
+    if (!post) {
+      notFound();
     }
-  });
 
-  if (!post) {
-    notFound();
+    const authorName = post.author?.fullName || 'Anuki';
+
+    return {
+      title: post.title,
+      slug: post.slug,
+      content: post.content,
+      excerpt: post.excerpt || '',
+      date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      isoDate: new Date(post.createdAt).toISOString(),
+      author: authorName,
+      imageUrl: post.imageUrl || 'https://www.anukicrochet.in/crochet-care.jpg',
+      seoTitle: post.seoTitle,
+      seoDesc: post.seoDesc,
+      canonicalUrl: post.canonicalUrl,
+      noIndex: post.noIndex,
+    };
+  } catch (err) {
+    console.error('[DEBUG getPost] caught error:', err);
+    throw err;
   }
-
-  const authorName = post.author?.fullName || 'Anuki';
-
-  return {
-    title: post.title,
-    slug: post.slug,
-    content: post.content,
-    excerpt: post.excerpt || '',
-    date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-    isoDate: new Date(post.createdAt).toISOString(),
-    author: authorName,
-    imageUrl: post.imageUrl || 'https://www.anukicrochet.in/crochet-care.jpg',
-    seoTitle: post.seoTitle,
-    seoDesc: post.seoDesc,
-    canonicalUrl: post.canonicalUrl,
-    noIndex: post.noIndex,
-  };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -140,6 +145,9 @@ export default async function BlogPostPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {post.imageUrl && (
+        <link rel="preload" as="image" href={post.imageUrl} />
+      )}
       
       {/* Top Bar / App Header */}
       <header className="sticky top-0 z-40 bg-[#FBF8F5]/95 backdrop-blur-md border-b border-[#EFE5DE] w-full px-4 md:px-8 py-3 transition-colors duration-200">
@@ -198,13 +206,18 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Hero Visual */}
         <figure className="mb-12">
           {post.imageUrl ? (
-            <ScrollFadeImage 
-              src={post.imageUrl} 
-              alt={post.title} 
-              className="aspect-video w-full rounded-3xl shadow-sm bg-[#faeaea] border border-[#EFE5DE]" 
-            />
+            <div className="relative aspect-video w-full rounded-3xl overflow-hidden shadow-sm bg-[#221617] border border-[#EFE5DE]">
+              <Image 
+                src={post.imageUrl} 
+                alt={post.title} 
+                fill 
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+              />
+            </div>
           ) : (
-            <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-sm bg-[#faeaea] border border-[#EFE5DE] flex items-center justify-center text-[#6E6363] font-serif">
+            <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-sm bg-[#221617] border border-[#EFE5DE] flex items-center justify-center text-[#EFE5DE] font-serif">
               Studio Photography
             </div>
           )}

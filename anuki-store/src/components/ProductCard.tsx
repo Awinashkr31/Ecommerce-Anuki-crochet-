@@ -29,6 +29,8 @@ export interface Product {
   status?: string;
   stockStatus?: string;
   originalId?: string;
+  tags?: string | null;
+  seoKeywords?: string | null;
 }
 
 const ProductCardComponent = ({ product, hideAddToCart = false, href }: { product: Product, hideAddToCart?: boolean, href?: string }) => {
@@ -256,7 +258,7 @@ const ProductCardComponent = ({ product, hideAddToCart = false, href }: { produc
                   className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
                     idx === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
-                  sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 250px"
+                  sizes="(max-width: 640px) 50vw, 33vw"
                 />
               );
             })
@@ -267,7 +269,7 @@ const ProductCardComponent = ({ product, hideAddToCart = false, href }: { produc
               fill
               loading="lazy"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 640px) 48vw, (max-width: 1024px) 30vw, 250px"
+              sizes="(max-width: 640px) 50vw, 33vw"
             />
           )}
         </Link>

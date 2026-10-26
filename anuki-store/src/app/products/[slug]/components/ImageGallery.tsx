@@ -30,7 +30,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}
-            initial={{ opacity: 0 }}
+            initial={activeIndex === 0 ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
@@ -50,7 +50,7 @@ export default function ImageGallery({ images, altText }: { images: { url: strin
                 src={mainImage}
                 alt={images[activeIndex]?.altText || altText}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                sizes="(max-width: 640px) 100vw, 50vw"
                 className="object-cover transition-transform duration-500"
                 priority={activeIndex === 0}
                 fetchPriority={activeIndex === 0 ? "high" : "auto"}

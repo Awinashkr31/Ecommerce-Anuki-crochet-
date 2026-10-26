@@ -17,6 +17,7 @@ import useSWR from 'swr';
 import { trackViewCart } from "@/lib/gtm";
 import PriceRoll from "@/components/animations/PriceRoll";
 import ClickSuccess from "@/components/animations/ClickSuccess";
+import { prefetchCheckoutData } from "@/lib/checkoutPrefetch";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CartClient({ crossSellProducts = [] }: { crossSellProducts?: any[] }) {
@@ -30,10 +31,11 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   const { profile } = useAuthStore();
   const { selectedAddress, setSelectedAddress, fetchAddressesOnce, hydrate } = useAddressStore();
 
-  // Hydrate address from localStorage on mount
+  // Hydrate address from localStorage on mount and prefetch checkout route
   useEffect(() => {
     hydrate();
-  }, [hydrate]);
+    router.prefetch('/checkout');
+  }, [hydrate, router]);
 
   // Fetch addresses once when user is logged in
   useEffect(() => {
@@ -57,6 +59,8 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
   }, [profile, isLoginSheetOpen, router, selectedAddress]);
 
   const handlePlaceOrder = () => {
+    // Start prefetching checkout data immediately on click so checkout feels instant
+    prefetchCheckoutData();
     if (!profile) {
       // Guest user — go straight to checkout without login
       router.push('/checkout');
@@ -332,6 +336,8 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
 
                 <ClickSuccess 
                   onClick={handlePlaceOrder}
+                  onMouseEnter={() => prefetchCheckoutData()}
+                  onTouchStart={() => prefetchCheckoutData()}
                   className="hidden lg:flex w-full mt-5 bg-[#be4b5c] text-white font-bold text-base py-3.5 rounded-full shadow-[0_8px_20px_-4px_rgba(190,75,92,0.3)] active:scale-[0.98] transition-all items-center justify-center gap-2 hover:bg-[#9e3345]"
                 >
                   <ShieldCheck size={18} />
@@ -382,6 +388,8 @@ export default function CartClient({ crossSellProducts = [] }: { crossSellProduc
           
           <ClickSuccess 
             onClick={handlePlaceOrder}
+            onMouseEnter={() => prefetchCheckoutData()}
+            onTouchStart={() => prefetchCheckoutData()}
             className="bg-[#be4b5c] text-white font-bold text-sm px-6 py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_12px_rgba(190,75,92,0.3)] flex items-center gap-2 hover:bg-[#9e3345]"
           >
             Checkout

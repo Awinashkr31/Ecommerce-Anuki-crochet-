@@ -6,8 +6,8 @@ import { Dancing_Script } from 'next/font/google';
 
 const dancingScript = Dancing_Script({ subsets: ['latin'], weight: ['700'] });
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Search, ShoppingCart, User } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, ShoppingCart, User, X } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { InstallPWAButton } from "./InstallPWAButton";
 import { useAuthStore } from "../store/authStore";
@@ -19,12 +19,67 @@ export function StoreHeader() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [prevPathname, setPrevPathname] = useState(pathname);
-  if (prevPathname !== pathname) {
-    setPrevPathname(pathname);
-    setIsMobileSearchExpanded(false);
-  }
+  useEffect(() => {
+    const syncFromUrl = () => {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get("q") ?? params.get("search") ?? params.get("query") ?? "";
+        setSearchQuery(q);
+        if (pathname === "/products" && q.trim()) {
+          setIsMobileSearchExpanded(true);
+        }
+      }
+    };
+
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    window.addEventListener("searchCleared", syncFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl);
+      window.removeEventListener("searchCleared", syncFromUrl);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname !== "/products") {
+      setIsMobileSearchExpanded(false);
+    }
+  }, [pathname]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    
+    // Live filtering if already on /products (~300ms debounce)
+    if (pathname === "/products") {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        const trimmed = val.trim();
+        if (trimmed) {
+          router.replace(`/products?q=${encodeURIComponent(trimmed)}`, { scroll: false });
+        } else {
+          router.replace("/products", { scroll: false });
+        }
+      }, 300);
+    }
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      router.push(`/products?q=${encodeURIComponent(trimmed)}`);
+    } else {
+      router.push("/products");
+    }
+  };
 
 
 
@@ -62,7 +117,7 @@ export function StoreHeader() {
         <div className="max-w-7xl mx-auto w-full h-16 px-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 border-[1.5px] border-[#FCE4E8] rounded-[12px] flex items-center justify-center bg-[#FFF9FA] overflow-hidden p-1 shadow-sm shrink-0">
-              <Image alt="Logo" width={640} height={640} className="w-full h-full object-contain" src="/logo2.webp" />
+              <Image alt="Logo" width={40} height={40} sizes="40px" className="w-full h-full object-contain" src="/logo2.webp" priority />
             </div>
             <div className="flex flex-col items-center sm:items-start justify-center leading-none mt-0.5">
               <div className="flex items-center gap-1.5 tracking-tight relative z-10">
@@ -112,13 +167,38 @@ export function StoreHeader() {
         </div>
         {isMobileSearchExpanded && (
           <div className="px-4 pb-3 animate-fade-in">
-             <form onSubmit={(e) => {
-               e.preventDefault();
-               const query = new FormData(e.currentTarget).get('q')?.toString().trim();
-               if (query) router.push(`/products?search=${encodeURIComponent(query)}`);
-             }} className="flex items-center w-full bg-neutral-100 rounded-full shadow-sm overflow-hidden px-3">
-               <Search size={18} className="text-neutral-500 shrink-0" />
-               <input type="text" name="q" placeholder="Search bouquets, keychains, plushies..." className="flex-1 h-10 bg-transparent px-2 focus:outline-none text-sm text-neutral-900 placeholder:text-neutral-400" autoFocus />
+             <form onSubmit={handleSearchSubmit} className="flex items-center w-full bg-neutral-100 rounded-full shadow-sm overflow-hidden px-3">
+               <button 
+                 type="submit" 
+                 aria-label="Search" 
+                 className="text-neutral-500 hover:text-neutral-800 shrink-0 p-1 flex items-center justify-center focus:outline-none cursor-pointer"
+               >
+                 <Search size={18} />
+               </button>
+               <input 
+                 type="text" 
+                 name="q" 
+                 value={searchQuery}
+                 onChange={(e) => handleSearchChange(e.target.value)}
+                 placeholder="Search bouquets, keychains, plushies..." 
+                 className="flex-1 h-10 bg-transparent px-2 focus:outline-none text-sm text-neutral-900 placeholder:text-neutral-400" 
+                 autoFocus 
+               />
+               {searchQuery && (
+                 <button
+                   type="button"
+                   onClick={() => {
+                     setSearchQuery("");
+                     if (pathname === "/products") {
+                       router.replace("/products", { scroll: false });
+                     }
+                   }}
+                   aria-label="Clear search input"
+                   className="text-neutral-400 hover:text-neutral-600 p-1 flex items-center justify-center focus:outline-none cursor-pointer"
+                 >
+                   <X size={16} />
+                 </button>
+               )}
              </form>
           </div>
         )}

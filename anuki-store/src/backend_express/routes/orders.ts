@@ -88,7 +88,10 @@ router.post('/', optionalAuth, validate(createOrderSchema), async (req: import('
 
     // Fetch user in parallel with the order transaction to save time
     const userPromise = (paymentMethod === 'online' && userId)
-      ? prisma.user.findUnique({ where: { id: userId } })
+      ? prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true, email: true, fullName: true, phone: true },
+        })
       : Promise.resolve(null);
 
     // Build internal notes with guest info if applicable

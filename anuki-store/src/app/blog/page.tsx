@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 
@@ -82,9 +83,16 @@ export default async function BlogIndexPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {posts.map(post => (
             <Link key={post.id} href={`/blog/${post.slug}`} className="bg-white rounded-2xl border border-[#EFE5DE] overflow-hidden shadow-sm hover:shadow-md flex flex-col group transition-all duration-300">
-              <div className="relative aspect-video w-full overflow-hidden bg-[#faeaea]">
+              <div className="relative aspect-video w-full overflow-hidden bg-[#221617]">
                 {post.imageUrl ? (
-                  <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
+                  <Image 
+                    src={post.imageUrl} 
+                    alt={post.title} 
+                    fill 
+                    sizes="(max-width: 768px) 100vw, 50vw" 
+                    loading="lazy" 
+                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6E6363]">No image</div>
                 )}

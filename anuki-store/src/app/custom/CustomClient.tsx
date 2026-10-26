@@ -104,13 +104,14 @@ export default function CustomClient() {
     <div className="min-h-screen bg-[#fafaf9] overflow-x-hidden">
       
       {/* Hero Section */}
-      <section className="relative w-full min-h-[520px] md:min-h-[580px] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full min-h-[520px] md:min-h-[580px] bg-[#1c1917] flex items-center justify-center overflow-hidden">
         {/* Background Image Overlay */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 bg-[#1c1917]">
           <NextImage 
             src="/custom-portfolio/hero.webp" 
             alt="Custom Crochet Orders India Handcrafted" 
             fill 
+            sizes="100vw"
             className="object-cover"
             priority
           />

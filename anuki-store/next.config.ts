@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   images: {
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [360, 414, 640, 750, 828, 1080, 1200],
+    deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000,
     remotePatterns: [
@@ -33,7 +33,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'wzhxuzxfoayjzrhufyxw.supabase.co' },
       { protocol: 'https', hostname: 'placehold.co' },
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' }
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'anukicrochet.in' },
+      { protocol: 'https', hostname: 'www.anukicrochet.in' }
     ],
   },
   async redirects() {
@@ -71,7 +73,7 @@ const nextConfig: NextConfig = {
       { source: '/custom-crochet-baby-gifts', destination: '/custom', statusCode: 301 },
       { source: '/custom-crochet-bulk-orders', destination: '/custom', statusCode: 301 },
       { source: '/custom-color-crochet-gifts', destination: '/custom', statusCode: 301 },
-      { source: '/custom-:slug(.*)', destination: '/custom', statusCode: 301 },
+      { source: '/custom-:slug((?!portfolio).*)', destination: '/custom', statusCode: 301 },
     ];
   },
   async headers() {
@@ -96,6 +98,16 @@ const nextConfig: NextConfig = {
       {
         // Immutable cache for all files in the public directory (Edge Cache)
         source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2|ttf|eot)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Immutable cache for optimized Next.js images
+        source: '/_next/image(.*)',
         headers: [
           {
             key: 'Cache-Control',

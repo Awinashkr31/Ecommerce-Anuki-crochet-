@@ -193,6 +193,7 @@ export default function CustomPage() {
           { name: 'Custom Crochet Orders', item: '/custom' },
         ]} 
       />
+      <link rel="preload" as="image" href="/custom-portfolio/hero.webp" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <CustomClient />
     </>

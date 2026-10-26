@@ -283,6 +283,9 @@ export default async function ProductDetailPage({ params }: Props) {
           { name: product.name, item: `/products/${product.slug}` }
         ]} 
       />
+      {product.images?.[0]?.url && (
+        <link rel="preload" as="image" href={product.images[0].url} />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

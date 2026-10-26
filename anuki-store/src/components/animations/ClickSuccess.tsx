@@ -7,6 +7,8 @@ import { useAnimationState } from "@/hooks/useAnimationState";
 interface ClickSuccessProps {
   children: React.ReactNode;
   onClick?: (e: React.MouseEvent) => void;
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
   className?: string;
   disabled?: boolean;
   successDurationMs?: number;
@@ -18,6 +20,8 @@ interface ClickSuccessProps {
 export default function ClickSuccess({
   children,
   onClick,
+  onMouseEnter,
+  onTouchStart,
   className = "",
   disabled = false,
   successDurationMs = 1200,
@@ -48,6 +52,8 @@ export default function ClickSuccess({
     <button
       type={type}
       onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onTouchStart={onTouchStart}
       disabled={disabled}
       aria-label={ariaLabel}
       className={`relative overflow-hidden select-none ${className}`}
